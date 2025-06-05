@@ -12,11 +12,12 @@ import { dashboardNavItems, NavItem } from "@/config/dashboard-nav";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useAuthActions, useCurrentUser } from "@/stores/auth";
+import { useAuthActions, useCurrentUser, useIsOnline } from "@/stores/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { Switch } from "@/components/ui/switch"; // For Online/Offline
 import { Label } from "@/components/ui/label"; // For Online/Offline
-import { useState } from "react"; // For local UI state of online status
+
+import { useChatWebSocket } from "@/hooks/useChatWebSocket";
 
 interface GlobalSidebarProps {
   currentUser: User | null; // Pass the current user to determine role
@@ -24,13 +25,12 @@ interface GlobalSidebarProps {
 }
 
 export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
+  const { setOnlineStatus } = useChatWebSocket();
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuthActions();
+  const { logout, setOnlineStatus: setAuthOnlineStatus } = useAuthActions();
+  const isOnline = useIsOnline(); // Get online status from auth store
   const queryClient = useQueryClient();
-
-  // Local state for online/offline toggle (actual logic via WebSocket/API later)
-  const [isOnline, setIsOnline] = useState(true);
 
   const handleLogout = () => {
     logout();
@@ -39,9 +39,10 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
   };
 
   const handleStatusChange = (checked: boolean) => {
-    setIsOnline(checked);
-    // TODO: Implement actual API/WebSocket call to update status
-    console.log(`User status changed to: ${checked ? "Online" : "Offline"}`);
+    // Optimistically update the UI immediately
+    setAuthOnlineStatus(checked);
+    // Send the status change to the server
+    setOnlineStatus(checked);
   };
 
   if (!currentUser) {

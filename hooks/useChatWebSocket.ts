@@ -8,7 +8,7 @@ import { ChatMessage, ChatSession, User } from "@/types";
 const SOCKET_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001";
 
 export function useChatWebSocket() {
-  const { accessToken, user } = useAuthStore();
+  const { accessToken, user, actions: authActions } = useAuthStore();
   const chatActions = useChatActions();
 
   // socketRef is the primary reference to the socket instance for this hook.
@@ -169,6 +169,15 @@ export function useChatWebSocket() {
               chatActions.removePendingRequest(data.chatSessionId);
             }
           );
+
+          newSocket.on(
+            "server:online_status_updated",
+            (data: { isOnline: boolean }) => {
+              console.log("Online status updated by server:", data);
+              // Update the auth store with the server-confirmed status
+              authActions.setOnlineStatus(data.isOnline);
+            }
+          );
         }
       }
     } else {
@@ -207,6 +216,7 @@ export function useChatWebSocket() {
       //   socketRef.current.off('disconnect');
       //   // ... off for all other events
       // }
+      console.log("Cleaning up WebSocket listeners.");
     };
     // Dependencies:
     // - accessToken, user: To trigger connection/disconnection on auth changes.
@@ -216,7 +226,7 @@ export function useChatWebSocket() {
     // Instead, we use useChatStore.getState().socket to get the current socket state
     // without subscribing to changes, which prevents the effect from re-running
     // when setSocket is called.
-  }, [accessToken, user, chatActions]);
+  }, [accessToken, user, chatActions, authActions]);
 
   // Emitter functions use socketRef.current
   const sendMessage = (payload: {
@@ -248,7 +258,16 @@ export function useChatWebSocket() {
     }
   };
 
-  return { sendMessage, acceptChat };
+  const setOnlineStatus = (isOnline: boolean) => {
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit("agent:set_online_status", { isOnline });
+      console.log(`User status changed to: ${isOnline ? "Online" : "Offline"}`);
+    } else {
+      console.error("Socket not connected. Cannot set online status.");
+    }
+  };
+
+  return { sendMessage, acceptChat, setOnlineStatus };
 }
 
 // GlobalChatWebSocketInitializer remains the same

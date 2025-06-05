@@ -7,11 +7,13 @@ import { User } from "@/types";
 interface AuthState {
   user: User | null;
   accessToken: string | null;
+  isOnline: boolean; // Agent's online status
   _hasHydrated: boolean;
   actions: {
     login: (user: User, accessToken: string) => void;
     logout: () => void;
     updateUser: (updatedUserDetails: Partial<User>) => void;
+    setOnlineStatus: (isOnline: boolean) => void;
     setHasHydrated: (hasHydrated: boolean) => void;
   };
 }
@@ -21,11 +23,12 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       accessToken: null,
+      isOnline: false,
       _hasHydrated: false,
       actions: {
         login: (user, accessToken) => set({ user, accessToken }),
         logout: () => {
-          set({ user: null, accessToken: null });
+          set({ user: null, accessToken: null, isOnline: false });
           // queryClient.clear() will be called from where logout action is dispatched
         },
         updateUser: (updatedUserDetails) => {
@@ -35,6 +38,7 @@ export const useAuthStore = create<AuthState>()(
             }));
           }
         },
+        setOnlineStatus: (isOnline) => set({ isOnline }),
         setHasHydrated: (hasHydrated) => set({ _hasHydrated: hasHydrated }),
       },
     }),
@@ -56,6 +60,7 @@ export const useCurrentUser = () => useAuthStore((state) => state.user);
 export const useAccessToken = () => useAuthStore((state) => state.accessToken);
 export const useIsAuthenticated = () =>
   useAuthStore((state) => !!state.accessToken && !!state.user);
+export const useIsOnline = () => useAuthStore((state) => state.isOnline);
 export const useHasHydrated = () => useAuthStore((state) => state._hasHydrated);
 export const useAuthActions = () => useAuthStore((state) => state.actions);
 export const getAuthToken = () => useAuthStore.getState().accessToken;
