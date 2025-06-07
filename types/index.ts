@@ -1,6 +1,8 @@
 // src/types/index.ts
 
 export * from "./chat"; // Export all from chat.ts
+export * from "./department"; // If you created department.ts
+export * from "./widget"; // Export all from widget.ts
 
 export interface User {
   id: string; // Note: Login returns 'id'

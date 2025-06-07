@@ -32,7 +32,7 @@ export const dashboardNavItems: NavItem[] = [
   },
   {
     title: "My Chats", // Or "Active Chats"
-    href: "/dashboard/chats",
+    href: "/dashboard/chat",
     icon: MessageSquare,
   },
   {
@@ -42,26 +42,32 @@ export const dashboardNavItems: NavItem[] = [
   },
   {
     title: "User Management",
-    href: "/dashboard/admin/users",
+    href: "/dashboard/users",
     icon: Users,
     role: "ADMIN",
     separator: true,
   },
   {
+    title: "Widgets",
+    href: "/dashboard/widgets",
+    icon: Building,
+    role: "ADMIN",
+  },
+  {
     title: "Agent Settings", // Specific agent settings (can be part of User Management too)
-    href: "/dashboard/admin/agents",
+    href: "/dashboard/agents",
     icon: UserCog,
     role: "ADMIN",
   },
   {
     title: "Departments",
-    href: "/dashboard/admin/departments",
+    href: "/dashboard/departments",
     icon: Building,
     role: "ADMIN",
   },
   {
     title: "All Chat Sessions", // Admin monitoring
-    href: "/dashboard/admin/sessions",
+    href: "/dashboard/sessions",
     icon: ShieldAlert,
     role: "ADMIN",
   },

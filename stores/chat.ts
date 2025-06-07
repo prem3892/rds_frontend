@@ -228,6 +228,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
 export const useSocketInstance = () => useChatStore((state) => state.socket);
 export const useIsSocketConnected = () =>
   useChatStore((state) => state.isConnected);
+export const useSocketConnectionStatus = () =>
+  useChatStore((state) => ({
+    socket: state.socket,
+    isConnected: state.isConnected,
+    isSocketConnected: state.socket?.connected ?? false,
+  }));
 export const useActiveChatSessions = () =>
   useChatStore((state) => state.activeSessions);
 export const usePendingChatRequests = () =>
