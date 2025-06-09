@@ -48,15 +48,16 @@ export interface ChatSession {
 }
 
 export type ChatSessionStatus =
-  | "OPEN"
   | "PENDING_ASSIGNMENT"
   | "ACTIVE"
-  | "CLOSED"
+  | "RESOLVED"
+  | "CLOSED_BY_AGENT"
+  | "CLOSED_BY_CUSTOMER"
   | "ABANDONED_BY_CUSTOMER"
-  | "ABANDONED_BY_AGENT"
   | "PENDING_AGENT_RECONNECT"
-  | "PENDING_CUSTOMER_RECONNECT"
-  | "RESOLVED";
+  | "ABANDONED_BY_AGENT"
+  | "EXPIRED_PENDING_ASSIGNMENT"
+  | "OFFLINE_MESSAGE";
 
 // For GET /chat/sessions query parameters
 export interface GetChatSessionsQueryDto {

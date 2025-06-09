@@ -10,7 +10,7 @@ import {
   useSelectedChatSessionId,
   usePendingChatRequests,
 } from "@/stores/chat";
-import { useChatWebSocket } from "@/hooks/useChatWebSocket";
+
 import {
   ChatHeader,
   ChatMessages,
@@ -19,6 +19,7 @@ import {
   MessageInput,
   TypingIndicator,
 } from "./components";
+import { useSocketOperations } from "@/hooks/useSocket";
 
 // --- Main Page Component ---
 export default function MyChatsPage() {
@@ -28,7 +29,7 @@ export default function MyChatsPage() {
   } = useGetMyActiveChatSessions();
   const chatStoreActions = useChatActions();
   const { sendMessage, acceptChat, sendTypingStart, sendTypingStop } =
-    useChatWebSocket();
+    useSocketOperations();
 
   const activeSessionsMap = useActiveChatSessions();
   const pendingRequests = usePendingChatRequests();

@@ -41,10 +41,13 @@ import {
 } from "@/components/ui/select";
 
 const historyStatusOptions: ChatSessionStatus[] = [
-  "CLOSED",
   "RESOLVED",
+  "CLOSED_BY_AGENT",
+  "CLOSED_BY_CUSTOMER",
   "ABANDONED_BY_CUSTOMER",
   "ABANDONED_BY_AGENT",
+  "EXPIRED_PENDING_ASSIGNMENT",
+  "OFFLINE_MESSAGE",
 ];
 
 export default function ChatHistoryPage() {
@@ -52,7 +55,7 @@ export default function ChatHistoryPage() {
   const [filters, setFilters] = useState<
     Omit<GetChatSessionsQueryDto, "limit" | "page">
   >({
-    status: currentUser?.role === "AGENT" ? undefined : "CLOSED",
+    status: currentUser?.role === "AGENT" ? undefined : "RESOLVED",
   });
   const [selectedSessionForMessages, setSelectedSessionForMessages] =
     useState<ChatSession | null>(null);
@@ -62,7 +65,7 @@ export default function ChatHistoryPage() {
       setFilters((prev) => ({
         ...prev,
         agentId: currentUser.id,
-        status: prev.status || "CLOSED",
+        status: prev.status || "RESOLVED",
       }));
     }
   }, [currentUser]);
@@ -117,7 +120,7 @@ export default function ChatHistoryPage() {
             onValueChange={(value) =>
               handleFilterChange(
                 "status",
-                (value as ChatSessionStatus) || undefined
+                value === "ALL" ? undefined : (value as ChatSessionStatus)
               )
             }
             defaultValue={filters.status}
@@ -126,7 +129,7 @@ export default function ChatHistoryPage() {
               <SelectValue placeholder="Status (Default: Closed)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All My Historical</SelectItem>
+              <SelectItem value="ALL">All My Historical</SelectItem>
               {historyStatusOptions.map((s) => (
                 <SelectItem key={s} value={s}>
                   {s.replace(/_/g, " ")}
@@ -137,14 +140,17 @@ export default function ChatHistoryPage() {
           {currentUser?.role === "ADMIN" && (
             <Select
               onValueChange={(value) =>
-                handleFilterChange("agentId", value || undefined)
+                handleFilterChange(
+                  "agentId",
+                  value === "ALL_AGENTS" ? undefined : value
+                )
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filter by Agent (Admin)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Agents</SelectItem>
+                <SelectItem value="ALL_AGENTS">All Agents</SelectItem>
               </SelectContent>
             </Select>
           )}
@@ -183,8 +189,12 @@ export default function ChatHistoryPage() {
                     <TableRow key={session._id}>
                       <TableCell>{session._id.slice(-8)}</TableCell>
                       <TableCell>
-                        {session.customer?.firstName ||
-                          session.customerId.slice(-6)}
+                        {typeof session.customerId === "object" &&
+                        session.customerId?.firstName
+                          ? session.customerId.firstName
+                          : typeof session.customerId === "string"
+                          ? session.customerId.slice(-6)
+                          : ""}
                       </TableCell>
                       {currentUser?.role === "ADMIN" && (
                         <TableCell>

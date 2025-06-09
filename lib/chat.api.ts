@@ -14,13 +14,19 @@ import { useCurrentUser } from "@/stores/auth";
 // 1. Get All Chat Sessions (Admin / Filtered for Agent History) - Now fetches all
 export const CHAT_SESSIONS_QUERY_KEY_PREFIX = "chatSessions";
 
+// Define the response type for chat sessions
+interface ChatSessionsResponse {
+  data: ChatSession[];
+  count: number;
+}
+
 export const useGetAllChatSessions = (
   params: Omit<GetChatSessionsQueryDto, "limit" | "page"> = {}, // Omitting limit and page
   options?: Omit<
     UseQueryOptions<
-      ChatSession[], // Expecting a direct array
+      ChatSessionsResponse, // API returns {data, count}
       ApiErrorResponse,
-      ChatSession[],
+      ChatSession[], // But we still transform to just the array for consumers
       [
         string,
         Omit<GetChatSessionsQueryDto, "limit" | "page" | "forCurrentAgent">
@@ -42,7 +48,7 @@ export const useGetAllChatSessions = (
   const { forCurrentAgent, ...apiParams } = stableParams;
 
   return useQuery<
-    ChatSession[],
+    ChatSessionsResponse,
     ApiErrorResponse,
     ChatSession[],
     [string, typeof apiParams]
@@ -61,16 +67,18 @@ export const useGetAllChatSessions = (
         queryParams.append("customerEmail", apiParams.customerEmail);
       const queryString = queryParams.toString();
 
-      // Assuming the API returns ChatSession[] if no pagination params are sent
-      return customFetch<ChatSession[]>(
+      // API returns {data: ChatSession[], count: number}
+      return customFetch<ChatSessionsResponse>(
         `/chat/sessions${queryString ? `?${queryString}` : ""}`
       );
     },
+    // Extract just the data array from the response
+    select: (response) => response.data,
     ...options,
   });
 };
 
-// 2. Get Agent's Active Chat Sessions - Unchanged as it was already non-paginated
+// 2. Get Agent's Active Chat Sessions
 export const MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY = "myActiveChatSessions";
 
 export const useGetMyActiveChatSessions = (

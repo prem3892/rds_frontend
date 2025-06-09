@@ -9,7 +9,7 @@ import {
   useHasHydrated,
 } from "@/stores/auth";
 import { User } from "@/types";
-import { GlobalChatWebSocketInitializer } from "@/hooks/useChatWebSocket";
+import { GlobalSocketInitializer } from "@/hooks/useSocket";
 
 export default function DashboardLayout({
   children,
@@ -47,7 +47,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-muted/40">
-      <GlobalChatWebSocketInitializer /> {/* Add this */}
+      <GlobalSocketInitializer /> {/* Global persistent socket */}
       <GlobalSidebar currentUser={currentUser} />
       <main className="flex flex-1 flex-col pl-72">
         {" "}
