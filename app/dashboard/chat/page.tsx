@@ -1,175 +1,24 @@
 // src/app/(dashboard)/chats/page.tsx
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import debounce from "lodash/debounce";
+import React, { useEffect, useCallback, useState } from "react";
+import { motion } from "framer-motion";
 import { useGetMyActiveChatSessions, useGetChatMessages } from "@/lib/api";
 import {
-  useChatStore,
   useChatActions,
   useActiveChatSessions,
   useSelectedChatSessionId,
   usePendingChatRequests,
 } from "@/stores/chat";
 import { useChatWebSocket } from "@/hooks/useChatWebSocket";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"; // Ensure Card components are imported
-import { format, parseISO, formatDistanceToNowStrict } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Send,
-  UserCircle,
-  MessageSquarePlus,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle, // For pending requests
-  Loader2, // For loading states
-} from "lucide-react";
-import { ChatMessage, ChatSession } from "@/types";
-import { useCurrentUser } from "@/stores/auth"; // For user context if needed
-
-// --- Helper Components ---
-
-// Individual Message Bubble
-const MessageBubble = React.memo(({ message }: { message: ChatMessage }) => {
-  const currentUser = useCurrentUser();
-  // Determine if the message is from the currently logged-in agent/admin
-  // Note: senderId for agent might be user.id, ensure consistency
-  const isOwnMessage =
-    message.senderType === "AGENT" && message.senderId === currentUser?.id;
-  const isSystem = message.senderType === "SYSTEM";
-
-  if (isSystem) {
-    return (
-      <div className="my-2 text-center">
-        <span className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-muted-foreground rounded-full">
-          {message.content.text || "System Notification"}
-          {message.content.appointmentDetails && (
-            <span className="block text-xxs">
-              Appointment:{" "}
-              {format(
-                parseISO(message.content.appointmentDetails.appointmentTime),
-                "Pp"
-              )}
-            </span>
-          )}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`flex my-1 ${isOwnMessage ? "justify-end" : "justify-start"}`}
-    >
-      <div
-        className={`p-3 rounded-lg max-w-[70%] shadow-sm ${
-          isOwnMessage
-            ? "bg-primary text-primary-foreground rounded-br-none"
-            : "bg-background border dark:border-slate-700 rounded-bl-none"
-          // Using bg-background for non-own messages to match typical chat UIs better
-        }`}
-      >
-        {!isOwnMessage &&
-          message.senderType === "AGENT" && ( // If another agent sent message (e.g. transferred chat)
-            <p className="text-xs font-semibold mb-1 opacity-70">
-              Agent: {message.senderId.slice(-4)}
-            </p>
-          )}
-        <p className="text-sm whitespace-pre-wrap">
-          {message.content.text || JSON.stringify(message.content)}
-        </p>
-        <p
-          className={`text-xs mt-1 ${
-            isOwnMessage
-              ? "text-blue-200 dark:text-sky-300"
-              : "text-muted-foreground/80"
-          } text-right`}
-        >
-          {format(parseISO(message.timestamp), "HH:mm")}
-        </p>
-      </div>
-    </div>
-  );
-});
-MessageBubble.displayName = "MessageBubble";
-
-// Chat Session Item in the List
-const ChatListItem = React.memo(
-  ({
-    session,
-    isSelected,
-    onSelect,
-  }: {
-    session: ChatSession & {
-      unreadCount?: number;
-      lastMessagePreview?: string;
-    };
-    isSelected: boolean;
-    onSelect: () => void;
-  }) => (
-    <Button
-      variant={isSelected ? "secondary" : "ghost"}
-      className="w-full justify-start p-3 h-auto mb-1 flex items-start text-left"
-      onClick={onSelect}
-    >
-      <Avatar className="h-10 w-10 mr-3 flex-shrink-0">
-        <AvatarImage
-          src={undefined /* No avatar URL available in the interface */}
-        />
-        <AvatarFallback className="text-sm">
-          {typeof session.customerId === "object"
-            ? session.customerId?.firstName?.charAt(0)?.toUpperCase() ||
-              session.customerId?.email?.charAt(0)?.toUpperCase() ||
-              "C"
-            : "C"}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 overflow-hidden">
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-sm truncate block">
-            {typeof session.customerId === "object"
-              ? session.customerId?.firstName ||
-                session.customerId?.email ||
-                session.customerId._id.slice(-6)
-              : session.customerId.slice(-6)}
-          </span>
-          {session.unreadCount && session.unreadCount > 0 ? (
-            <Badge
-              variant="destructive"
-              className="ml-1 text-xs px-1.5 py-0.5 flex-shrink-0"
-            >
-              {session.unreadCount}
-            </Badge>
-          ) : null}
-        </div>
-        <p className="text-xs text-muted-foreground truncate">
-          {session.lastMessagePreview || session.status.replace(/_/g, " ")}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {session.lastMessageTimestamp
-            ? formatDistanceToNowStrict(
-                parseISO(session.lastMessageTimestamp),
-                { addSuffix: true }
-              )
-            : "N/A"}
-        </p>
-      </div>
-    </Button>
-  )
-);
-ChatListItem.displayName = "ChatListItem";
+  ChatHeader,
+  ChatMessages,
+  ChatSidebar,
+  EmptyChatState,
+  MessageInput,
+  TypingIndicator,
+} from "./components";
 
 // --- Main Page Component ---
 export default function MyChatsPage() {
@@ -179,38 +28,12 @@ export default function MyChatsPage() {
   } = useGetMyActiveChatSessions();
   const chatStoreActions = useChatActions();
   const { sendMessage, acceptChat, sendTypingStart, sendTypingStop } =
-    useChatWebSocket(); // Get emitters
+    useChatWebSocket();
 
-  const activeSessionsMap = useActiveChatSessions(); // Zustand store: Record<string, ActiveChat>
-  const pendingRequests = usePendingChatRequests(); // Zustand store: ChatSession[]
-  const selectedSessionId = useSelectedChatSessionId(); // Zustand store: string | null
-
-  const [newMessage, setNewMessage] = useState("");
+  const activeSessionsMap = useActiveChatSessions();
+  const pendingRequests = usePendingChatRequests();
+  const selectedSessionId = useSelectedChatSessionId();
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<null | HTMLDivElement>(null);
-  const textareaRef = useRef<null | HTMLTextAreaElement>(null);
-
-  // Create debounced versions of the typing functions
-  const debouncedTypingStop = useCallback(
-    debounce((sessionId: string) => {
-      if (isTyping) {
-        setIsTyping(false);
-        sendTypingStop(sessionId);
-      }
-    }, 1500), // Wait 1.5 seconds of inactivity before stopping the typing indicator
-    [isTyping, sendTypingStop]
-  );
-
-  // Create a memoized version of the typing start function to avoid recreating it on every render
-  const handleTypingStart = useCallback(
-    (sessionId: string) => {
-      if (!isTyping) {
-        setIsTyping(true);
-        sendTypingStart(sessionId);
-      }
-    },
-    [isTyping, sendTypingStart]
-  );
 
   // Load initial active sessions from API into Zustand store
   useEffect(() => {
@@ -219,20 +42,13 @@ export default function MyChatsPage() {
     }
   }, [initialActiveSessionsData, chatStoreActions]);
 
-  useEffect(() => {
-    console.debug("pending chat requests ", pendingRequests);
-  }, [pendingRequests]);
-
   const selectedSessionDetails = selectedSessionId
     ? activeSessionsMap[selectedSessionId]
     : null;
 
-  // Fetch messages for the selected session (all messages, no pagination)
-  const {
-    data: messagesFromApi,
-    isLoading: isLoadingMessagesApi,
-    refetch: refetchMessagesFromApi,
-  } = useGetChatMessages(selectedSessionDetails?._id || null);
+  // Fetch messages for the selected session
+  const { data: messagesFromApi, isLoading: isLoadingMessagesApi } =
+    useGetChatMessages(selectedSessionDetails?._id || null);
 
   // Load messages from API into the selected session in Zustand store
   useEffect(() => {
@@ -255,60 +71,51 @@ export default function MyChatsPage() {
     selectedSessionDetails,
   ]);
 
-  // Auto-scroll to bottom of messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [selectedSessionDetails?.messages]); // Trigger on messages change for the selected session
+  const handleAcceptChat = useCallback(
+    (sessionId: string) => {
+      acceptChat(sessionId);
+    },
+    [acceptChat]
+  );
 
-  // Cleanup effect for debounced functions
-  useEffect(() => {
-    return () => {
-      // Cancel any pending debounced calls on unmount
-      debouncedTypingStop.cancel();
-
-      // If still typing, send typing stop signal
-      if (isTyping && selectedSessionId) {
-        sendTypingStop(selectedSessionId);
+  const handleSendMessage = useCallback(
+    (message: string) => {
+      if (selectedSessionId && selectedSessionDetails?.status === "ACTIVE") {
+        sendMessage({
+          chatSessionId: selectedSessionId,
+          messageContent: { text: message },
+        });
       }
-    };
-  }, [debouncedTypingStop, isTyping, selectedSessionId, sendTypingStop]);
+    },
+    [selectedSessionId, selectedSessionDetails, sendMessage]
+  );
 
-  const handleSendMessage = () => {
-    if (
-      newMessage.trim() &&
-      selectedSessionId &&
-      selectedSessionDetails?.status === "ACTIVE"
-    ) {
-      // Send the message
-      sendMessage({
-        chatSessionId: selectedSessionId,
-        messageContent: { text: newMessage.trim() },
-      });
+  const handleTypingStart = useCallback(
+    (sessionId: string) => {
+      if (!isTyping) {
+        setIsTyping(true);
+        sendTypingStart(sessionId);
+      }
+    },
+    [isTyping, sendTypingStart]
+  );
 
-      // Reset message input
-      setNewMessage("");
-
-      // Cancel debounced typing stop and immediately stop typing indicator
+  const handleTypingStop = useCallback(
+    (sessionId: string) => {
       if (isTyping) {
-        debouncedTypingStop.cancel();
         setIsTyping(false);
-        sendTypingStop(selectedSessionId);
+        sendTypingStop(sessionId);
       }
-
-      // Keep focus on the input
-      textareaRef.current?.focus();
-    }
-  };
-
-  const handleAcceptChat = (sessionId: string) => {
-    acceptChat(sessionId);
-  };
+    },
+    [isTyping, sendTypingStop]
+  );
 
   // TODO: Implement these actions
   const handleEndChat = (sessionId: string) => {
     console.log("TODO: End chat", sessionId);
     // socket.emit('agent:end_chat', { chatSessionId: sessionId });
   };
+
   const handleResolveChat = (sessionId: string) => {
     console.log("TODO: Resolve chat", sessionId);
     // socket.emit('agent:resolve_chat', { chatSessionId: sessionId });
@@ -319,9 +126,18 @@ export default function MyChatsPage() {
       new Date(b.lastMessageTimestamp || b.updatedAt).getTime() -
       new Date(a.lastMessageTimestamp || a.updatedAt).getTime()
   );
+
   const pendingRequestsSorted = [...pendingRequests].sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
+
+  const getCustomerName = () => {
+    if (!selectedSessionDetails) return "Customer";
+
+    return typeof selectedSessionDetails.customerId === "object"
+      ? selectedSessionDetails.customerId?.firstName || "Customer"
+      : "Customer";
+  };
 
   return (
     <motion.div
@@ -330,297 +146,50 @@ export default function MyChatsPage() {
       transition={{ duration: 0.3 }}
       className="flex h-[calc(100vh-var(--header-height,4rem))] overflow-hidden bg-muted/30 dark:bg-slate-900/50"
     >
-      {/* Sidebar for Active and Pending Chats */}
-      <aside className="w-80 xl:w-96 border-r flex flex-col bg-background dark:bg-slate-800 dark:border-slate-700">
-        <div className="p-4 border-b dark:border-slate-700">
-          <h2 className="text-xl font-semibold">My Chats</h2>
-        </div>
-
-        {/* Pending Requests */}
-        {pendingRequestsSorted.length > 0 && (
-          <div className="p-2 border-b dark:border-slate-700">
-            <h3 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-              Pending Requests ({pendingRequestsSorted.length})
-            </h3>
-            <ScrollArea className="h-auto max-h-60">
-              {" "}
-              {/* Adjust max height */}
-              {pendingRequestsSorted.map((session) => (
-                <Card
-                  key={session._id}
-                  className="mb-2 p-3 hover:shadow-md transition-shadow cursor-pointer bg-amber-50 dark:bg-amber-800/20 border-amber-500 dark:border-amber-600"
-                  onClick={() => handleAcceptChat(session._id)}
-                >
-                  <div className="flex justify-between w-full items-center mb-1">
-                    <span className="font-semibold text-sm text-amber-700 dark:text-amber-400">
-                      {typeof session.customerId === "object"
-                        ? session.customerId?.firstName ||
-                          session.customerId?.email ||
-                          session.customerId._id.slice(-6)
-                        : session.customerId.slice(-6)}
-                    </span>
-                    <Badge
-                      variant="destructive"
-                      className="bg-amber-500 text-amber-50"
-                    >
-                      NEW
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-amber-600 dark:text-amber-500">
-                    Dept:{" "}
-                    {session.department?.name ||
-                      (typeof session.departmentId === "object" &&
-                        session.departmentId?.name) ||
-                      (typeof session.departmentId === "string" &&
-                        session.departmentId?.slice(-6)) ||
-                      "N/A"}
-                  </p>
-                  <p className="text-xs text-amber-600 dark:text-amber-500">
-                    {formatDistanceToNowStrict(parseISO(session.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </p>
-                </Card>
-              ))}
-            </ScrollArea>
-          </div>
-        )}
-
-        {/* Active Chats List */}
-        <ScrollArea className="flex-1 p-2">
-          {isLoadingInitialSessions && activeSessionsArray.length === 0 && (
-            <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center">
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Loading active
-              chats...
-            </div>
-          )}
-          {!isLoadingInitialSessions &&
-            activeSessionsArray.length === 0 &&
-            pendingRequestsSorted.length === 0 && (
-              <p className="p-4 text-center text-sm text-muted-foreground">
-                No active or pending chats.
-              </p>
-            )}
-          {activeSessionsArray.map((session) => (
-            <ChatListItem
-              key={session._id}
-              session={session}
-              isSelected={selectedSessionId === session._id}
-              onSelect={() =>
-                chatStoreActions.setSelectedSessionId(session._id)
-              }
-            />
-          ))}
-        </ScrollArea>
-      </aside>
+      {/* Sidebar */}
+      <ChatSidebar
+        activeSessions={activeSessionsArray}
+        pendingSessions={pendingRequestsSorted}
+        selectedSessionId={selectedSessionId}
+        onSelectSession={(sessionId) =>
+          chatStoreActions.setSelectedSessionId(sessionId)
+        }
+        onAcceptChat={handleAcceptChat}
+        isLoading={isLoadingInitialSessions}
+      />
 
       {/* Main Chat View Area */}
       <main className="flex-1 flex flex-col bg-background dark:bg-slate-800">
         {selectedSessionDetails ? (
           <>
-            <header className="p-3.5 border-b bg-background dark:bg-slate-800 dark:border-slate-700 flex justify-between items-center shadow-sm">
-              <div className="flex items-center">
-                <Avatar className="h-9 w-9 mr-3">
-                  <AvatarImage
-                    src={
-                      undefined /* No avatar URL available in the interface */
-                    }
-                  />
-                  <AvatarFallback>
-                    {typeof selectedSessionDetails.customerId === "object"
-                      ? selectedSessionDetails.customerId?.firstName
-                          ?.charAt(0)
-                          ?.toUpperCase() ||
-                        selectedSessionDetails.customerId?.email
-                          ?.charAt(0)
-                          ?.toUpperCase() ||
-                        "C"
-                      : "C"}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-semibold text-md leading-tight">
-                    {typeof selectedSessionDetails.customerId === "object"
-                      ? selectedSessionDetails.customerId?.firstName ||
-                        selectedSessionDetails.customerId?.email ||
-                        selectedSessionDetails.customerId._id.slice(-6)
-                      : selectedSessionDetails.customerId.slice(-6)}
-                  </h3>
-                  <Badge
-                    variant={
-                      selectedSessionDetails.status === "ACTIVE"
-                        ? "default"
-                        : "outline"
-                    }
-                    className="text-xs py-0 px-1.5 h-5"
-                  >
-                    {selectedSessionDetails.status.replace(/_/g, " ")}
-                  </Badge>
-                </div>
-              </div>
-              <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleResolveChat(selectedSessionDetails._id)}
-                  disabled={selectedSessionDetails.status !== "ACTIVE"}
-                >
-                  <CheckCircle2 className="h-4 w-4 mr-1.5" /> Resolve
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleEndChat(selectedSessionDetails._id)}
-                  disabled={selectedSessionDetails.status !== "ACTIVE"}
-                >
-                  <XCircle className="h-4 w-4 mr-1.5" /> End Chat
-                </Button>
-              </div>
-            </header>
+            <ChatHeader
+              session={selectedSessionDetails}
+              onResolve={handleResolveChat}
+              onEnd={handleEndChat}
+            />
 
-            <ScrollArea
-              className="flex-1 p-4 space-y-1 bg-slate-50 dark:bg-slate-900/70 overflow-y-auto"
-              id="chat-message-scroll"
-            >
-              {(isLoadingMessagesApi ||
-                selectedSessionDetails.isLoadingMessages) &&
-                selectedSessionDetails.messages?.length === 0 && (
-                  <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center">
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Loading
-                    messages...
-                  </div>
-                )}
-              <AnimatePresence initial={false}>
-                {selectedSessionDetails.messages?.map((msg) => (
-                  <motion.div
-                    key={msg._id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <MessageBubble message={msg} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              <div ref={messagesEndRef} /> {/* For auto-scrolling */}
-            </ScrollArea>
+            <ChatMessages
+              messages={selectedSessionDetails.messages || []}
+              isLoading={
+                isLoadingMessagesApi || selectedSessionDetails.isLoadingMessages
+              }
+            />
 
-            <AnimatePresence>
-              {selectedSessionDetails.typing?.customer && (
-                <motion.div
-                  className="px-4 pt-1.5 pb-1.5 flex items-center"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="bg-muted dark:bg-slate-700 py-1.5 px-3.5 rounded-full flex items-center shadow-sm max-w-max">
-                    <div className="flex space-x-1 mr-2">
-                      <motion.span
-                        className="w-1.5 h-1.5 bg-muted-foreground/70 dark:bg-slate-400 rounded-full"
-                        animate={{ y: [0, -4, 0] }}
-                        transition={{
-                          duration: 1.2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: 0,
-                        }}
-                      />
-                      <motion.span
-                        className="w-1.5 h-1.5 bg-muted-foreground/70 dark:bg-slate-400 rounded-full"
-                        animate={{ y: [0, -4, 0] }}
-                        transition={{
-                          duration: 1.2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: 0.2,
-                        }}
-                      />
-                      <motion.span
-                        className="w-1.5 h-1.5 bg-muted-foreground/70 dark:bg-slate-400 rounded-full"
-                        animate={{ y: [0, -4, 0] }}
-                        transition={{
-                          duration: 1.2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: 0.4,
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {typeof selectedSessionDetails.customerId === "object"
-                        ? selectedSessionDetails.customerId?.firstName ||
-                          "Customer"
-                        : "Customer"}{" "}
-                      is typing
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <TypingIndicator
+              isTyping={!!selectedSessionDetails.typing?.customer}
+              customerName={getCustomerName()}
+            />
 
-            <footer className="p-3 border-t bg-background dark:bg-slate-800 dark:border-slate-700">
-              <div className="flex items-center space-x-2">
-                <Textarea
-                  ref={textareaRef}
-                  placeholder="Type your message..."
-                  value={newMessage}
-                  onChange={(e) => {
-                    setNewMessage(e.target.value);
-
-                    // Handle typing indicators with debounce
-                    if (selectedSessionId) {
-                      if (e.target.value.length > 0) {
-                        // Start typing and schedule the stop
-                        handleTypingStart(selectedSessionId);
-                        debouncedTypingStop(selectedSessionId);
-                      } else {
-                        // If cleared, immediately stop typing
-                        debouncedTypingStop.cancel();
-                        if (isTyping) {
-                          setIsTyping(false);
-                          sendTypingStop(selectedSessionId);
-                        }
-                      }
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  rows={1}
-                  className="flex-1 resize-none min-h-[40px] max-h-[120px] text-sm"
-                  disabled={selectedSessionDetails.status !== "ACTIVE"}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={
-                    !newMessage.trim() ||
-                    selectedSessionDetails.status !== "ACTIVE"
-                  }
-                  size="icon"
-                  className="h-9 w-9"
-                >
-                  <Send className="h-4 w-4" />
-                  <span className="sr-only">Send</span>
-                </Button>
-              </div>
-            </footer>
+            <MessageInput
+              disabled={selectedSessionDetails.status !== "ACTIVE"}
+              onSendMessage={handleSendMessage}
+              onTypingStart={handleTypingStart}
+              onTypingStop={handleTypingStop}
+              sessionId={selectedSessionId}
+            />
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 bg-slate-50 dark:bg-slate-900/70">
-            <MessageSquarePlus className="h-16 w-16 mb-4 opacity-30" />
-            <p className="text-lg font-medium">
-              Select a chat to view messages
-            </p>
-            <p className="text-sm">
-              Or accept a new pending request from the sidebar.
-            </p>
-          </div>
+          <EmptyChatState />
         )}
       </main>
     </motion.div>
