@@ -1,7 +1,8 @@
 // src/app/(dashboard)/chats/page.tsx
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import debounce from "lodash/debounce";
 import { useGetMyActiveChatSessions, useGetChatMessages } from "@/lib/api";
 import {
   useChatStore,
@@ -124,19 +125,25 @@ const ChatListItem = React.memo(
       onClick={onSelect}
     >
       <Avatar className="h-10 w-10 mr-3 flex-shrink-0">
-        <AvatarImage src={undefined /* session.customer?.avatarUrl */} />
+        <AvatarImage
+          src={undefined /* No avatar URL available in the interface */}
+        />
         <AvatarFallback className="text-sm">
-          {session.customer?.firstName?.charAt(0)?.toUpperCase() ||
-            session.customer?.email?.charAt(0)?.toUpperCase() ||
-            "C"}
+          {typeof session.customerId === "object"
+            ? session.customerId?.firstName?.charAt(0)?.toUpperCase() ||
+              session.customerId?.email?.charAt(0)?.toUpperCase() ||
+              "C"
+            : "C"}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 overflow-hidden">
         <div className="flex justify-between items-center">
           <span className="font-semibold text-sm truncate block">
-            {session.customer?.firstName ||
-              session.customer?.email ||
-              session.customerId.slice(-6)}
+            {typeof session.customerId === "object"
+              ? session.customerId?.firstName ||
+                session.customerId?.email ||
+                session.customerId._id.slice(-6)
+              : session.customerId.slice(-6)}
           </span>
           {session.unreadCount && session.unreadCount > 0 ? (
             <Badge
@@ -171,18 +178,39 @@ export default function MyChatsPage() {
     isLoading: isLoadingInitialSessions,
   } = useGetMyActiveChatSessions();
   const chatStoreActions = useChatActions();
-  const {
-    sendMessage,
-    acceptChat /*, endChat, resolveChat, sendTypingStart, sendTypingStop */,
-  } = useChatWebSocket(); // Get emitters
+  const { sendMessage, acceptChat, sendTypingStart, sendTypingStop } =
+    useChatWebSocket(); // Get emitters
 
   const activeSessionsMap = useActiveChatSessions(); // Zustand store: Record<string, ActiveChat>
   const pendingRequests = usePendingChatRequests(); // Zustand store: ChatSession[]
   const selectedSessionId = useSelectedChatSessionId(); // Zustand store: string | null
 
   const [newMessage, setNewMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const textareaRef = useRef<null | HTMLTextAreaElement>(null);
+
+  // Create debounced versions of the typing functions
+  const debouncedTypingStop = useCallback(
+    debounce((sessionId: string) => {
+      if (isTyping) {
+        setIsTyping(false);
+        sendTypingStop(sessionId);
+      }
+    }, 1500), // Wait 1.5 seconds of inactivity before stopping the typing indicator
+    [isTyping, sendTypingStop]
+  );
+
+  // Create a memoized version of the typing start function to avoid recreating it on every render
+  const handleTypingStart = useCallback(
+    (sessionId: string) => {
+      if (!isTyping) {
+        setIsTyping(true);
+        sendTypingStart(sessionId);
+      }
+    },
+    [isTyping, sendTypingStart]
+  );
 
   // Load initial active sessions from API into Zustand store
   useEffect(() => {
@@ -190,6 +218,10 @@ export default function MyChatsPage() {
       chatStoreActions.loadActiveSessions(initialActiveSessionsData);
     }
   }, [initialActiveSessionsData, chatStoreActions]);
+
+  useEffect(() => {
+    console.debug("pending chat requests ", pendingRequests);
+  }, [pendingRequests]);
 
   const selectedSessionDetails = selectedSessionId
     ? activeSessionsMap[selectedSessionId]
@@ -228,17 +260,42 @@ export default function MyChatsPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [selectedSessionDetails?.messages]); // Trigger on messages change for the selected session
 
+  // Cleanup effect for debounced functions
+  useEffect(() => {
+    return () => {
+      // Cancel any pending debounced calls on unmount
+      debouncedTypingStop.cancel();
+
+      // If still typing, send typing stop signal
+      if (isTyping && selectedSessionId) {
+        sendTypingStop(selectedSessionId);
+      }
+    };
+  }, [debouncedTypingStop, isTyping, selectedSessionId, sendTypingStop]);
+
   const handleSendMessage = () => {
     if (
       newMessage.trim() &&
       selectedSessionId &&
       selectedSessionDetails?.status === "ACTIVE"
     ) {
+      // Send the message
       sendMessage({
         chatSessionId: selectedSessionId,
         messageContent: { text: newMessage.trim() },
       });
+
+      // Reset message input
       setNewMessage("");
+
+      // Cancel debounced typing stop and immediately stop typing indicator
+      if (isTyping) {
+        debouncedTypingStop.cancel();
+        setIsTyping(false);
+        sendTypingStop(selectedSessionId);
+      }
+
+      // Keep focus on the input
       textareaRef.current?.focus();
     }
   };
@@ -296,9 +353,11 @@ export default function MyChatsPage() {
                 >
                   <div className="flex justify-between w-full items-center mb-1">
                     <span className="font-semibold text-sm text-amber-700 dark:text-amber-400">
-                      {session.customer?.firstName ||
-                        session.customer?.email ||
-                        session.customerId.slice(-6)}
+                      {typeof session.customerId === "object"
+                        ? session.customerId?.firstName ||
+                          session.customerId?.email ||
+                          session.customerId._id.slice(-6)
+                        : session.customerId.slice(-6)}
                     </span>
                     <Badge
                       variant="destructive"
@@ -310,7 +369,10 @@ export default function MyChatsPage() {
                   <p className="text-xs text-amber-600 dark:text-amber-500">
                     Dept:{" "}
                     {session.department?.name ||
-                      session.departmentId?.slice(-6) ||
+                      (typeof session.departmentId === "object" &&
+                        session.departmentId?.name) ||
+                      (typeof session.departmentId === "string" &&
+                        session.departmentId?.slice(-6)) ||
                       "N/A"}
                   </p>
                   <p className="text-xs text-amber-600 dark:text-amber-500">
@@ -353,7 +415,7 @@ export default function MyChatsPage() {
       </aside>
 
       {/* Main Chat View Area */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col bg-background dark:bg-slate-800">
         {selectedSessionDetails ? (
           <>
             <header className="p-3.5 border-b bg-background dark:bg-slate-800 dark:border-slate-700 flex justify-between items-center shadow-sm">
@@ -361,24 +423,28 @@ export default function MyChatsPage() {
                 <Avatar className="h-9 w-9 mr-3">
                   <AvatarImage
                     src={
-                      undefined /* selectedSessionDetails.customer?.avatarUrl */
+                      undefined /* No avatar URL available in the interface */
                     }
                   />
                   <AvatarFallback>
-                    {selectedSessionDetails.customer?.firstName
-                      ?.charAt(0)
-                      ?.toUpperCase() ||
-                      selectedSessionDetails.customer?.email
-                        ?.charAt(0)
-                        ?.toUpperCase() ||
-                      "C"}
+                    {typeof selectedSessionDetails.customerId === "object"
+                      ? selectedSessionDetails.customerId?.firstName
+                          ?.charAt(0)
+                          ?.toUpperCase() ||
+                        selectedSessionDetails.customerId?.email
+                          ?.charAt(0)
+                          ?.toUpperCase() ||
+                        "C"
+                      : "C"}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="font-semibold text-md leading-tight">
-                    {selectedSessionDetails.customer?.firstName ||
-                      selectedSessionDetails.customer?.email ||
-                      selectedSessionDetails.customerId.slice(-6)}
+                    {typeof selectedSessionDetails.customerId === "object"
+                      ? selectedSessionDetails.customerId?.firstName ||
+                        selectedSessionDetails.customerId?.email ||
+                        selectedSessionDetails.customerId._id.slice(-6)
+                      : selectedSessionDetails.customerId.slice(-6)}
                   </h3>
                   <Badge
                     variant={
@@ -413,7 +479,7 @@ export default function MyChatsPage() {
             </header>
 
             <ScrollArea
-              className="flex-1 p-4 space-y-1 bg-slate-50 dark:bg-slate-900/70"
+              className="flex-1 p-4 space-y-1 bg-slate-50 dark:bg-slate-900/70 overflow-y-auto"
               id="chat-message-scroll"
             >
               {(isLoadingMessagesApi ||
@@ -441,13 +507,59 @@ export default function MyChatsPage() {
               <div ref={messagesEndRef} /> {/* For auto-scrolling */}
             </ScrollArea>
 
-            {selectedSessionDetails.typing?.customer && ( // Only show customer typing
-              <div className="px-4 pt-1 pb-0.5 text-xs text-muted-foreground italic">
-                {`${
-                  selectedSessionDetails.customer?.firstName || "Customer"
-                } is typing... `}
-              </div>
-            )}
+            <AnimatePresence>
+              {selectedSessionDetails.typing?.customer && (
+                <motion.div
+                  className="px-4 pt-1.5 pb-1.5 flex items-center"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="bg-muted dark:bg-slate-700 py-1.5 px-3.5 rounded-full flex items-center shadow-sm max-w-max">
+                    <div className="flex space-x-1 mr-2">
+                      <motion.span
+                        className="w-1.5 h-1.5 bg-muted-foreground/70 dark:bg-slate-400 rounded-full"
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{
+                          duration: 1.2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0,
+                        }}
+                      />
+                      <motion.span
+                        className="w-1.5 h-1.5 bg-muted-foreground/70 dark:bg-slate-400 rounded-full"
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{
+                          duration: 1.2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0.2,
+                        }}
+                      />
+                      <motion.span
+                        className="w-1.5 h-1.5 bg-muted-foreground/70 dark:bg-slate-400 rounded-full"
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{
+                          duration: 1.2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0.4,
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {typeof selectedSessionDetails.customerId === "object"
+                        ? selectedSessionDetails.customerId?.firstName ||
+                          "Customer"
+                        : "Customer"}{" "}
+                      is typing
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <footer className="p-3 border-t bg-background dark:bg-slate-800 dark:border-slate-700">
               <div className="flex items-center space-x-2">
@@ -457,9 +569,22 @@ export default function MyChatsPage() {
                   value={newMessage}
                   onChange={(e) => {
                     setNewMessage(e.target.value);
-                    // TODO: Emit typing start/stop
-                    // if (e.target.value.length > 0 && !isTyping) sendTypingStart(selectedSessionId);
-                    // if (e.target.value.length === 0 && isTyping) sendTypingStop(selectedSessionId);
+
+                    // Handle typing indicators with debounce
+                    if (selectedSessionId) {
+                      if (e.target.value.length > 0) {
+                        // Start typing and schedule the stop
+                        handleTypingStart(selectedSessionId);
+                        debouncedTypingStop(selectedSessionId);
+                      } else {
+                        // If cleared, immediately stop typing
+                        debouncedTypingStop.cancel();
+                        if (isTyping) {
+                          setIsTyping(false);
+                          sendTypingStop(selectedSessionId);
+                        }
+                      }
+                    }
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {

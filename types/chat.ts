@@ -3,14 +3,15 @@
 // From GET /chat/sessions and GET /chat/sessions/my-active
 export interface ChatSession {
   _id: string;
-  customerId: string; // Could be an object if populated with customer details
-  customer?: {
-    // Assuming it might be populated
-    _id: string;
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-  };
+  customerId:
+    | string
+    | {
+        // Assuming it might be populated
+        _id: string;
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+      }; // Could be an object if populated with customer details
   agentId?: string | null; // Could be an object if populated
   agent?: {
     // Assuming it might be populated
@@ -18,12 +19,24 @@ export interface ChatSession {
     firstName?: string;
     lastName?: string;
   };
-  departmentId?: string | null;
+  departmentId?:
+    | string
+    | null
+    | {
+        _id: string;
+        name: string;
+        description?: string;
+        createdBy?: string;
+        createdAt?: string;
+        updatedAt?: string;
+        __v?: number;
+      };
   department?: {
     // Assuming it might be populated
     _id: string;
     name?: string;
   };
+  initialMessage: string;
   status: ChatSessionStatus;
   createdAt: string; // ISO 8601 Date string
   updatedAt: string; // ISO 8601 Date string

@@ -3,7 +3,16 @@ export interface Department {
   _id: string;
   name: string;
   description?: string;
-  // ... other fields
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreateDepartmentDto {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateDepartmentDto {
+  name?: string;
+  description?: string;
 }

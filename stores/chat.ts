@@ -48,6 +48,10 @@ interface ChatState {
       isTyping: boolean
     ) => void;
 
+    // Convenience methods for typing indicators
+    setCustomerTypingStatus: (sessionId: string, isTyping: boolean) => void;
+    setAgentTypingStatus: (sessionId: string, isTyping: boolean) => void;
+
     addPendingRequest: (session: ChatSession) => void;
     removePendingRequest: (sessionId: string) => void;
 
@@ -220,6 +224,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
           (s) => s._id !== sessionId
         ),
       })),
+
+    // Convenience methods for typing indicators
+    setCustomerTypingStatus: (sessionId, isTyping) => {
+      const { setTypingIndicator } = get().actions;
+      setTypingIndicator(sessionId, "customer", isTyping);
+    },
+
+    setAgentTypingStatus: (sessionId, isTyping) => {
+      const { setTypingIndicator } = get().actions;
+      setTypingIndicator(sessionId, "agent", isTyping);
+    },
     // clearChatState: () => set(initialState),
   },
 }));

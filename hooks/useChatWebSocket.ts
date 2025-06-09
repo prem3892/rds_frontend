@@ -157,6 +157,23 @@ export function useChatWebSocket() {
             authActions.setOnlineStatus(data.isOnline);
           }
         );
+
+        // Customer typing indicator events
+        newSocket.on(
+          "server:customer_typing_start",
+          (data: { chatSessionId: string }) => {
+            console.log("Customer started typing:", data.chatSessionId);
+            chatActions.setCustomerTypingStatus(data.chatSessionId, true);
+          }
+        );
+
+        newSocket.on(
+          "server:customer_typing_stop",
+          (data: { chatSessionId: string }) => {
+            console.log("Customer stopped typing:", data.chatSessionId);
+            chatActions.setCustomerTypingStatus(data.chatSessionId, false);
+          }
+        );
       }
     } else {
       // No token/user, or invalid role: disconnect if socket has a connection
@@ -241,7 +258,37 @@ export function useChatWebSocket() {
     [socket]
   );
 
-  return { sendMessage, acceptChat, setOnlineStatus };
+  const sendTypingStart = useCallback(
+    (chatSessionId: string) => {
+      if (socket && socket.connected) {
+        socket.emit("agent:typing_start", { chatSessionId });
+        chatActions.setAgentTypingStatus(chatSessionId, true);
+      } else {
+        console.error("Socket not connected. Cannot send typing start.");
+      }
+    },
+    [socket, chatActions]
+  );
+
+  const sendTypingStop = useCallback(
+    (chatSessionId: string) => {
+      if (socket && socket.connected) {
+        socket.emit("agent:typing_stop", { chatSessionId });
+        chatActions.setAgentTypingStatus(chatSessionId, false);
+      } else {
+        console.error("Socket not connected. Cannot send typing stop.");
+      }
+    },
+    [socket, chatActions]
+  );
+
+  return {
+    sendMessage,
+    acceptChat,
+    setOnlineStatus,
+    sendTypingStart,
+    sendTypingStop,
+  };
 }
 
 // Custom hook for socket operations - can be used anywhere in the app
@@ -289,10 +336,34 @@ export function useSocketOperations() {
 
   const isConnected = socket?.connected ?? false;
 
+  const sendTypingStart = useCallback(
+    (chatSessionId: string) => {
+      if (socket && socket.connected) {
+        socket.emit("agent:typing_start", { chatSessionId });
+      } else {
+        console.error("Socket not connected. Cannot send typing start.");
+      }
+    },
+    [socket]
+  );
+
+  const sendTypingStop = useCallback(
+    (chatSessionId: string) => {
+      if (socket && socket.connected) {
+        socket.emit("agent:typing_stop", { chatSessionId });
+      } else {
+        console.error("Socket not connected. Cannot send typing stop.");
+      }
+    },
+    [socket]
+  );
+
   return {
     sendMessage,
     acceptChat,
     setOnlineStatus,
+    sendTypingStart,
+    sendTypingStop,
     isConnected,
     socket,
   };
