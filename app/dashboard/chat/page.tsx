@@ -28,8 +28,14 @@ export default function MyChatsPage() {
     isLoading: isLoadingInitialSessions,
   } = useGetMyActiveChatSessions();
   const chatStoreActions = useChatActions();
-  const { sendMessage, acceptChat, sendTypingStart, sendTypingStop } =
-    useSocketOperations();
+  const {
+    sendMessage,
+    acceptChat,
+    sendTypingStart,
+    sendTypingStop,
+    endChat,
+    bookCustomer,
+  } = useSocketOperations();
 
   const activeSessionsMap = useActiveChatSessions();
   const pendingRequests = usePendingChatRequests();
@@ -111,16 +117,19 @@ export default function MyChatsPage() {
     [isTyping, sendTypingStop]
   );
 
-  // TODO: Implement these actions
-  const handleEndChat = (sessionId: string) => {
-    console.log("TODO: End chat", sessionId);
-    // socket.emit('agent:end_chat', { chatSessionId: sessionId });
-  };
+  const handleEndChat = useCallback(
+    (sessionId: string) => {
+      endChat(sessionId);
+    },
+    [endChat]
+  );
 
-  const handleResolveChat = (sessionId: string) => {
-    console.log("TODO: Resolve chat", sessionId);
-    // socket.emit('agent:resolve_chat', { chatSessionId: sessionId });
-  };
+  const handleResolveChat = useCallback(
+    (payload: { chatSessionId: string; date: string; notes?: string }) => {
+      bookCustomer(payload);
+    },
+    [bookCustomer]
+  );
 
   const activeSessionsArray = Object.values(activeSessionsMap).sort(
     (a, b) =>
@@ -145,7 +154,7 @@ export default function MyChatsPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="flex h-[calc(100vh-var(--header-height,4rem))] overflow-hidden bg-muted/30 dark:bg-slate-900/50"
+      className="flex h-full overflow-hidden bg-muted/30 dark:bg-slate-900/50"
     >
       {/* Sidebar */}
       <ChatSidebar

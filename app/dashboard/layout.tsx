@@ -8,8 +8,10 @@ import {
   useIsAuthenticated,
   useHasHydrated,
 } from "@/stores/auth";
+import { useSidebarExpanded } from "@/stores/shared";
 import { User } from "@/types";
 import { GlobalSocketInitializer } from "@/hooks/useSocket";
+import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({
   children,
@@ -20,6 +22,7 @@ export default function DashboardLayout({
   const isAuthenticated = useIsAuthenticated();
   const currentUser = useCurrentUser();
   const hasHydrated = useHasHydrated();
+  const sidebarExpanded = useSidebarExpanded();
 
   useEffect(() => {
     // Only check authentication after the store has hydrated
@@ -46,15 +49,19 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-muted/40">
+    <div className="flex min-h-screen bg-muted/40 overflow-hidden">
       <GlobalSocketInitializer /> {/* Global persistent socket */}
       <GlobalSidebar currentUser={currentUser} />
-      <main className="flex flex-1 flex-col pl-72">
-        {" "}
-        {/* pl-72 to account for sidebar width */}
+      <main
+        className={cn(
+          "flex flex-1 flex-col overflow-hidden transition-all duration-300"
+        )}
+      >
         {/* Optional: Add a Header component here if needed */}
         {/* <DashboardHeader currentUser={currentUser} /> */}
-        <div className="flex-1 p-6 sm:p-8 lg:p-10">{children}</div>
+        <div className="flex-1 p-6 sm:p-6 lg:p-8 overflow-hidden">
+          {children}
+        </div>
       </main>
     </div>
   );

@@ -65,6 +65,22 @@ export function useSocketInitializer() {
           case "customerTypingStop":
             chatActions.setCustomerTypingStatus(data.chatSessionId, false);
             break;
+          case "chatEndedAck":
+            chatActions.updateActiveSessionStatus(
+              data.chatSessionId,
+              "CLOSED_BY_AGENT"
+            );
+            break;
+          case "appointmentBookedAck":
+            chatActions.updateActiveSession(data.chatSessionId, {
+              appointmentBooked: true,
+              appointmentData: data.appointment,
+            });
+            chatActions.setAppointmentBookingInProgress(
+              data.chatSessionId,
+              false
+            );
+            break;
         }
       });
 
@@ -126,12 +142,25 @@ export function useSocketOperations() {
     [chatActions]
   ); // Add chatActions as a dependency
 
+  const endChat = useCallback((chatSessionId: string) => {
+    return socketService.endChat(chatSessionId);
+  }, []);
+
+  const bookCustomer = useCallback(
+    (payload: { chatSessionId: string; date: string; notes?: string }) => {
+      return socketService.bookCustomer(payload);
+    },
+    []
+  );
+
   return {
     sendMessage,
     acceptChat,
     setOnlineStatus,
     sendTypingStart,
     sendTypingStop,
+    endChat,
+    bookCustomer,
     isConnected: socketService.isConnected,
     socket: socketService.instance,
   };

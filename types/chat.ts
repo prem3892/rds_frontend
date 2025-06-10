@@ -43,6 +43,8 @@ export interface ChatSession {
   lastMessageTimestamp?: string | null; // ISO 8601 Date string
   lastMessagePreview?: string; // Not in spec, but useful for UI
   unreadCount?: number; // Not in spec, useful for UI
+  appointmentBooked?: boolean; // Flag to indicate if an appointment has been booked
+  appointmentData?: any; // Optional data about the booked appointment
   // ... other potential session fields from ChatSessionDocument
   // e.g., initiatedBy, endedBy, resolutionNotes, rating, tags, customData, etc.
 }

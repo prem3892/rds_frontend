@@ -18,6 +18,7 @@ interface ChatState {
   activeSessions: Record<string, ActiveChat>; // Keyed by session ID for quick access
   pendingRequests: ChatSession[]; // For agents to see incoming chats
   selectedSessionId: string | null; // ID of the currently viewed chat in "My Chats"
+  bookingInProgress: string[]; // Array of session IDs that are currently booking appointments
 
   actions: {
     setSocket: (socket: Socket | null) => void;
@@ -31,6 +32,10 @@ interface ChatState {
       status: ChatSessionStatus,
       updates?: Partial<ChatSession>
     ) => void;
+    updateActiveSession: (
+      sessionId: string,
+      updates: Partial<ChatSession>
+    ) => void; // For general updates to a session
     removeActiveSession: (sessionId: string) => void; // e.g., when chat ends/resolved
 
     setSelectedSessionId: (sessionId: string | null) => void;
@@ -52,6 +57,12 @@ interface ChatState {
     setCustomerTypingStatus: (sessionId: string, isTyping: boolean) => void;
     setAgentTypingStatus: (sessionId: string, isTyping: boolean) => void;
 
+    // Appointment booking states
+    setAppointmentBookingInProgress: (
+      sessionId: string,
+      inProgress: boolean
+    ) => void;
+
     addPendingRequest: (session: ChatSession) => void;
     removePendingRequest: (sessionId: string) => void;
 
@@ -66,6 +77,7 @@ const initialState = {
   activeSessions: {},
   pendingRequests: [],
   selectedSessionId: null,
+  bookingInProgress: [],
 };
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -114,6 +126,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
             [sessionId]: {
               ...state.activeSessions[sessionId],
               status,
+              ...updates,
+            },
+          },
+        };
+      }),
+    updateActiveSession: (sessionId, updates) =>
+      set((state) => {
+        if (!state.activeSessions[sessionId]) return state;
+        return {
+          activeSessions: {
+            ...state.activeSessions,
+            [sessionId]: {
+              ...state.activeSessions[sessionId],
               ...updates,
             },
           },
@@ -235,6 +260,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const { setTypingIndicator } = get().actions;
       setTypingIndicator(sessionId, "agent", isTyping);
     },
+
+    setAppointmentBookingInProgress: (sessionId, inProgress) =>
+      set((state) => {
+        if (inProgress) {
+          // Add the sessionId to the bookingInProgress array if not already there
+          if (!state.bookingInProgress.includes(sessionId)) {
+            return {
+              bookingInProgress: [...state.bookingInProgress, sessionId],
+            };
+          }
+        } else {
+          // Remove the sessionId from the bookingInProgress array
+          return {
+            bookingInProgress: state.bookingInProgress.filter(
+              (id) => id !== sessionId
+            ),
+          };
+        }
+        return state; // No change needed
+      }),
     // clearChatState: () => set(initialState),
   },
 }));
@@ -256,3 +301,5 @@ export const usePendingChatRequests = () =>
 export const useSelectedChatSessionId = () =>
   useChatStore((state) => state.selectedSessionId);
 export const useChatActions = () => useChatStore((state) => state.actions);
+export const useIsBookingInProgress = (sessionId: string) =>
+  useChatStore((state) => state.bookingInProgress.includes(sessionId));

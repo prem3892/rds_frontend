@@ -116,6 +116,22 @@ class SocketService {
       }
     );
 
+    this.socket.on(
+      "server:chat_ended_ack",
+      (data: { chatSessionId: string }) => {
+        console.log("Chat ended acknowledgment received:", data.chatSessionId);
+        this.notifyListeners("chatEndedAck", data);
+      }
+    );
+
+    this.socket.on(
+      "server:appointment_booked_ack",
+      (data: { chatSessionId: string; appointment: any }) => {
+        console.log("Appointment booked acknowledgment received:", data);
+        this.notifyListeners("appointmentBookedAck", data);
+      }
+    );
+
     return this.socket;
   }
 
@@ -166,6 +182,29 @@ class SocketService {
       return false;
     }
     this.socket.emit("agent:typing_stop", { chatSessionId });
+    return true;
+  }
+
+  endChat(chatSessionId: string) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot end chat.");
+      return false;
+    }
+    this.socket.emit("agent:end_chat", { chatSessionId });
+    return true;
+  }
+
+  bookCustomer(payload: {
+    chatSessionId: string;
+    date: string;
+    notes?: string;
+  }) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot book appointment.");
+      return false;
+    }
+    console.debug("Booking appointment for chat session:", payload);
+    this.socket.emit("agent:book_appointment", payload);
     return true;
   }
 

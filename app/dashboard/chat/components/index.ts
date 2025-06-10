@@ -1,3 +1,4 @@
+export { default as BookingForm } from "./BookingForm";
 export { default as ChatHeader } from "./ChatHeader";
 export { default as ChatListItem } from "./ChatListItem";
 export { default as ChatMessages } from "./ChatMessages";
