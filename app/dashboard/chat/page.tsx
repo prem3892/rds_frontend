@@ -18,8 +18,11 @@ import {
   EmptyChatState,
   MessageInput,
   TypingIndicator,
+  VisitorsList,
 } from "./components";
 import { useSocketOperations } from "@/hooks/useSocket";
+import { Button } from "@/components/ui/button";
+import { Users, X } from "lucide-react";
 
 // --- Main Page Component ---
 export default function MyChatsPage() {
@@ -41,6 +44,7 @@ export default function MyChatsPage() {
   const pendingRequests = usePendingChatRequests();
   const selectedSessionId = useSelectedChatSessionId();
   const [isTyping, setIsTyping] = useState(false);
+  const [isVisitorsPanelVisible, setIsVisitorsPanelVisible] = useState(false);
 
   // Load initial active sessions from API into Zustand store
   useEffect(() => {
@@ -156,7 +160,7 @@ export default function MyChatsPage() {
       transition={{ duration: 0.3 }}
       className="flex h-full overflow-hidden bg-muted/30 dark:bg-slate-900/50"
     >
-      {/* Sidebar */}
+      {/* Chat Sidebar */}
       <ChatSidebar
         activeSessions={activeSessionsArray}
         pendingSessions={pendingRequestsSorted}
@@ -169,7 +173,11 @@ export default function MyChatsPage() {
       />
 
       {/* Main Chat View Area */}
-      <main className="flex-1 flex flex-col bg-background dark:bg-slate-800">
+      <main
+        className={`flex-1 flex flex-col bg-background dark:bg-slate-800 ${
+          selectedSessionDetails ? "relative" : ""
+        }`}
+      >
         {selectedSessionDetails ? (
           <>
             <ChatHeader
@@ -197,11 +205,46 @@ export default function MyChatsPage() {
               onTypingStop={handleTypingStop}
               sessionId={selectedSessionId}
             />
+
+            {/* Visitors Panel Toggle Button */}
+            {!isVisitorsPanelVisible && (
+              <Button
+                onClick={() => setIsVisitorsPanelVisible(true)}
+                className="absolute top-4 right-4 z-10"
+                variant="outline"
+                size="sm"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Visitors
+              </Button>
+            )}
           </>
         ) : (
-          <EmptyChatState />
+          // Show only VisitorsList when no chat is selected
+          <div className="flex-1 p-4">
+            <VisitorsList maxHeight="h-full" />
+          </div>
         )}
       </main>
+
+      {/* Visitors Panel - Conditionally visible */}
+      {selectedSessionDetails && isVisitorsPanelVisible && (
+        <aside className="border-l bg-background dark:bg-slate-800 flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b">
+            <h3 className="font-semibold">Visitors</h3>
+            <Button
+              onClick={() => setIsVisitorsPanelVisible(false)}
+              variant="ghost"
+              size="sm"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex-1">
+            <VisitorsList />
+          </div>
+        </aside>
+      )}
     </motion.div>
   );
 }

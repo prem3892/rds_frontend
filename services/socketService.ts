@@ -132,6 +132,11 @@ class SocketService {
       }
     );
 
+    this.socket.on("server:visitor_activity", (data: any) => {
+      console.log("Visitor activity received:", data);
+      this.notifyListeners("visitorActivity", data);
+    });
+
     return this.socket;
   }
 

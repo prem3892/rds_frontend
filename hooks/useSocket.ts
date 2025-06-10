@@ -3,12 +3,14 @@ import { useEffect, useCallback } from "react";
 import { socketService } from "@/services/socketService";
 import { useAuthStore } from "@/stores/auth";
 import { useChatActions } from "@/stores/chat";
-import { ChatMessage } from "@/types";
+import { useVisitorActions } from "@/stores/visitor";
+import { ChatMessage, VisitorActivityEvent } from "@/types";
 
 // Hook for initializing the socket only once
 export function useSocketInitializer() {
   const { accessToken, user, actions: authActions } = useAuthStore();
   const chatActions = useChatActions();
+  const visitorActions = useVisitorActions();
 
   useEffect(() => {
     if (
@@ -81,6 +83,10 @@ export function useSocketInitializer() {
               false
             );
             break;
+          case "visitorActivity":
+            // Handle visitor activity events
+            visitorActions.handleVisitorActivity(data as VisitorActivityEvent);
+            break;
         }
       });
 
@@ -90,7 +96,7 @@ export function useSocketInitializer() {
         removeListener();
       };
     }
-  }, [accessToken, user, chatActions, authActions]);
+  }, [accessToken, user, chatActions, authActions, visitorActions]);
 
   return null;
 }
