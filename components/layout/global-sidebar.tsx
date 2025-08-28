@@ -63,11 +63,11 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
       animate={{ width: sidebarExpanded ? 240 : 64 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       className={cn(
-        " left-0 top-0 z-40 flex h-screen flex-col border-r bg-background",
+        " left-0 text-white top-0 z-40 flex h-screen flex-col border-r bg-gradient-to-b from-[#00398F] to-[#001433]",
         className
       )}
     >
-      <div className="flex h-16 items-center border-b px-4 justify-between">
+      <div className="flex h-16 items-center  px-4 justify-between">
         {sidebarExpanded ? (
           <Link
             href="/dashboard"
@@ -107,6 +107,11 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
           )}
         </Button>
       </div>
+<div className="px-3">
+
+      <Separator orientation="horizontal" className="px-3 w-" /> 
+</div>
+      
 
       <ScrollArea className="flex-1">
         <nav className="grid items-start gap-1 px-4 py-4">
@@ -125,7 +130,7 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
                     <Button
                       variant={isActive ? "secondary" : "ghost"}
                       className={cn(
-                        "w-full",
+                        "w-full text-base  font-normal",
                         sidebarExpanded
                           ? "justify-start"
                           : "justify-center px-2",
@@ -134,7 +139,7 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
                       title={!sidebarExpanded ? item.title : undefined}
                     >
                       <Icon
-                        className={cn("h-4 w-4", sidebarExpanded && "mr-2")}
+                        className={cn("size-5", sidebarExpanded && "")}
                       />
                       {sidebarExpanded && (
                         <>

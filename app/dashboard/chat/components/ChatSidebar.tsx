@@ -22,14 +22,16 @@ const ChatSidebar = ({
   onAcceptChat,
   isLoading,
 }: ChatSidebarProps) => (
-  <aside className="w-80 xl:w-96 border-r flex flex-col bg-background dark:bg-slate-800 dark:border-slate-700">
-    <div className="p-4 border-b dark:border-slate-700">
-      <h2 className="text-xl font-semibold">My Chats</h2>
+  <aside className="w-80 xl:w-96  flex rounded-l-3xl flex-col bg-[#f2f4f8] p-5 ">
+    <div className="bg-white rounded-3xl p-5 h-full">
+    <div className="p-4  ">
+
+      <h2 className="text-xl font-semibold">Recent Chats</h2>
     </div>
 
     {/* Pending Requests */}
     {pendingSessions.length > 0 && (
-      <div className="p-2 border-b dark:border-slate-700">
+      <div className="p-2 border-b ">
         <h3 className="px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
           Pending Requests ({pendingSessions.length})
         </h3>
@@ -69,6 +71,8 @@ const ChatSidebar = ({
         />
       ))}
     </ScrollArea>
+    </div>
+  
   </aside>
 );
 

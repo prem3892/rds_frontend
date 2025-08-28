@@ -158,7 +158,7 @@ export default function MyChatsPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="flex h-full overflow-hidden bg-muted/30 dark:bg-slate-900/50"
+      className="flex h-full overflow-hidden  "
     >
       {/* Chat Sidebar */}
       <ChatSidebar
@@ -174,7 +174,7 @@ export default function MyChatsPage() {
 
       {/* Main Chat View Area */}
       <main
-        className={`flex-1 flex flex-col bg-background dark:bg-slate-800 ${
+        className={`flex-1 flex flex-col bg-[#f2f4f8] ${
           selectedSessionDetails ? "relative" : ""
         }`}
       >
@@ -221,7 +221,7 @@ export default function MyChatsPage() {
           </>
         ) : (
           // Show only VisitorsList when no chat is selected
-          <div className="flex-1 p-4">
+            <div className="flex-1 p-4 bg-[#f2f4f8]">
             <VisitorsList maxHeight="h-full" />
           </div>
         )}
@@ -229,7 +229,7 @@ export default function MyChatsPage() {
 
       {/* Visitors Panel - Conditionally visible */}
       {selectedSessionDetails && isVisitorsPanelVisible && (
-        <aside className="border-l bg-background dark:bg-slate-800 flex flex-col">
+        <aside className="border-l bg-[#f2f4f8] flex flex-col">
           <div className="flex items-center justify-between p-4 border-b">
             <h3 className="font-semibold">Visitors</h3>
             <Button

@@ -12,6 +12,7 @@ import { useSidebarExpanded } from "@/stores/shared";
 import { User } from "@/types";
 import { GlobalSocketInitializer } from "@/hooks/useSocket";
 import { cn } from "@/lib/utils";
+import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper";
 
 export default function DashboardLayout({
   children,
@@ -51,18 +52,20 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen bg-muted/40 overflow-hidden">
       <GlobalSocketInitializer /> {/* Global persistent socket */}
-      <GlobalSidebar currentUser={currentUser} />
-      <main
+      {/* <GlobalSidebar currentUser={currentUser} /> */}
+<MainLayoutWrapper currentScreen="Dashboard" >
+     {children}
+  </MainLayoutWrapper>
+      {/* <main
         className={cn(
-          "flex flex-1 flex-col overflow-hidden transition-all duration-300"
+          "flex flex-1 flex-col overflow-hidden transition-all duration-300 "
         )}
       >
-        {/* Optional: Add a Header component here if needed */}
-        {/* <DashboardHeader currentUser={currentUser} /> */}
+
         <div className="flex-1 p-6 sm:p-6 lg:p-8 overflow-hidden">
-          {children}
+       
         </div>
-      </main>
+      </main> */}
     </div>
   );
 }
