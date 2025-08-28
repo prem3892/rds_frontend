@@ -9,3 +9,5 @@ export { default as MessageInput } from "./MessageInput";
 export { default as PendingChatRequestCard } from "./PendingChatRequestCard";
 export { default as TypingIndicator } from "./TypingIndicator";
 export { default as VisitorsList } from "./VisitorsList";
+export { default as GuestFeed } from "./GuestFeed";
+export { default as GuestInfo } from "./GuestInfo";

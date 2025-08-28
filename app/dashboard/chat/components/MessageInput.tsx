@@ -76,7 +76,7 @@ const MessageInput = ({
   }, [debouncedTypingStop, isTyping, sessionId, onTypingStop]);
 
   return (
-    <footer className="p-3 border-t bg-background dark:bg-slate-800 dark:border-slate-700">
+    <footer className="p-4 rounded-b-3xl bg-white">
       <div className="flex items-center space-x-2">
         <Textarea
           ref={textareaRef}
@@ -108,7 +108,7 @@ const MessageInput = ({
             }
           }}
           rows={1}
-          className="flex-1 resize-none min-h-[40px] max-h-[120px] text-sm"
+          className="flex-1 resize-none min-h-[40px] max-h-[120px] text-sm bg-gray-50 border-gray-200"
           disabled={disabled}
         />
         <Button

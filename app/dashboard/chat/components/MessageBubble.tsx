@@ -2,6 +2,7 @@ import React from "react";
 import { format, parseISO } from "date-fns";
 import { ChatMessage } from "@/types";
 import { useCurrentUser } from "@/stores/auth";
+import { Check, CheckCheck } from "lucide-react";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -40,9 +41,8 @@ const MessageBubble = React.memo(({ message }: MessageBubbleProps) => {
       <div
         className={`p-3 rounded-lg max-w-[70%] shadow-sm ${
           isOwnMessage
-            ? "bg-primary text-primary-foreground rounded-br-none"
-            : "bg-background border dark:border-slate-700 rounded-bl-none"
-          // Using bg-background for non-own messages to match typical chat UIs better
+            ? "bg-blue-600 text-white rounded-br-none"
+            : "bg-white border border-gray-200 rounded-bl-none"
         }`}
       >
         {!isOwnMessage &&
@@ -54,15 +54,29 @@ const MessageBubble = React.memo(({ message }: MessageBubbleProps) => {
         <p className="text-sm whitespace-pre-wrap">
           {message.content.text || JSON.stringify(message.content)}
         </p>
-        <p
-          className={`text-xs mt-1 ${
-            isOwnMessage
-              ? "text-blue-200 dark:text-sky-300"
-              : "text-muted-foreground/80"
-          } text-right`}
-        >
-          {format(parseISO(message.timestamp), "HH:mm")}
-        </p>
+        <div className="flex items-center justify-end gap-1 mt-1">
+          <p
+            className={`text-xs ${
+              isOwnMessage
+                ? "text-blue-200"
+                : "text-muted-foreground/80"
+            }`}
+          >
+            {format(parseISO(message.timestamp), "HH:mm")}
+          </p>
+          {isOwnMessage && (
+            <div className="flex items-center gap-1">
+              {message.readByCustomer ? (
+                <CheckCheck className="w-3 h-3 text-blue-200" />
+              ) : (
+                <Check className="w-3 h-3 text-blue-200" />
+              )}
+              <span className="text-xs text-blue-200">
+                {message.readByCustomer ? "Read" : "Sent"}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
