@@ -38,6 +38,7 @@ import { useAuthActions, useIsOnline } from "@/stores"
 import { useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { socketService } from "@/services/socketService"
+import { HomeIcon } from "../icons"
 
 interface DashboardLayoutProps {
   currentScreen: string
@@ -84,7 +85,7 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
 
 
   const menuItems = [
-    { icon: Home, label: "Dashboard", href: "/dashboard/chat", active: currentScreen === "Dashboard" },
+    { icon: HomeIcon, label: "Dashboard", href: "/dashboard/chat", active: currentScreen === "Dashboard" },
     { icon: Users, label: "Contacts", href: "/contacts", active: currentScreen === "Contacts" },
     { icon: MessageSquare, label: "Chat History", href: "/dashboard/history", active: currentScreen === "Chat History" },
     { icon: UserCheck, label: "Agents", href: "/agents", active: currentScreen === "Agents" },
@@ -116,11 +117,11 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
                   <SidebarMenuItem key={item.label}>
                     <Link href={item.href}>
                       <SidebarMenuButton
-                        className={`w-full justify-start gap-3 px-4 py-3 text-white hover:bg-white/10 ${
-                          item.active ? "bg-white/20" : ""
+                        className={`w-full justify-start gap-3 px-4 py-3 text-white hover:bg-white/10 hover:text-white ${
+                          item.active ? "bg-white/20 text-white" : ""
                         }`}
                       >
-                        <item.icon className="h-5 w-5" />
+                          <item.icon className="size-5 text-white" /> 
                         <span>{item.label}</span>
                       </SidebarMenuButton>
                     </Link>
@@ -212,12 +213,8 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
           </header>
 
           {/* Main Content Area */}
-          <main className="flex-1 overflow-auto bg-white p-6">
-            {children || (
-              <div className="flex h-full items-center justify-center text-gray-500">
-                <p>Main content area - Dashboard components will go here</p>
-              </div>
-            )}
+          <main className="flex-1 overflow-auto bg-white p-5">
+            {children}
           </main>
         </div>
       </div>

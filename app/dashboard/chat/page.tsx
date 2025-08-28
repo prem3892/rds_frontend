@@ -221,7 +221,7 @@ export default function MyChatsPage() {
           </>
         ) : (
           // Show only VisitorsList when no chat is selected
-            <div className="flex-1 p-4 bg-[#f2f4f8]">
+            <div className="flex-1 p-5 bg-[#f2f4f8] ">
             <VisitorsList maxHeight="h-full" />
           </div>
         )}

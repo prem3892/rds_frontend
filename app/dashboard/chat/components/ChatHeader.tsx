@@ -59,7 +59,7 @@ const ChatHeader = ({ session, onResolve, onEnd }: ChatHeaderProps) => {
 
   return (
     <>
-      <header className="p-3.5 border-b bg-background dark:bg-slate-800 dark:border-slate-700 flex justify-between items-center shadow-sm">
+      <header className=" flex justify-between items-center shadow-sm">
         <div className="flex items-center">
           <Avatar className="h-9 w-9 mr-3">
             <AvatarImage src={undefined} />
