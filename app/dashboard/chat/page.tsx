@@ -192,7 +192,7 @@ export default function MyChatsPage() {
           className="flex h-full overflow-hidden"
         >
           {/* Mobile Chat View */}
-          <main className="flex-1 flex flex-col bg-[#f2f4f8] p-2 sm:p-5">
+          <main className="flex-1 flex flex-col bg-[#f2f4f8] rounded-3xl p-2 sm:p-5">
             <div className="bg-white rounded-3xl h-full flex flex-col shadow-sm">
               <ChatHeader
                 session={selectedSessionDetails}
@@ -239,7 +239,7 @@ export default function MyChatsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="flex h-full overflow-hidden"
+          className="flex h-full overflow-hidden bg-[#f2f4f8] rounded-3xl"
         >
           {/* Mobile Sidebar */}
           <ChatSidebar
@@ -263,7 +263,7 @@ export default function MyChatsPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="flex h-full overflow-hidden"
+      className="mx-auto   space-y-6 flex bg-[#f2f4f8] rounded-3xl h-full"
     >
       {/* Chat Sidebar */}
       <ChatSidebar
@@ -278,7 +278,7 @@ export default function MyChatsPage() {
       />
 
       {/* Main Chat View Area */}
-      <main className="flex-1 p-2 sm:p-5 bg-[#f2f4f8]">
+      <main className="flex-1  bg-[#f2f4f8] p-4">
         {selectedSessionDetails ? (
           <div className="bg-white rounded-3xl h-full flex flex-col shadow-sm overflow-hidden">
             <ChatHeader

@@ -67,7 +67,7 @@ const ChatHeader = ({
 
   return (
     <>
-      <header className="bg-white p-4 rounded-t-3xl">
+      <header className="bg-white rounded-t-3xl p-4">
         <div className="flex items-center justify-between">
           {/* Left side - Back button and guest info */}
           <div className="flex items-center gap-4">

@@ -53,9 +53,7 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-muted/40 overflow-hidden">
       <GlobalSocketInitializer /> {/* Global persistent socket */}
       {/* <GlobalSidebar currentUser={currentUser} /> */}
-<MainLayoutWrapper currentScreen="Dashboard" >
-     {children}
-  </MainLayoutWrapper>
+      <MainLayoutWrapper>{children}</MainLayoutWrapper>
       {/* <main
         className={cn(
           "flex flex-1 flex-col overflow-hidden transition-all duration-300 "

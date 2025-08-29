@@ -87,6 +87,10 @@ export function useSocketInitializer() {
             // Handle visitor activity events
             visitorActions.handleVisitorActivity(data as VisitorActivityEvent);
             break;
+          case "chatSessionRestored":
+            // Handle chat session restoration - add the session to active sessions
+            chatActions.addActiveSession(data);
+            break;
         }
       });
 
@@ -149,6 +153,7 @@ export function useSocketOperations() {
   ); // Add chatActions as a dependency
 
   const endChat = useCallback((chatSessionId: string) => {
+    console.log("endChat", chatSessionId);
     return socketService.endChat(chatSessionId);
   }, []);
 

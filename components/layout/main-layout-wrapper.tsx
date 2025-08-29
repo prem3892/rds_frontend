@@ -2,7 +2,7 @@
 
 import type React from "react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -36,12 +36,48 @@ import { cn } from "@/lib/utils"
 import { useSocketOperations } from "@/hooks/useSocket"
 import { useAuthActions, useIsOnline } from "@/stores"
 import { useQueryClient } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { socketService } from "@/services/socketService"
 import { HomeIcon } from "../icons"
 
+// Utility function to get screen name based on route
+const getScreenNameFromRoute = (pathname: string): string => {
+  const routeMap: Record<string, string> = {
+    "/dashboard": "Overview",
+    "/dashboard/chat": "Dashboard",
+    "/dashboard/history": "Chat History",
+    "/dashboard/widgets": "Domains",
+    "/dashboard/(admin)/widgets": "Domains",
+    "/dashboard/(admin)/agents": "Agents",
+    "/dashboard/(admin)/departments": "Departments",
+    "/dashboard/(admin)/sessions": "Sessions",
+    "/dashboard/users": "User Management",
+    "/dashboard/profile": "Profile",
+    "/contacts": "Contacts",
+    "/agents": "Agents",
+    "/canned-messages": "Canned Messages",
+    "/auto-message": "Auto Message",
+    "/blocked-guests": "Blocked Guests",
+  };
+
+  // Check for exact matches first
+  if (routeMap[pathname]) {
+    return routeMap[pathname];
+  }
+
+  // Check for partial matches (for nested routes)
+  for (const [route, screenName] of Object.entries(routeMap)) {
+    if (pathname.startsWith(route)) {
+      return screenName;
+    }
+  }
+
+  // Default fallback
+  return "Dashboard";
+};
+
 interface DashboardLayoutProps {
-  currentScreen: string
+  currentScreen?: string // Make it optional since we'll auto-determine it
   children?: React.ReactNode
 }
 
@@ -52,6 +88,12 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isStatusLoading, setIsStatusLoading] = useState(false);
+  const pathname = usePathname(); 
+
+  // Auto-determine current screen based on route if not provided
+  const screenTitle = useMemo(() => {
+    return currentScreen || getScreenNameFromRoute(pathname);
+  }, [currentScreen, pathname]);
 
   // Listen for online status updates from server
   useEffect(() => {
@@ -85,21 +127,21 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
 
 
   const menuItems = [
-    { icon: HomeIcon, label: "Dashboard", href: "/dashboard/chat", active: currentScreen === "Dashboard" },
-    { icon: Users, label: "Contacts", href: "/contacts", active: currentScreen === "Contacts" },
-    { icon: MessageSquare, label: "Chat History", href: "/dashboard/history", active: currentScreen === "Chat History" },
-    { icon: UserCheck, label: "Agents", href: "/agents", active: currentScreen === "Agents" },
-    { icon: Globe, label: "Domains", href: "/domains", active: currentScreen === "Domains" },
-    { icon: Mail, label: "Canned Messages", href: "/canned-messages", active: currentScreen === "Canned Messages" },
-    { icon: MessageCircle, label: "Auto Message", href: "/auto-message", active: currentScreen === "Auto Message" },
-    { icon: UserX, label: "Blocked Guests", href: "/blocked-guests", active: currentScreen === "Blocked Guests" },
+    { icon: HomeIcon, label: "Dashboard", href: "/dashboard/chat", active: pathname === "/dashboard/chat" },
+    { icon: Users, label: "Contacts", href: "/contacts", active: pathname === "/contacts" },
+    { icon: MessageSquare, label: "Chat History", href: "/dashboard/history", active: pathname === "/dashboard/history" },
+    { icon: UserCheck, label: "Agents", href: "/agents", active: pathname === "/agents" },
+    { icon: Globe, label: "Domains", href: "/dashboard/widgets", active: pathname.includes("/widgets") },
+    { icon: Mail, label: "Canned Messages", href: "/canned-messages", active: pathname === "/canned-messages" },
+    { icon: MessageCircle, label: "Auto Message", href: "/auto-message", active: pathname === "/auto-message" },
+    { icon: UserX, label: "Blocked Guests", href: "/blocked-guests", active: pathname === "/blocked-guests" },
   ]
 
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
-        <Sidebar className="border-r-0">
-          <div className="flex h-full flex-col bg-gradient-to-b from-[#00398F] to-[#001433]">
+        <Sidebar className="border-r-0 p-4 px-2 bg-white outline-none border-none">
+          <div className="flex h-full flex-col rounded-3xl bg-gradient-to-b from-[#00398F] to-[#001433]">
             <SidebarHeader className="p-6">
               <div className="flex items-center gap-2">
                  <Image
@@ -148,17 +190,17 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
           <header className="flex h-16 items-center justify-between bg-white px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="lg:hidden" />
-              <h1 className="text-2xl font-semibold text-gray-900">{currentScreen}</h1>
+              <h1 className="text-2xl font-semibold text-gray-900">{screenTitle}</h1>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {/* Online/Offline Toggle */}
               <div className="flex bg-gray-100 rounded-full p-1">
                 <button
                   onClick={() => handleStatusChange(true)}
                   disabled={isStatusLoading}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2",
+                    "px-2 sm:px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2",
                     isOnline
                       ? "bg-blue-600 text-white shadow-sm"
                       : "text-gray-600 hover:text-gray-800",
@@ -174,7 +216,7 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
                   onClick={() => handleStatusChange(false)}
                   disabled={isStatusLoading}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2",
+                    "px-2 sm:px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2",
                     !isOnline
                       ? "bg-blue-600 text-white shadow-sm"
                       : "text-gray-600 hover:text-gray-800",
@@ -196,7 +238,7 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
                       <AvatarImage src="/professional-headshot.png" alt="Cameron Williamson" />
                       <AvatarFallback>CW</AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col items-start text-sm">
+                    <div className="hidden sm:flex flex-col items-start text-sm">
                       <span className="font-medium">Cameron Williamson</span>
                       <span className="text-gray-500">williamson@gmail.com</span>
                     </div>

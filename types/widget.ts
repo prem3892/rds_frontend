@@ -20,7 +20,6 @@ export interface Widget {
   _id: string;
   name: string;
   domains: string[];
-  // In the response, departmentIds is an array of populated department objects
   departmentIds: WidgetDepartmentInfo[];
   injectableScriptUrl: string;
   isEnabled: boolean;

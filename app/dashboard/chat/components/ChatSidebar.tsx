@@ -23,7 +23,7 @@ const ChatSidebar = ({
   onAcceptChat,
   isLoading,
 }: ChatSidebarProps) => (
-  <aside className="w-full sm:w-80 xl:w-96 flex rounded-l-3xl flex-col bg-[#f2f4f8] p-2 sm:p-5">
+    <aside className="w-full sm:w-80 xl:w-96 flex rounded-l-3xl flex-col  p-4 h-full">
     <div className="bg-white rounded-3xl p-3 sm:p-5 h-full shadow-sm">
       <div className="p-2 sm:p-4">
         <div className="flex items-center gap-2">
