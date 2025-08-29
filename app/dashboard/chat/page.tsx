@@ -181,7 +181,7 @@ export default function MyChatsPage() {
       : "Customer";
   };
 
-  // Mobile view - show only chat when selected, otherwise show sidebar and guest feed
+  // Mobile view - show only chat when selected, otherwise show sidebar
   if (isMobileView) {
     if (selectedSessionDetails) {
       return (
@@ -192,7 +192,7 @@ export default function MyChatsPage() {
           className="flex h-full overflow-hidden"
         >
           {/* Mobile Chat View */}
-          <main className="flex-1 flex flex-col bg-[#f2f4f8] p-5">
+          <main className="flex-1 flex flex-col bg-[#f2f4f8] p-2 sm:p-5">
             <div className="bg-white rounded-3xl h-full flex flex-col shadow-sm">
               <ChatHeader
                 session={selectedSessionDetails}
@@ -278,13 +278,14 @@ export default function MyChatsPage() {
       />
 
       {/* Main Chat View Area */}
-      <main className="flex-1 p-5 bg-[#f2f4f8]">
+      <main className="flex-1 p-2 sm:p-5 bg-[#f2f4f8]">
         {selectedSessionDetails ? (
           <div className="bg-white rounded-3xl h-full flex flex-col shadow-sm overflow-hidden">
             <ChatHeader
               session={selectedSessionDetails}
               onResolve={handleResolveChat}
               onEnd={handleEndChat}
+              onBack={handleBackToChats}
               onShowGuestInfo={handleShowGuestInfo}
             />
 

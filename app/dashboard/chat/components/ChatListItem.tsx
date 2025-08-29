@@ -17,7 +17,7 @@ interface ChatListItemProps {
 const ChatListItem = React.memo(
   ({ session, isSelected, onSelect }: ChatListItemProps) => {
     const getCountryFlag = (country?: string) => {
-      // Simple country flag emoji mapping
+
       const flagMap: Record<string, string> = {
         india: "🇮🇳",
         us: "🇺🇸",
@@ -94,26 +94,28 @@ const ChatListItem = React.memo(
     return (
       <Button
         variant={isSelected ? "secondary" : "ghost"}
-        className={`w-full justify-start p-3 h-auto mb-2 flex items-start text-left rounded-lg transition-all duration-200 ${
+        className={`w-full justify-start p-2 sm:p-3 h-auto mb-1 sm:mb-2 flex items-start text-left rounded-lg transition-all duration-200 ${
           isSelected 
-            ? "bg-blue-600 text-white hover:bg-blue-700" 
-            : "hover:bg-gray-50"
+            ? "bg-gray-100 text-white hover:bg-gray-200" 
+            : "hover:bg-gray-50 bg-gray-50"
         }`}
         onClick={onSelect}
       >
-        <div className="flex-1 overflow-hidden">
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm truncate">
+        <div className="flex-1 overflow-hidden min-w-0 text-gray-800">
+          <div className="flex justify-between items-start mb-1 sm:mb-2">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <span className="font-semibold text-xs sm:text-sm truncate">
                 {getCustomerName()}
               </span>
-              <span className="text-lg">
+              <span className="text-base sm:text-lg flex-shrink-0">
                 {getCountryFlag()}
               </span>
-              {getBrowserIcon()}
-              {getPlatformIcon()}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {getBrowserIcon()}
+                {getPlatformIcon()}
+              </div>
             </div>
-            <div className="text-xs text-gray-500 flex-shrink-0">
+            <div className="text-xs text-gray-500 flex-shrink-0 ml-1">
               {getTimeDisplay()}
             </div>
           </div>

@@ -76,7 +76,7 @@ const MessageInput = ({
   }, [debouncedTypingStop, isTyping, sessionId, onTypingStop]);
 
   return (
-    <footer className="p-4 rounded-b-3xl bg-white">
+    <footer className="p-3 sm:p-4 rounded-b-3xl bg-white">
       <div className="flex items-center space-x-2">
         <Textarea
           ref={textareaRef}
@@ -115,7 +115,7 @@ const MessageInput = ({
           onClick={handleSend}
           disabled={!message.trim() || disabled}
           size="icon"
-          className="h-9 w-9"
+          className="h-9 w-9 flex-shrink-0"
         >
           <Send className="h-4 w-4" />
           <span className="sr-only">Send</span>

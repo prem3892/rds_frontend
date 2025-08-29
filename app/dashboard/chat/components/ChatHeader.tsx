@@ -76,19 +76,19 @@ const ChatHeader = ({
                 variant="ghost"
                 size="sm"
                 onClick={onBack}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 flex-shrink-0"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
             
-            <div className="flex items-center gap-3">
-              <Avatar className="h-9 w-9">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar className="h-9 w-9 flex-shrink-0">
                 <AvatarImage src={undefined} />
                 <AvatarFallback className="text-sm">{customerInitial}</AvatarFallback>
               </Avatar>
-              <div>
-                <h3 className="font-semibold text-md leading-tight">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-md leading-tight truncate">
                   {customerName}
                 </h3>
                 <Badge
@@ -102,16 +102,16 @@ const ChatHeader = ({
           </div>
 
           {/* Right side - Action buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {onShowGuestInfo && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onShowGuestInfo}
-                className="text-xs"
+                className="text-xs hidden sm:flex"
               >
                 <User className="h-4 w-4 mr-1" />
-                Guest Info
+                <span className="hidden md:inline">Guest Info</span>
               </Button>
             )}
             
@@ -129,12 +129,14 @@ const ChatHeader = ({
               {isBookingInProgress ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                  Booking...
+                  <span className="hidden sm:inline">Booking...</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                  {session.appointmentBooked ? "Booked" : "Book Now"}
+                  <span className="hidden sm:inline">
+                    {session.appointmentBooked ? "Booked" : "Book Now"}
+                  </span>
                 </>
               )}
             </Button>
@@ -146,13 +148,14 @@ const ChatHeader = ({
               disabled={session.status !== "ACTIVE"}
               className="text-xs"
             >
-              <XCircle className="h-4 w-4 mr-1.5" /> End Chat
+              <XCircle className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">End Chat</span>
             </Button>
           </div>
         </div>
 
         {/* Care message */}
-        <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+        <div className="mt-3 p-3 bg-gradient-to-r from-blue-100  to-transparent rounded-none">
           <p className="text-sm text-blue-800 font-medium">
             While chatting, let&apos;s show them care!
           </p>

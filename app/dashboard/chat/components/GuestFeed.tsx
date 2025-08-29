@@ -22,6 +22,8 @@ import {
   cn,
   formatRelativeTime,
 } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+
 
 interface GuestFeedProps {
   className?: string;
@@ -144,7 +146,7 @@ export function GuestFeed({
   };
 
   return (
-    <Card className={cn("w-full h-full bg-white rounded-3xl border-none shadow-sm", className)}>
+    <Card className={cn("w-full h-full  rounded-3xl border-none shadow-sm ", className)}>
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between mb-4">
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -190,14 +192,14 @@ export function GuestFeed({
                 : "bg-transparent"
             )}
           >
-            1 Active Chats
+            Active Chats
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="p-0">
-        <ScrollArea className={cn(maxHeight, "px-6 pb-6")}>
-          <AnimatePresence mode="popLayout">
+      <CardContent className="p-0 ">
+        <ScrollArea className={cn(maxHeight, "gap-4  px-2")}>
+          <AnimatePresence mode="sync">
             {visitors.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -218,7 +220,7 @@ export function GuestFeed({
                 )}
               </motion.div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 px-4">
                 {visitors.map((visitor) => (
                   <motion.div
                     key={visitor.customerId}
@@ -226,18 +228,29 @@ export function GuestFeed({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.2 }}
-                    className="relative"
+                    className="relative "
                   >
                     {/* Timeline connector */}
-                    <div className="absolute left-6 top-8 bottom-0 w-px bg-gray-200 border-l border-dashed" />
+                  
+                
                     
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-center ">
                       {/* Timeline dot */}
-                      <div className="relative z-10 w-3 h-3 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+           
                       
                       {/* Time */}
-                      <div className="text-xs text-gray-500 mt-2 w-16 flex-shrink-0">
+                      <div className="flex relative items-center justify-start ">
+
+
+                      <div className="text-xs text-gray-500  mt-2 p-3 py-2 flex-shrink-0 rounded-full border-dashed border-2 border-gray-200">
                         {formatRelativeTime(visitor.lastActivity)}
+                      </div>
+
+                      <div className="  border-1 border-dashed border-gray-200 bg-gray-200 rounded-full block w-10" />
+
+                      <div className="absolute -right-4 top-3 text-xs text-gray-500  p-1 flex-shrink-0 bg-white rounded-full border-dashed border-2 border-gray-200 ">
+                        <span className="size-3 bg-blue-600 rounded-full block" />
+                      </div>
                       </div>
                       
                       {/* Visitor Info */}
@@ -255,9 +268,9 @@ export function GuestFeed({
                               {getPlatformIcon(visitor.browserInfo.platform)}
                             </div>
                             
-                            <div className="text-xs text-gray-600 mb-2">
+                            <a href={visitor.currentPageUrl} target="_blank" className="text-xs text-gray-600 mb-2">
                               At: {visitor.currentPageUrl}
-                            </div>
+                            </a>
                           </div>
                           
                           <div className="flex flex-col items-end gap-2">

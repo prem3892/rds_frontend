@@ -2,6 +2,7 @@ export { default as BookingForm } from "./BookingForm";
 export { default as ChatHeader } from "./ChatHeader";
 export { default as ChatListItem } from "./ChatListItem";
 export { default as ChatMessages } from "./ChatMessages";
+export { default as ChatSkeleton } from "./ChatSkeleton";
 export { default as ChatSidebar } from "./ChatSidebar";
 export { default as EmptyChatState } from "./EmptyChatState";
 export { default as MessageBubble } from "./MessageBubble";

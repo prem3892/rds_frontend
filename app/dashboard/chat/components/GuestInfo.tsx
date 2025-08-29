@@ -1,27 +1,21 @@
 "use client";
 
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  User,
-  MapPin,
-  Clock,
-  Globe,
-  Mail,
-  Phone,
-  User as UserIcon,
-  Calendar,
-} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn, getColorFromString } from "@/lib/utils";
 import { ChatSession } from "@/types";
-import { cn, getInitials, getColorFromString } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Clock,
+  Globe,
+  MapPin,
+  User as UserIcon,
+  X
+} from "lucide-react";
 
 interface GuestInfoProps {
   session: ChatSession | null;
@@ -79,7 +73,7 @@ export function GuestInfo({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black/30 bg-opacity-50 z-40"
             onClick={onClose}
           />
           

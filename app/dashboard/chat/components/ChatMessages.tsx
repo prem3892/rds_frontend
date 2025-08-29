@@ -1,9 +1,9 @@
 import React, { useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChatMessage } from "@/types";
 import MessageBubble from "./MessageBubble";
+import ChatSkeleton from "./ChatSkeleton";
 import { format, parseISO, isToday, isYesterday } from "date-fns";
 
 interface ChatMessagesProps {
@@ -54,11 +54,7 @@ const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
       className="flex-1 p-4 space-y-1 overflow-y-auto bg-gray-100"
       id="chat-message-scroll"
     >
-      {isLoading && messages.length === 0 && (
-        <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center">
-          <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Loading messages...
-        </div>
-      )}
+      {isLoading && messages.length === 0 && <ChatSkeleton />}
       <AnimatePresence initial={false}>
         {Object.entries(messageGroups).map(([dateKey, dateMessages]) => (
           <div key={dateKey} className="space-y-1 ">
