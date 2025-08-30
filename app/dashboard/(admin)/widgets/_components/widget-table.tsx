@@ -1,20 +1,23 @@
 "use client"
 
-import React from 'react'
+import React, { useState } from 'react'
 import { DataTable } from '@/components/ui/data-table'
 import { columns } from './widget-columns';
-import { ApiErrorResponse, Widget } from '@/types';
+import { ApiErrorResponse, Widget, PaginatedWidgetResponse } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Globe, IdCard, MessageCircle, Paintbrush, Text, Workflow, MoreHorizontal } from 'lucide-react';
 import CelAction from "./cell-actions";
 import { Row } from '@tanstack/react-table';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 
 type Props = {
-    widgets: Widget[];
+    widgetData: PaginatedWidgetResponse | null;
     isLoadingWidgets: boolean;
     widgetsError: ApiErrorResponse | null;
+    currentPage: number;
+    onPageChange: (page: number) => void;
 }
 
 // Widget Card Component for mobile view
@@ -106,7 +109,9 @@ const WidgetCard = ({ widget }: { widget: Widget }) => {
 };
 
 const WidgetTable = (props: Props) => {
-    const {widgets, isLoadingWidgets, widgetsError} = props;
+    const {widgetData, isLoadingWidgets, widgetsError, currentPage, onPageChange} = props;
+    const widgets = widgetData?.items || [];
+    const meta = widgetData?.meta;
 
   if (widgetsError) {
     return (
@@ -118,7 +123,7 @@ const WidgetTable = (props: Props) => {
     );
   }
 
-  if (!widgets && !isLoadingWidgets) {
+  if (!widgets.length && !isLoadingWidgets) {
     return (
       <div className='bg-white p-4 rounded-xl'>
         <div className="text-center text-gray-500 py-8">
@@ -222,6 +227,17 @@ const WidgetTable = (props: Props) => {
           skeletonRows={8}
         />
       </div>
+
+      {/* Pagination Controls */}
+      {meta && meta.totalPages > 1 && (
+        <div className="mt-6">
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={meta.totalPages}
+            onPageChange={onPageChange}
+          />
+        </div>
+      )}
     </div>
   )
 }

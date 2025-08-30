@@ -2,25 +2,32 @@
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useGetAllWidgets } from "@/lib/widget.api";
 import { useCurrentUser } from "@/stores/auth";
 import { motion } from "framer-motion";
-import { AlertTriangle, Globe, PlusCircle, Settings2 } from "lucide-react";
+import { AlertTriangle, Globe, PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import WidgetTable from "./_components/widget-table";
-import { useGetAllWidgets } from "@/lib/widget.api";
-import { cn } from "@/lib/utils";
 
 export default function WidgetsPage() {
   const currentUser = useCurrentUser();
   const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
   const {
-    data: widgets,
+    data: widgetData,
     isLoading: isLoadingWidgets,
     error: widgetsError,
-  } = useGetAllWidgets({
+  } = useGetAllWidgets(currentPage, pageSize, {
     enabled: currentUser?.role === "ADMIN",
   });
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   if (currentUser?.role !== "ADMIN") {
     return (
@@ -50,7 +57,7 @@ export default function WidgetsPage() {
             <span className="p-2 bg-blue-500  text-white mr-1 rounded-md ">
               <Globe className=" text-2xl" />
             </span>
-            <span>{widgets?.length}{" "} </span>Widgets
+            Widgets
           </h1>
         </div>
         <Button
@@ -63,9 +70,11 @@ export default function WidgetsPage() {
       </div>
 
       <WidgetTable
-        widgets={widgets || []}
+        widgetData={widgetData || null}
         isLoadingWidgets={isLoadingWidgets}
         widgetsError={widgetsError || null}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
       />
     </div>
     </motion.div>

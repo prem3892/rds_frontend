@@ -12,7 +12,7 @@ import {
   CreateCannedMessageDto, 
   UpdateCannedMessageDto, 
   CannedMessageFilters, 
-  CannedMessageResponse 
+  PaginatedCannedMessageResponse 
 } from "@/types";
 
 // Query key constants
@@ -36,11 +36,11 @@ export const useCreateCannedMessageMutation = (
 export const useGetCannedMessages = (
   filters?: CannedMessageFilters,
   options?: Omit<
-    UseQueryOptions<CannedMessageResponse, ApiErrorResponse>,
+    UseQueryOptions<PaginatedCannedMessageResponse, ApiErrorResponse, PaginatedCannedMessageResponse, [string, CannedMessageFilters | undefined]>,
     "queryKey" | "queryFn"
   >
 ) => {
-  return useQuery<CannedMessageResponse, ApiErrorResponse>({
+  return useQuery<PaginatedCannedMessageResponse, ApiErrorResponse, PaginatedCannedMessageResponse, [string, CannedMessageFilters | undefined]>({
     queryKey: [CANNED_MESSAGES_QUERY_KEY, filters],
     queryFn: () => {
       const params = new URLSearchParams();
@@ -57,7 +57,7 @@ export const useGetCannedMessages = (
       const queryString = params.toString();
       const url = queryString ? `/agents/canned-messages?${queryString}` : "/agents/canned-messages";
       
-      return customFetch<CannedMessageResponse>(url);
+      return customFetch<PaginatedCannedMessageResponse>(url);
     },
     ...options,
   });

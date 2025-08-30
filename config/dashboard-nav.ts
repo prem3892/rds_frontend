@@ -11,6 +11,7 @@ import {
   History,
   CircleUserRound,
   Power,
+  FileText,
 } from "lucide-react"; // Example icons from lucide-react
 
 export type NavItem = {
@@ -64,6 +65,11 @@ export const dashboardNavItems: NavItem[] = [
     href: "/dashboard/departments",
     icon: Building,
     role: "ADMIN",
+  },
+  {
+    title: "Canned Messages",
+    href: "/dashboard/canned-messages",
+    icon: FileText,
   },
   {
     title: "All Chat Sessions", // Admin monitoring

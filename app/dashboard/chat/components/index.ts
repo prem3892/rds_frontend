@@ -12,3 +12,4 @@ export { default as TypingIndicator } from "./TypingIndicator";
 export { default as VisitorsList } from "./VisitorsList";
 export { default as GuestFeed } from "./GuestFeed";
 export { default as GuestInfo } from "./GuestInfo";
+export { default as CannedMessageSelector } from "./CannedMessageSelector";

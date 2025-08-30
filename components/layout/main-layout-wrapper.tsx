@@ -53,11 +53,11 @@ const getScreenNameFromRoute = (pathname: string): string => {
     "/dashboard/(admin)/sessions": "Sessions",
     "/dashboard/users": "User Management",
     "/dashboard/profile": "Profile",
-    "/contacts": "Contacts",
-    "/agents": "Agents",
-    "/canned-messages": "Canned Messages",
-    "/auto-message": "Auto Message",
-    "/blocked-guests": "Blocked Guests",
+    "/dashboard/contacts": "Contacts",
+    "/dashboard/agents": "Agents",
+    "/dashboard/canned-messages": "Canned Messages",
+    "/dashboard/auto-message": "Auto Message",
+    "/dashboard/blocked-guests": "Blocked Guests",
   };
 
   // Check for exact matches first
@@ -127,14 +127,14 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
 
 
   const menuItems = [
-    { icon: HomeIcon, label: "Dashboard", href: "/dashboard/chat", active: pathname === "/dashboard/chat" },
-    { icon: Users, label: "Contacts", href: "/contacts", active: pathname === "/contacts" },
-    { icon: MessageSquare, label: "Chat History", href: "/dashboard/history", active: pathname === "/dashboard/history" },
-    { icon: UserCheck, label: "Agents", href: "/agents", active: pathname === "/agents" },
+    { icon: HomeIcon, label: "Dashboard", href: "/dashboard/chat", active: pathname.includes("/chat") },
+    { icon: Users, label: "Contacts", href: "/dashboard/contacts", active: pathname.includes("/contacts") },
+    { icon: MessageSquare, label: "Chat History", href: "/dashboard/history", active: pathname.includes("/history") },
+    { icon: UserCheck, label: "Agents", href: "/dashboard/agents", active: pathname.includes("/agents") },
     { icon: Globe, label: "Domains", href: "/dashboard/widgets", active: pathname.includes("/widgets") },
-    { icon: Mail, label: "Canned Messages", href: "/canned-messages", active: pathname === "/canned-messages" },
-    { icon: MessageCircle, label: "Auto Message", href: "/auto-message", active: pathname === "/auto-message" },
-    { icon: UserX, label: "Blocked Guests", href: "/blocked-guests", active: pathname === "/blocked-guests" },
+    { icon: Mail, label: "Canned Messages", href: "/dashboard/canned-messages", active: pathname.includes("/canned-messages") },
+    { icon: MessageCircle, label: "Auto Message", href: "/dashboard/auto-message", active: pathname.includes("/auto-message") },
+    { icon: UserX, label: "Blocked Guests", href: "/dashboard/blocked-guests", active: pathname.includes("/blocked-guests") },
   ]
 
   return (
