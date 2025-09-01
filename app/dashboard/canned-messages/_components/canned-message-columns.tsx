@@ -4,6 +4,7 @@ import { CannedMessage } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { Globe, Keyboard, MoreHorizontal, Tag, User, Users } from "lucide-react";
 import CellAction from "./cell-actions";
+import { cn } from "@/lib/utils";
 
 
 export const columns: ColumnDef<CannedMessage>[] = [
@@ -70,7 +71,12 @@ export const columns: ColumnDef<CannedMessage>[] = [
     },
     cell: ({ row }) => {
       return (
-        <Badge variant={row.original.isGlobal ? "default" : "secondary"}>
+        <Badge variant={row.original.isGlobal ? "default" : "outline"}
+        className={cn(
+          row.original.isGlobal ? "bg-blue-500 text-white border-0" : "bg-transparent text-blue-500 border border-blue-500"
+        )}
+        >
+
           {row.original.isGlobal ? "Global" : "Personal"}
         </Badge>
       );

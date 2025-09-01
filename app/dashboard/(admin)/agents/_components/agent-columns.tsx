@@ -1,0 +1,179 @@
+"use client";
+
+import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { AgentProfile } from "@/lib/agent.api";
+import { Department } from "@/types";
+import { 
+  Edit, 
+  ToggleLeft, 
+  MessageSquare, 
+  Building, 
+  Globe, 
+  User,
+  Mail,
+  ShieldCheck
+} from "lucide-react";
+import CellActions from "./cell-actions";
+
+interface AgentColumnsProps {
+  departments: Department[];
+  onEdit: (agent: AgentProfile) => void;
+  onToggleStatus: (agent: AgentProfile) => void;
+}
+
+export const createAgentColumns = ({ 
+  departments, 
+  onEdit, 
+  onToggleStatus 
+}: AgentColumnsProps): ColumnDef<AgentProfile>[] => [
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => {
+      const agent = row.original;
+      return (
+        <div className="flex items-center space-x-2">
+          <User className="h-4 w-4 text-blue-500" />
+          <span className="font-medium">
+            {agent.user.firstName} {agent.user.lastName}
+          </span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ row }) => {
+      const agent = row.original;
+      return (
+        <div className="flex items-center space-x-2">
+          <Mail className="h-4 w-4 text-gray-500" />
+          <span>{agent.user.email}</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "departments",
+    header: "Departments",
+    cell: ({ row }) => {
+      const agent = row.original;
+      return (
+        <div className="flex items-center space-x-2">
+          <Building className="h-4 w-4 text-gray-500" />
+          <div className="flex flex-wrap gap-1">
+            {agent.departmentIds.length > 0 ? (
+              Array.isArray(agent.departmentIds) &&
+              typeof agent.departmentIds[0] === "object" ? (
+                // Handle case where departmentIds is an array of department objects
+                agent.departmentIds.map((dept: any) => (
+                  <Badge key={dept._id} variant="outline" className="text-xs">
+                    {dept.name}
+                  </Badge>
+                ))
+              ) : (
+                // Handle case where departmentIds is an array of IDs
+                departments
+                  ?.filter((dept: Department) =>
+                    agent.departmentIds.includes(dept._id)
+                  )
+                  .map((dept: Department) => (
+                    <Badge key={dept._id} variant="outline" className="text-xs">
+                      {dept.name}
+                    </Badge>
+                  ))
+              )
+            ) : (
+              <span className="text-muted-foreground text-sm">None</span>
+            )}
+          </div>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "domainAccess",
+    header: "Domain Access",
+    cell: ({ row }) => {
+      const agent = row.original;
+      return (
+        <div className="flex items-center space-x-2">
+          <Globe className="h-4 w-4 text-gray-500" />
+          <div className="flex flex-wrap gap-1">
+            {agent.domainAccess && agent.domainAccess.length > 0 ? (
+              agent.domainAccess.map((domain, idx) => (
+                <Badge key={idx} variant="secondary" className="text-xs">
+                  {domain}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-muted-foreground text-sm">All domains</span>
+            )}
+          </div>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const agent = row.original;
+      return (
+        <div className="flex items-center justify-center">
+          <Badge
+            variant={agent.isOnline ? "default" : "secondary"}
+            className="font-normal"
+          >
+            {agent.isOnline ? "Online" : "Offline"}
+          </Badge>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "maxConcurrentChats",
+    header: "Max Chats",
+    cell: ({ row }) => {
+      const agent = row.original;
+      return (
+        <div className="flex items-center justify-center space-x-2">
+          <MessageSquare className="h-4 w-4 text-gray-500" />
+          <Badge variant="outline">
+            {agent.maxConcurrentChats}
+          </Badge>
+        </div>
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const agent = row.original;
+      return (
+        <div className="flex items-center justify-end space-x-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => onEdit(agent)}
+            className="h-8 w-8"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={agent.isOnline ? "destructive" : "default"}
+            size="icon"
+            onClick={() => onToggleStatus(agent)}
+            className="h-8 w-8"
+          >
+            <ToggleLeft className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+  },
+];

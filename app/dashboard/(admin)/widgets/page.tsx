@@ -31,6 +31,13 @@ export default function WidgetsPage() {
 
   if (currentUser?.role !== "ADMIN") {
     return (
+      <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mx-auto p-4 md:p-6 lg:p-8 space-y-6 bg-[#f2f4f8] rounded-3xl min-h-full"
+    > 
+    
       <Alert variant="destructive" className="m-4">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Access Denied</AlertTitle>
@@ -38,6 +45,8 @@ export default function WidgetsPage() {
           You do not have permission to manage widgets.
         </AlertDescription>
       </Alert>
+    </motion.div>
+    
     );
   }
 
