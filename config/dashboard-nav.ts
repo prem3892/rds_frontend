@@ -72,6 +72,11 @@ export const dashboardNavItems: NavItem[] = [
     icon: FileText,
   },
   {
+    title: "Auto Messages",
+    href: "/dashboard/auto-messages",
+    icon: MessageSquare,
+  },
+  {
     title: "All Chat Sessions", // Admin monitoring
     href: "/dashboard/sessions",
     icon: ShieldAlert,

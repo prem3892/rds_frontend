@@ -1,0 +1,72 @@
+"use client";
+
+import { useState } from "react";
+import { Department, AgentProfile } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Users } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AgentsModal } from "./agents-modal";
+
+interface AgentsCellProps {
+  department: Department;
+  agents: AgentProfile[];
+}
+
+export function AgentsCell({ department, agents }: AgentsCellProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const departmentAgents = agents.filter(agent => 
+    agent.departmentIds.includes(department._id)
+  );
+
+  return (
+    <>
+      <div className="flex items-center space-x-2">
+        <div className="flex -space-x-2">
+          {departmentAgents.slice(0, 5).map((agent) => (
+            <TooltipProvider key={agent._id}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Avatar className="h-8 w-8 border-2 border-white rounded-full bg-gray-100 hover:z-10 transition-transform hover:scale-110">
+                    <AvatarFallback className="text-xs bg-blue-100 text-blue-600 font-medium">
+                      {agent.user.firstName[0]}{agent.user.lastName[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{agent.user.firstName} {agent.user.lastName}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ))}
+        </div>
+        {departmentAgents.length > 5 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsModalOpen(true)}
+            className="text-xs font-medium h-6 px-2 hover:bg-blue-50 hover:border-blue-200 cursor-pointer"
+          >
+            +{departmentAgents.length - 5} more
+          </Button>
+        )}
+        {departmentAgents.length === 0 && (
+          <span className="text-sm text-gray-500 italic">No agents assigned</span>
+        )}
+      </div>
+      
+      <AgentsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        departmentName={department.name}
+        agents={departmentAgents}
+      />
+    </>
+  );
+}

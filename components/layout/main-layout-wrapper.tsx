@@ -133,7 +133,7 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
     { icon: UserCheck, label: "Agents", href: "/dashboard/agents", active: pathname.includes("/agents") },
     { icon: Globe, label: "Domains", href: "/dashboard/widgets", active: pathname.includes("/widgets") },
     { icon: Mail, label: "Canned Messages", href: "/dashboard/canned-messages", active: pathname.includes("/canned-messages") },
-    { icon: MessageCircle, label: "Auto Message", href: "/dashboard/auto-message", active: pathname.includes("/auto-message") },
+    { icon: MessageCircle, label: "Auto Message", href: "/dashboard/auto-messages", active: pathname.includes("/auto-messages") },
     { icon: UserX, label: "Blocked Guests", href: "/dashboard/blocked-guests", active: pathname.includes("/blocked-guests") },
   ]
 

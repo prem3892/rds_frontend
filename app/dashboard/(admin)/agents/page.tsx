@@ -50,8 +50,8 @@ export default function AgentsPage() {
   const [editingAgent, setEditingAgent] = useState<AgentProfile | null>(null);
   const [agentFilters, setAgentFilters] = useState<AgentFilters>({
     search: "",
-    department: "",
-    status: "",
+    department: "all",
+    status: "all",
   });
 
   // Department states
@@ -104,10 +104,10 @@ export default function AgentsPage() {
       agent.user.lastName.toLowerCase().includes(agentFilters.search.toLowerCase()) ||
       agent.user.email.toLowerCase().includes(agentFilters.search.toLowerCase());
 
-    const matchesDepartment = !agentFilters.department || 
+    const matchesDepartment = !agentFilters.department || agentFilters.department === "all" || 
       agent.departmentIds.includes(agentFilters.department);
 
-    const matchesStatus = !agentFilters.status || 
+    const matchesStatus = !agentFilters.status || agentFilters.status === "all" || 
       (agentFilters.status === "online" && agent.isOnline) ||
       (agentFilters.status === "offline" && !agent.isOnline);
 

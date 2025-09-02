@@ -2,8 +2,10 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter, X } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface AgentFilters {
   search: string;
@@ -35,12 +37,12 @@ const SearchFilters = ({ filters, onFiltersChange, departments }: SearchFiltersP
   const clearFilters = () => {
     onFiltersChange({
       search: "",
-      department: "",
-      status: "",
+      department: "all",
+      status: "all",
     });
   };
 
-  const hasActiveFilters = filters.search || filters.department || filters.status;
+  const hasActiveFilters = filters.search || (filters.department && filters.department !== "all") || (filters.status && filters.status !== "all");
 
   return (
     <div className="space-y-4">
@@ -57,10 +59,15 @@ const SearchFilters = ({ filters, onFiltersChange, departments }: SearchFiltersP
         </div>
         <Button
           variant="outline"
-          size="icon"
+
           onClick={() => setIsExpanded(!isExpanded)}
+          className={cn(
+            "transition-all duration-200",
+            isExpanded 
+              ? "bg-primary text-primary-foreground border-primary shadow-md"  : ""
+          )}
         >
-          <Filter className="h-4 w-4" />
+          <Filter className="h-4 w-4" /> Filters
         </Button>
         {hasActiveFilters && (
           <Button variant="outline" size="icon" onClick={clearFilters}>
@@ -75,36 +82,38 @@ const SearchFilters = ({ filters, onFiltersChange, departments }: SearchFiltersP
           {/* Department Filter */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Department</label>
-            <select
-              value={filters.department}
-              onChange={(e) => handleDepartmentChange(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="">All Departments</option>
-              {departments.map((dept) => (
-                <option key={dept._id} value={dept._id}>
-                  {dept.name}
-                </option>
-              ))}
-            </select>
+            <Select value={filters.department} onValueChange={handleDepartmentChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Departments" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Departments</SelectItem>
+                {departments.map((dept) => (
+                  <SelectItem key={dept._id} value={dept._id}>
+                    {dept.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Status Filter */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Status</label>
-            <select
-              value={filters.status}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md text-sm"
-            >
-              <option value="">All Status</option>
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-            </select>
+            <Select value={filters.status} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="online">Online</SelectItem>
+                <SelectItem value="offline">Offline</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Clear Filters Button */}
-          <div className="flex items-end">
+          {/* <div className="flex items-end">
             <Button
               variant="outline"
               onClick={clearFilters}
@@ -112,7 +121,7 @@ const SearchFilters = ({ filters, onFiltersChange, departments }: SearchFiltersP
             >
               Clear Filters
             </Button>
-          </div>
+          </div> */}
         </div>
       )}
     </div>

@@ -36,7 +36,7 @@ export const createAgentColumns = ({
       return (
         <div className="flex items-center space-x-2">
           <User className="h-4 w-4 text-blue-500" />
-          <span className="font-medium">
+          <span className="font-medium capitalize">
             {agent.user.firstName} {agent.user.lastName}
           </span>
         </div>
@@ -123,7 +123,7 @@ export const createAgentColumns = ({
     cell: ({ row }) => {
       const agent = row.original;
       return (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-start">
           <Badge
             variant={agent.isOnline ? "default" : "secondary"}
             className="font-normal"
@@ -140,7 +140,7 @@ export const createAgentColumns = ({
     cell: ({ row }) => {
       const agent = row.original;
       return (
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-start space-x-2">
           <MessageSquare className="h-4 w-4 text-gray-500" />
           <Badge variant="outline">
             {agent.maxConcurrentChats}
@@ -155,7 +155,7 @@ export const createAgentColumns = ({
     cell: ({ row }) => {
       const agent = row.original;
       return (
-        <div className="flex items-center justify-end space-x-2">
+        <div className="flex items-center justify-start  space-x-2">
           <Button
             variant="outline"
             size="icon"

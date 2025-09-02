@@ -13,3 +13,5 @@ export { default as EditDepartmentForm } from "./edit-department-form";
 export { default as DeleteDepartmentDialog } from "./delete-department-dialog";
 export { default as DepartmentSearchFilters } from "./department-search-filters";
 export { createDepartmentColumns } from "./department-columns";
+export { AgentsModal } from "./agents-modal";
+export { AgentsCell } from "./agents-cell";

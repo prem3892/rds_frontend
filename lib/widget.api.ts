@@ -46,6 +46,20 @@ export const useGetAllWidgets = (
   });
 };
 
+// 2.1. Get All Widgets (for dropdowns and filters)
+export const useGetAllWidgetsList = (
+  options?: Omit<
+    UseQueryOptions<PaginatedWidgetResponse, ApiErrorResponse, PaginatedWidgetResponse, [string, "all"]>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<PaginatedWidgetResponse, ApiErrorResponse, PaginatedWidgetResponse, [string, "all"]>({
+    queryKey: [WIDGETS_QUERY_KEY, "all"],
+    queryFn: () => customFetch<PaginatedWidgetResponse>(`/widgets?page=1&limit=100`),
+    ...options,
+  });
+};
+
 // 3. Get Widget by ID (or config, they are similar for admin)
 // Endpoint /widgets/:id is used for GET, PUT, DELETE
 export const useGetWidgetById = (

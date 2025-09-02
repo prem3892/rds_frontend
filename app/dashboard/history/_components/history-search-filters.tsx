@@ -14,6 +14,7 @@ import { Search, Filter, X } from "lucide-react";
 import { useState } from "react";
 import { ChatSessionStatus } from "@/types";
 import { Department, AgentProfile } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface HistoryFilters {
   search: string;
@@ -75,10 +76,15 @@ export default function HistorySearchFilters({
         </div>
         <Button
           variant="outline"
-          size="icon"
+
           onClick={() => setIsExpanded(!isExpanded)}
+          className={cn(
+            "transition-all duration-200",
+            isExpanded 
+              ? "bg-primary text-primary-foreground border-primary shadow-md"  : ""
+          )}
         >
-          <Filter className="h-4 w-4" />
+          <Filter className="h-4 w-4" /> Filters
         </Button>
         {hasActiveFilters && (
           <Button variant="outline" size="icon" onClick={onClearFilters}>

@@ -373,7 +373,7 @@ export default function DepartmentsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(department._id)}
+                        onClick={() => handleDelete(department._id)}     
                       >
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
