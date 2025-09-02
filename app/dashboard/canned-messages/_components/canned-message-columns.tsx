@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CannedMessage } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
-import { Globe, Keyboard, MoreHorizontal, Tag, User, Users } from "lucide-react";
+import { Calendar, Globe, Keyboard, MessageCircle, MoreHorizontal, Tag, User, Users } from "lucide-react";
 import CellAction from "./cell-actions";
 import { cn } from "@/lib/utils";
 
@@ -48,10 +48,18 @@ export const columns: ColumnDef<CannedMessage>[] = [
   },
   {
     id: "content",
-    header: "Message",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <MessageCircle className="size-5 stroke-1" />
+          <span>Message</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       return (
         <div className="text-sm text-muted-foreground max-w-xs truncate">
+        
           {row.original.content}
         </div>
       );
@@ -158,7 +166,14 @@ export const columns: ColumnDef<CannedMessage>[] = [
   },
   {
     id: "createdAt",
-    header: "Created",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <Calendar className="size-5 stroke-1" />
+          <span>Created</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       return (
         <div className="text-sm text-muted-foreground">

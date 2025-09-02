@@ -13,7 +13,9 @@ import {
   Globe, 
   User,
   Mail,
-  ShieldCheck
+  ShieldCheck,
+  MoreHorizontal,
+  Settings
 } from "lucide-react";
 import CellActions from "./cell-actions";
 
@@ -30,7 +32,14 @@ export const createAgentColumns = ({
 }: AgentColumnsProps): ColumnDef<AgentProfile>[] => [
   {
     accessorKey: "name",
-    header: "Name",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <User className="size-5 stroke-1" />
+          <span>Name</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const agent = row.original;
       return (
@@ -45,12 +54,18 @@ export const createAgentColumns = ({
   },
   {
     accessorKey: "email",
-    header: "Email",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <Mail className="size-5 stroke-1" />
+          <span>Email</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const agent = row.original;
       return (
         <div className="flex items-center space-x-2">
-          <Mail className="h-4 w-4 text-gray-500" />
           <span>{agent.user.email}</span>
         </div>
       );
@@ -58,7 +73,14 @@ export const createAgentColumns = ({
   },
   {
     accessorKey: "departments",
-    header: "Departments",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <Building className="size-5 stroke-1" />
+          <span>Departments</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const agent = row.original;
       return (
@@ -96,7 +118,14 @@ export const createAgentColumns = ({
   },
   {
     accessorKey: "domainAccess",
-    header: "Domain Access",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <Globe className="size-5 stroke-1" />
+          <span>Domain Access</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const agent = row.original;
       return (
@@ -119,7 +148,14 @@ export const createAgentColumns = ({
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <Settings className="size-5 stroke-1" />
+          <span>Status</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const agent = row.original;
       return (
@@ -136,12 +172,18 @@ export const createAgentColumns = ({
   },
   {
     accessorKey: "maxConcurrentChats",
-    header: "Max Chats",
+      header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <MessageSquare className="size-5 stroke-1" />
+          <span>Max Chats</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const agent = row.original;
       return (
         <div className="flex items-center justify-start space-x-2">
-          <MessageSquare className="h-4 w-4 text-gray-500" />
           <Badge variant="outline">
             {agent.maxConcurrentChats}
           </Badge>
@@ -151,7 +193,14 @@ export const createAgentColumns = ({
   },
   {
     id: "actions",
-    header: "Actions",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <MoreHorizontal className="size-5 stroke-1" />
+          <span>Actions</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const agent = row.original;
       return (

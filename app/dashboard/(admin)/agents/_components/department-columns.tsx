@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Department, AgentProfile } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Users } from "lucide-react";
+import { Edit, MoreHorizontal, Trash2, Users } from "lucide-react";
 import { AgentsCell } from "./agents-cell";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -74,6 +74,14 @@ export const createDepartmentColumns = (
   },
   {
     id: "actions",
+    header: () => {
+      return (
+        <div className="flex items-center space-x-2">
+          <MoreHorizontal className="h-4 w-4" />
+          <span>Actions</span>
+        </div>
+      );
+    },
     cell: ({ row }) => {
       const department = row.original;
 

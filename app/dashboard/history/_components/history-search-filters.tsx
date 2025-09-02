@@ -15,6 +15,7 @@ import { useState } from "react";
 import { ChatSessionStatus } from "@/types";
 import { Department, AgentProfile } from "@/types";
 import { cn } from "@/lib/utils";
+import { HistorySearchFiltersSkeleton } from "./history-search-filters-skeleton";
 
 interface HistoryFilters {
   search: string;
@@ -31,6 +32,7 @@ interface HistorySearchFiltersProps {
   departments: Department[];
   agents: AgentProfile[];
   onClearFilters: () => void;
+  isLoading?: boolean;
 }
 
 const historyStatusOptions: ChatSessionStatus[] = [
@@ -52,8 +54,13 @@ export default function HistorySearchFilters({
   departments,
   agents,
   onClearFilters,
+  isLoading = false,
 }: HistorySearchFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  if (isLoading) {
+    return <HistorySearchFiltersSkeleton />;
+  }
 
   const handleInputChange = (field: keyof HistoryFilters, value: string) => {
     onFiltersChange({ ...filters, [field]: value });

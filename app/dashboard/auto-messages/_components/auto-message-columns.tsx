@@ -4,13 +4,20 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { AutoMessage, Widget } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Globe, MapPin, Clock, Settings, Tag } from "lucide-react";
+import { Globe, MapPin, Clock, Settings, Tag, MessageCircle, MoreHorizontal, GitBranchIcon, Heading1, Text } from "lucide-react";
 import CellAction from "./cell-actions";
 
 export const createColumns = (widgets: Widget[]): ColumnDef<AutoMessage>[] => [
   {
     accessorKey: "title",
-    header: "Title",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <Text className="size-5 stroke-1" />
+          <span>Title</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const title = row.getValue("title") as string;
       return (
@@ -22,7 +29,14 @@ export const createColumns = (widgets: Widget[]): ColumnDef<AutoMessage>[] => [
   },
   {
     accessorKey: "message",
-    header: "Message",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <MessageCircle className="size-5 stroke-1" />
+          <span>Message</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const message = row.getValue("message") as string;
       return (
@@ -34,7 +48,14 @@ export const createColumns = (widgets: Widget[]): ColumnDef<AutoMessage>[] => [
   },
   {
     accessorKey: "domain",
-    header: "Domain",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <Globe className="size-5 stroke-1" />
+          <span>Domain</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const domain = row.getValue("domain") as string;
       return (
@@ -47,7 +68,14 @@ export const createColumns = (widgets: Widget[]): ColumnDef<AutoMessage>[] => [
   },
   {
     accessorKey: "sitewide",
-    header: "Scope",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <MapPin className="size-5 stroke-1" />
+          <span>Scope</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const sitewide = row.getValue("sitewide") as boolean;
       return (
@@ -62,7 +90,14 @@ export const createColumns = (widgets: Widget[]): ColumnDef<AutoMessage>[] => [
   },
   {
     accessorKey: "pagePaths",
-    header: "Page Paths",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <GitBranchIcon className="size-5 stroke-1" />
+          <span>Page Paths</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const pagePaths = row.getValue("pagePaths") as string[];
       const sitewide = row.getValue("sitewide") as boolean;
@@ -104,7 +139,14 @@ export const createColumns = (widgets: Widget[]): ColumnDef<AutoMessage>[] => [
   },
   {
     accessorKey: "showAfterSeconds",
-    header: "Show After",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <Clock className="size-5 stroke-1" />
+          <span>Show After</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const seconds = row.getValue("showAfterSeconds") as number;
       return (
@@ -117,12 +159,19 @@ export const createColumns = (widgets: Widget[]): ColumnDef<AutoMessage>[] => [
   },
   {
     accessorKey: "isEnabled",
-    header: "Status",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <Settings className="size-5 stroke-1" />
+          <span>Status</span>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const isEnabled = row.getValue("isEnabled") as boolean;
       return (
         <div className="flex items-center gap-2">
-          <Settings className="h-4 w-4 text-gray-500" />
+
           <Badge variant={isEnabled ? "default" : "secondary"}>
             {isEnabled ? "Enabled" : "Disabled"}
           </Badge>
@@ -132,7 +181,14 @@ export const createColumns = (widgets: Widget[]): ColumnDef<AutoMessage>[] => [
   },
   {
     id: "actions",
-    header: "Actions",
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <MoreHorizontal className="size-5 stroke-1" />
+          <span>Actions</span>
+        </div>
+      )
+    },
     cell: ({ row }) => <CellAction data={row.original} widgets={widgets} />,
   },
 ];

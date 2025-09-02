@@ -4,14 +4,8 @@ import { Widget } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, MoreHorizontal, Trash, Loader2 } from "lucide-react";
+import { Copy, Edit, Trash, Loader2 } from "lucide-react";
 import React, { useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -68,7 +62,6 @@ type Props = {
 };
 
 function CelAction({ row }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -145,7 +138,6 @@ function CelAction({ row }: Props) {
 
   // Handle edit button click
   const handleEditClick = () => {
-    setIsOpen(false);
     // Prefill form with widget data
     form.reset({
       name: widget.name || "",
@@ -161,7 +153,6 @@ function CelAction({ row }: Props) {
 
   // Handle delete button click
   const handleDeleteClick = () => {
-    setIsOpen(false);
     setIsDeleteDialogOpen(true);
   };
 
@@ -194,36 +185,35 @@ function CelAction({ row }: Props) {
 
   return (
     <>
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <MoreHorizontal className="size-3" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem
-            className="text-xs"
-            onClick={handleEditClick}
-          >
-            <Edit className="size-3 text-blue-500" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-xs"
-            onClick={handleCopyScript}
-          >
-            <Copy className="size-3" />
-            Copy Script
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-xs"
-            onClick={handleDeleteClick}
-          >
-            <Trash className="size-3 text-red-500" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleEditClick}
+          className="h-8 px-2 text-xs"
+        >
+          <Edit className="size-4  " />
+          
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCopyScript}
+          className="h-8 px-2 text-xs"
+        >
+          <Copy className="size-4 " />
+        
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleDeleteClick}
+          className="h-8 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+        >
+          <Trash className="size-4 " />
+         
+        </Button>
+      </div>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

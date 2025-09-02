@@ -42,6 +42,11 @@ export const dashboardNavItems: NavItem[] = [
     icon: History,
   },
   {
+    title: "Chat History (New)", // New chat history UI
+    href: "/dashboard/history-new",
+    icon: History,
+  },
+  {
     title: "User Management",
     href: "/dashboard/users",
     icon: Users,
