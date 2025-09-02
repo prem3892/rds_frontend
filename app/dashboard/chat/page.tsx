@@ -165,8 +165,8 @@ export default function MyChatsPage() {
 
   const activeSessionsArray = Object.values(activeSessionsMap).sort(
     (a, b) =>
-      new Date(b.lastMessageTimestamp || b.updatedAt).getTime() -
-      new Date(a.lastMessageTimestamp || a.updatedAt).getTime()
+      new Date(b.lastMessageAt || b.updatedAt).getTime() -
+      new Date(a.lastMessageAt || a.updatedAt).getTime()
   );
 
   const pendingRequestsSorted = [...pendingRequests].sort(
@@ -177,7 +177,7 @@ export default function MyChatsPage() {
     if (!selectedSessionDetails) return "Customer";
 
     return typeof selectedSessionDetails.customerId === "object"
-      ? selectedSessionDetails.customerId?.firstName || "Customer"
+      ? selectedSessionDetails.customerId?.name || "Customer"
       : "Customer";
   };
 
