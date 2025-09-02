@@ -11,6 +11,7 @@ import {
   History,
   CircleUserRound,
   Power,
+  FileText,
 } from "lucide-react"; // Example icons from lucide-react
 
 export type NavItem = {
@@ -40,13 +41,18 @@ export const dashboardNavItems: NavItem[] = [
     href: "/dashboard/history",
     icon: History,
   },
-  // {
-  //   title: "User Management",
-  //   href: "/dashboard/users",
-  //   icon: Users,
-  //   role: "ADMIN",
-  //   separator: true,
-  // },
+  {
+    title: "Chat History (New)", // New chat history UI
+    href: "/dashboard/history-new",
+    icon: History,
+  },
+  {
+    title: "User Management",
+    href: "/dashboard/users",
+    icon: Users,
+    role: "ADMIN",
+    separator: true,
+  },
   {
     title: "Widgets",
     href: "/dashboard/widgets",
@@ -65,17 +71,27 @@ export const dashboardNavItems: NavItem[] = [
     icon: Building,
     role: "ADMIN",
   },
-  // {
-  //   title: "All Chat Sessions", // Admin monitoring
-  //   href: "/dashboard/sessions",
-  //   icon: ShieldAlert,
-  //   role: "ADMIN",
-  // },
-  // {
-  //   title: "My Profile",
-  //   href: "/dashboard/profile",
-  //   icon: CircleUserRound,
-  //   separator: true,
-  // },
+  {
+    title: "Canned Messages",
+    href: "/dashboard/canned-messages",
+    icon: FileText,
+  },
+  {
+    title: "Auto Messages",
+    href: "/dashboard/auto-messages",
+    icon: MessageSquare,
+  },
+  {
+    title: "All Chat Sessions", // Admin monitoring
+    href: "/dashboard/sessions",
+    icon: ShieldAlert,
+    role: "ADMIN",
+  },
+  {
+    title: "My Profile",
+    href: "/dashboard/profile",
+    icon: CircleUserRound,
+    separator: true,
+  },
   // Set Online/Offline status will likely be a toggle in the header or user menu, not a nav item.
 ];

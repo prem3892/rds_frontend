@@ -15,6 +15,7 @@ export interface RegisterAgentDto {
   firstName: string;
   lastName: string;
   role: "AGENT";
+
 }
 
 // Agent types

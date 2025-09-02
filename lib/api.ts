@@ -70,12 +70,13 @@ export const customFetch = async <T>(
         // Ensure statusCode field exists
         errorData.statusCode = response.status;
       }
-    } catch (e) {
+    } catch (error) {
+      console.error("Error parsing JSON response:", error);
       errorData = {
         statusCode: response.status,
         message:
           response.statusText ||
-          "An unexpected error occurred. The response was not valid JSON.",
+          "An unexpected error occurred. The response was not valid JSON. " ,
       };
     }
 

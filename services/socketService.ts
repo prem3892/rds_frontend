@@ -137,6 +137,12 @@ class SocketService {
       this.notifyListeners("visitorActivity", data);
     });
 
+    // Chat session restored
+    this.socket.on("server:chat_session_restored", (session: ChatSession) => {
+      console.log("Chat session restored:", session);
+      this.notifyListeners("chatSessionRestored", session);
+    });
+
     return this.socket;
   }
 

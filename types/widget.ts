@@ -13,14 +13,17 @@ export interface UpdateWidgetDto extends Partial<CreateWidgetDto> {}
 export interface WidgetDepartmentInfo {
   _id: string;
   name: string;
-  // Potentially other department fields if populated
+  description: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface Widget {
   _id: string;
   name: string;
   domains: string[];
-  // In the response, departmentIds is an array of populated department objects
   departmentIds: WidgetDepartmentInfo[];
   injectableScriptUrl: string;
   isEnabled: boolean;
@@ -30,6 +33,23 @@ export interface Widget {
   createdBy: string; // Admin User ID
   createdAt: string; // ISO 8601 Date string
   updatedAt: string; // ISO 8601 Date string
+  __v: number;
+}
+
+// Pagination metadata interface
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+// Paginated response interface
+export interface PaginatedWidgetResponse {
+  items: Widget[];
+  meta: PaginationMeta;
 }
 
 // For the public config endpoint

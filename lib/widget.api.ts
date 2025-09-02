@@ -10,7 +10,7 @@ import {
   Widget,
   CreateWidgetDto,
   UpdateWidgetDto,
-  // WidgetPublicConfig, // For public endpoints, not strictly needed for admin management now
+  PaginatedWidgetResponse,
   ApiErrorResponse,
 } from "@/types";
 
@@ -30,16 +30,32 @@ export const useCreateWidgetMutation = (
   });
 };
 
-// 2. Get All Widgets
+// 2. Get All Widgets with Pagination
 export const useGetAllWidgets = (
+  page: number = 1,
+  limit: number = 1,
   options?: Omit<
-    UseQueryOptions<Widget[], ApiErrorResponse, Widget[], [string]>,
+    UseQueryOptions<PaginatedWidgetResponse, ApiErrorResponse, PaginatedWidgetResponse, [string, number, number]>,
     "queryKey" | "queryFn"
   >
 ) => {
-  return useQuery<Widget[], ApiErrorResponse, Widget[], [string]>({
-    queryKey: [WIDGETS_QUERY_KEY],
-    queryFn: () => customFetch<Widget[]>("/widgets"),
+  return useQuery<PaginatedWidgetResponse, ApiErrorResponse, PaginatedWidgetResponse, [string, number, number]>({
+    queryKey: [WIDGETS_QUERY_KEY, page, limit],
+    queryFn: () => customFetch<PaginatedWidgetResponse>(`/widgets?page=${page}&limit=${limit}`),
+    ...options,
+  });
+};
+
+// 2.1. Get All Widgets (for dropdowns and filters)
+export const useGetAllWidgetsList = (
+  options?: Omit<
+    UseQueryOptions<PaginatedWidgetResponse, ApiErrorResponse, PaginatedWidgetResponse, [string, "all"]>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<PaginatedWidgetResponse, ApiErrorResponse, PaginatedWidgetResponse, [string, "all"]>({
+    queryKey: [WIDGETS_QUERY_KEY, "all"],
+    queryFn: () => customFetch<PaginatedWidgetResponse>(`/widgets?page=1&limit=100`),
     ...options,
   });
 };

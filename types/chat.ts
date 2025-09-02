@@ -3,50 +3,37 @@
 // From GET /chat/sessions and GET /chat/sessions/my-active
 export interface ChatSession {
   _id: string;
-  customerId:
-    | string
-    | {
-        // Assuming it might be populated
-        _id: string;
-        firstName?: string;
-        lastName?: string;
-        email?: string;
-      }; // Could be an object if populated with customer details
-  agentId?: string | null; // Could be an object if populated
-  agent?: {
-    // Assuming it might be populated
+  widgetId: {
     _id: string;
-    firstName?: string;
-    lastName?: string;
+    name: string;
   };
-  departmentId?:
-    | string
-    | null
-    | {
-        _id: string;
-        name: string;
-        description?: string;
-        createdBy?: string;
-        createdAt?: string;
-        updatedAt?: string;
-        __v?: number;
-      };
-  department?: {
-    // Assuming it might be populated
+  customerId: {
     _id: string;
-    name?: string;
+    email: string;
+    name: string;
   };
-  initialMessage: string;
+  agentId: {
+    _id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+  departmentId: {
+    _id: string;
+    name: string;
+  };
   status: ChatSessionStatus;
+  initiatedAt: string; // ISO 8601 Date string
+  acceptedAt: string; // ISO 8601 Date string
+  endedAt: string | null; // ISO 8601 Date string
+  lastMessageAt: string; // ISO 8601 Date string
+  customerLastSeen: string; // ISO 8601 Date string
+  initialMessage: string;
+  domain: string;
+  priorityNotificationSentCount: number;
   createdAt: string; // ISO 8601 Date string
   updatedAt: string; // ISO 8601 Date string
-  lastMessageTimestamp?: string | null; // ISO 8601 Date string
-  lastMessagePreview?: string; // Not in spec, but useful for UI
-  unreadCount?: number; // Not in spec, useful for UI
-  appointmentBooked?: boolean; // Flag to indicate if an appointment has been booked
-  appointmentData?: any; // Optional data about the booked appointment
-  // ... other potential session fields from ChatSessionDocument
-  // e.g., initiatedBy, endedBy, resolutionNotes, rating, tags, customData, etc.
+  agentLastSeen: string; // ISO 8601 Date string
 }
 
 export type ChatSessionStatus =
@@ -95,15 +82,15 @@ export interface ChatMessageContent {
 
 export interface ChatMessage {
   _id: string;
+  readByCustomer: boolean;
+  readByAgent: boolean;
   chatSessionId: string;
   senderId: string; // Customer ID, Agent ID, or "SYSTEM"
   senderType: "CUSTOMER" | "AGENT" | "SYSTEM";
-  messageType: string; // "TEXT", "IMAGE", "FILE", "APPOINTMENT_BOOKED_NOTICE", etc.
   content: ChatMessageContent;
   timestamp: string; // ISO 8601 Date string
-  readByAgent?: boolean;
-  readByCustomer?: boolean;
-  // ... other potential message fields from ChatMessageDocument
+  createdAt: string; // ISO 8601 Date string
+  updatedAt: string; // ISO 8601 Date string
 }
 
 // For GET /chat/sessions/:sessionId/messages query parameters

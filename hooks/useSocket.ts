@@ -75,8 +75,8 @@ export function useSocketInitializer() {
             break;
           case "appointmentBookedAck":
             chatActions.updateActiveSession(data.chatSessionId, {
-              appointmentBooked: true,
-              appointmentData: data.appointment,
+              // appointmentBooked: true,
+              // appointmentData: data.appointment,
             });
             chatActions.setAppointmentBookingInProgress(
               data.chatSessionId,
@@ -86,6 +86,10 @@ export function useSocketInitializer() {
           case "visitorActivity":
             // Handle visitor activity events
             visitorActions.handleVisitorActivity(data as VisitorActivityEvent);
+            break;
+          case "chatSessionRestored":
+            // Handle chat session restoration - add the session to active sessions
+            chatActions.addActiveSession(data);
             break;
         }
       });
@@ -149,6 +153,7 @@ export function useSocketOperations() {
   ); // Add chatActions as a dependency
 
   const endChat = useCallback((chatSessionId: string) => {
+    console.log("endChat", chatSessionId);
     return socketService.endChat(chatSessionId);
   }, []);
 

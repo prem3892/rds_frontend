@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { GlobalSidebar } from "@/components/layout/global-sidebar";
+import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper";
+import { GlobalSocketInitializer } from "@/hooks/useSocket";
 import {
   useCurrentUser,
-  useIsAuthenticated,
   useHasHydrated,
+  useIsAuthenticated,
 } from "@/stores/auth";
-import { useSidebarExpanded } from "@/stores/shared";
-import { User } from "@/types";
-import { GlobalSocketInitializer } from "@/hooks/useSocket";
-import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DashboardLayout({
   children,
@@ -22,7 +19,7 @@ export default function DashboardLayout({
   const isAuthenticated = useIsAuthenticated();
   const currentUser = useCurrentUser();
   const hasHydrated = useHasHydrated();
-  const sidebarExpanded = useSidebarExpanded();
+  // const sidebarExpanded = useSidebarExpanded();
 
   useEffect(() => {
     // Only check authentication after the store has hydrated
@@ -51,18 +48,18 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen bg-muted/40 overflow-hidden">
       <GlobalSocketInitializer /> {/* Global persistent socket */}
-      <GlobalSidebar currentUser={currentUser} />
-      <main
+      {/* <GlobalSidebar currentUser={currentUser} /> */}
+      <MainLayoutWrapper>{children}</MainLayoutWrapper>
+      {/* <main
         className={cn(
-          "flex flex-1 flex-col overflow-hidden transition-all duration-300"
+          "flex flex-1 flex-col overflow-hidden transition-all duration-300 "
         )}
       >
-        {/* Optional: Add a Header component here if needed */}
-        {/* <DashboardHeader currentUser={currentUser} /> */}
+
         <div className="flex-1 p-6 sm:p-6 lg:p-8 overflow-hidden">
-          {children}
+       
         </div>
-      </main>
+      </main> */}
     </div>
   );
 }

@@ -32,7 +32,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  chatSessionId,
+
   isLoading = false,
 }) => {
   const [date, setDate] = useState<Date | undefined>(undefined);

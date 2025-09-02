@@ -16,10 +16,10 @@ const TypingIndicator = ({ isTyping, customerName }: TypingIndicatorProps) => (
         exit={{ opacity: 0, height: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="bg-muted dark:bg-slate-700 py-1.5 px-3.5 rounded-full flex items-center shadow-sm max-w-max">
+        <div className="bg-gray-100 py-1.5 px-3.5 rounded-full flex items-center shadow-sm max-w-max">
           <div className="flex space-x-1 mr-2">
             <motion.span
-              className="w-1.5 h-1.5 bg-muted-foreground/70 dark:bg-slate-400 rounded-full"
+              className="w-1.5 h-1.5 bg-gray-500 rounded-full"
               animate={{ y: [0, -4, 0] }}
               transition={{
                 duration: 1.2,
@@ -29,7 +29,7 @@ const TypingIndicator = ({ isTyping, customerName }: TypingIndicatorProps) => (
               }}
             />
             <motion.span
-              className="w-1.5 h-1.5 bg-muted-foreground/70 dark:bg-slate-400 rounded-full"
+              className="w-1.5 h-1.5 bg-gray-500 rounded-full"
               animate={{ y: [0, -4, 0] }}
               transition={{
                 duration: 1.2,
@@ -39,7 +39,7 @@ const TypingIndicator = ({ isTyping, customerName }: TypingIndicatorProps) => (
               }}
             />
             <motion.span
-              className="w-1.5 h-1.5 bg-muted-foreground/70 dark:bg-slate-400 rounded-full"
+              className="w-1.5 h-1.5 bg-gray-500 rounded-full"
               animate={{ y: [0, -4, 0] }}
               transition={{
                 duration: 1.2,
@@ -49,7 +49,7 @@ const TypingIndicator = ({ isTyping, customerName }: TypingIndicatorProps) => (
               }}
             />
           </div>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-gray-600">
             {customerName || "Customer"} is typing
           </span>
         </div>
