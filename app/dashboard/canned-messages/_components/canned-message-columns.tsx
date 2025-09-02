@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CannedMessage } from "@/types";
+import { CannedMessage } from "@/types/canned-message";
 import { ColumnDef } from "@tanstack/react-table";
 import { Calendar, Globe, Keyboard, MessageCircle, MoreHorizontal, Tag, User, Users } from "lucide-react";
 import CellAction from "./cell-actions";
@@ -122,9 +122,9 @@ export const columns: ColumnDef<CannedMessage>[] = [
       return (
         <div className="flex flex-wrap gap-1">
           {row.original.departmentIds.length > 0 ? (
-            row.original.departmentIds.map((dept, index) => (
+            row.original.departmentIds.map((dept: any, index: number | string) => (
               <Badge key={index} variant="outline" className="text-xs">
-                {dept.name}
+                {dept.name} 
               </Badge>
             ))
           ) : (
@@ -150,7 +150,7 @@ export const columns: ColumnDef<CannedMessage>[] = [
       return (
         <div className="flex flex-wrap gap-1">
           {row.original.tags.length > 0 ? (
-            row.original.tags.map((tag, index) => (
+            row.original.tags.map((tag: string, index: number | string) => (
               <Badge key={index} variant="outline" className="text-xs">
                 {tag}
               </Badge>

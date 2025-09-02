@@ -1,22 +1,19 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ApiErrorResponse, AgentProfile, Department } from "@/types";
+import { Card, CardContent } from "@/components/ui/card";
+import { DataTable } from "@/components/ui/data-table";
+import { AgentProfile, ApiErrorResponse, Department } from "@/types";
 import { Row } from "@tanstack/react-table";
-import { 
-  User, 
-  Mail, 
-  Building, 
-  Globe, 
-  MessageSquare, 
-  Edit, 
-  ToggleLeft 
+import {
+  Building,
+  Globe,
+  Mail,
+  MessageSquare,
+  User
 } from "lucide-react";
 import { createAgentColumns } from "./agent-columns";
 import CellAction from "./cell-actions";
-import { DataTable } from "@/components/ui/data-table";
-import { PaginationControls } from "@/components/ui/pagination-controls";
 
 type Props = {
   agentData: AgentProfile[] | null;
@@ -155,8 +152,6 @@ const AgentTable = (props: Props) => {
     agentData, 
     isLoadingAgents, 
     agentsError, 
-    currentPage, 
-    onPageChange,
     departments,
     onEdit,
     onToggleStatus

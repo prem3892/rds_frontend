@@ -5,8 +5,7 @@ export * from "./department"; // If you created department.ts
 export * from "./widget"; // Export all from widget.ts
 export * from "./agent"; // Export all from agent.ts
 export * from "./visitor"; // Export all from visitor.ts
-export * from "./canned-message"; // Export all from canned-message.ts
-export * from "./auto-message"; // Export all from auto-message.ts
+// Export all from auto-message.ts
 
 export interface User {
   id: string; // Note: Login returns 'id'

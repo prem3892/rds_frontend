@@ -1,28 +1,26 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  Users,
-  Globe,
-  Monitor,
-  ChevronDown,
-  Chrome,
-  Apple,
-} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { useVisitorsArray, useOnlineVisitorsCount } from "@/stores/visitor";
-import { VisitorStatus } from "@/types/visitor";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   cn,
   formatRelativeTime,
 } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
+import { useOnlineVisitorsCount, useVisitorsArray } from "@/stores/visitor";
+import { VisitorStatus } from "@/types/visitor";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Apple,
+  ChevronDown,
+  Chrome,
+  Globe,
+  Search,
+  Users
+} from "lucide-react";
+import { useState } from "react";
 
 
 interface GuestFeedProps {

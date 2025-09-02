@@ -1,15 +1,15 @@
 // src/lib/api-chat.ts
-import { useQuery, UseQueryOptions, QueryKey } from "@tanstack/react-query"; // Removed useInfiniteQuery
-import { customFetch } from "./api";
+import { useCurrentUser } from "@/stores/auth";
 import {
-  ChatSession,
-  ChatMessage,
-  GetChatSessionsQueryDto,
   // GetMessagesQueryDto, // We might not need explicit GetMessagesQueryDto if fetching all
   // PaginatedResponse, // Assuming direct array responses for now
   ApiErrorResponse,
+  ChatMessage,
+  ChatSession,
+  GetChatSessionsQueryDto,
 } from "@/types";
-import { useCurrentUser } from "@/stores/auth";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query"; // Removed useInfiniteQuery
+import { customFetch } from "./api";
 
 // 1. Get All Chat Sessions (Admin / Filtered for Agent History) - Now fetches all
 export const CHAT_SESSIONS_QUERY_KEY_PREFIX = "chatSessions";
@@ -45,7 +45,7 @@ export const useGetAllChatSessions = (
   ) {
     stableParams.agentId = currentUser.id;
   }
-  const { forCurrentAgent, ...apiParams } = stableParams;
+  const { ...apiParams } = stableParams;
 
   return useQuery<
     ChatSessionsResponse,

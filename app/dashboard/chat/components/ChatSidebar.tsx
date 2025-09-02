@@ -1,10 +1,9 @@
-import React from "react";
+import { ChatIcon } from "@/components/icons";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, MessageCircle } from "lucide-react";
 import { ChatSession } from "@/types";
+import { Loader2 } from "lucide-react";
 import ChatListItem from "./ChatListItem";
 import PendingChatRequestCard from "./PendingChatRequestCard";
-import { ChatIcon } from "@/components/icons";
 
 interface ChatSidebarProps {
   activeSessions: ChatSession[];

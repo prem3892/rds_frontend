@@ -1,11 +1,10 @@
 "use client"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 // import { Card, CardContent } from "@/components/ui/card"
 import { Building } from "lucide-react"
-import { useState } from "react"
 
 // Minimal local type so you can drop-in without relying on '@/types'
 type AgentProfile = {

@@ -1,16 +1,14 @@
 "use client"
 
-import React, { useState } from 'react'
-import { DataTable } from '@/components/ui/data-table'
-import { columns } from './widget-columns';
-import { ApiErrorResponse, Widget, PaginatedWidgetResponse } from '@/types';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Globe, IdCard, MessageCircle, Paintbrush, Text, Workflow, MoreHorizontal } from 'lucide-react';
-import CelAction from "./cell-actions";
-import { Row } from '@tanstack/react-table';
+import { Card, CardContent } from '@/components/ui/card';
+import { DataTable } from '@/components/ui/data-table';
 import { PaginationControls } from '@/components/ui/pagination-controls';
+import { ApiErrorResponse, PaginatedWidgetResponse, Widget } from '@/types';
+import { Row } from '@tanstack/react-table';
+import { Globe, IdCard, Paintbrush, Workflow } from 'lucide-react';
+import CelAction from "./cell-actions";
+import { columns } from './widget-columns';
 
 type Props = {
     widgetData: PaginatedWidgetResponse | null;

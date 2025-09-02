@@ -33,17 +33,16 @@ export function GuestInfo({
   if (!session) return null;
 
   const getCustomerName = () => {
-    if (typeof session.customerId === "object") {
-      return session.customerId?.firstName || 
+    
+      return session.customerId?.name || 
              session.customerId?.email || 
              `Guest${session.customerId._id.slice(-6)}`;
-    }
-    return `Guest${session.customerId.slice(-6)}`;
+    
   };
 
   const getCustomerInitial = () => {
     if (typeof session.customerId === "object") {
-      return session.customerId?.firstName?.charAt(0)?.toUpperCase() ||
+      return session.customerId?.name?.charAt(0)?.toUpperCase() ||
              session.customerId?.email?.charAt(0)?.toUpperCase() ||
              "G";
     }
@@ -51,8 +50,8 @@ export function GuestInfo({
   };
 
   const getLastSeen = () => {
-    if (session.lastMessageTimestamp) {
-      const date = new Date(session.lastMessageTimestamp);
+      if (session.lastMessageAt) {
+      const date = new Date(session.lastMessageAt);
       const now = new Date();
       const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
       

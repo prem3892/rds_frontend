@@ -1,10 +1,9 @@
-import React, { useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AnimatePresence, motion } from "framer-motion";
 import { ChatMessage } from "@/types";
+import { format, isToday, isYesterday, parseISO } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 import MessageBubble from "../../chat/components/MessageBubble";
-import ChatSkeleton from "../../chat/components/ChatSkeleton";
-import { format, parseISO, isToday, isYesterday } from "date-fns";
 import { HistoryChatMessagesSkeleton } from "./history-chat-messages-skeleton";
 
 interface HistoryChatMessagesProps {

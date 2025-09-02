@@ -1,29 +1,29 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  Users,
-  Globe,
-  Monitor,
-  Clock,
-  Wifi,
-  WifiOff,
-} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useVisitorsArray, useOnlineVisitorsCount } from "@/stores/visitor";
-import { VisitorInfo, VisitorStatus } from "@/types/visitor";
 import {
   cn,
   formatRelativeTime,
-  getInitials,
   getColorFromString,
+  getInitials,
 } from "@/lib/utils";
+import { useOnlineVisitorsCount, useVisitorsArray } from "@/stores/visitor";
+import { VisitorInfo, VisitorStatus } from "@/types/visitor";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Clock,
+  Globe,
+  Monitor,
+  Search,
+  Users,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface VisitorsListProps {
   className?: string;
@@ -137,7 +137,7 @@ export function VisitorsList({
                 {searchTerm ? (
                   <div>
                     <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>No visitors found matching "{searchTerm}"</p>
+                    <p>No visitors found matching &quot;{searchTerm}&quot;</p>
                   </div>
                 ) : (
                   <div>

@@ -1,10 +1,10 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { AutoMessage, Widget } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Globe, MapPin, Clock, Settings, Tag, MessageCircle, MoreHorizontal, GitBranchIcon, Heading1, Text } from "lucide-react";
+import { AutoMessage } from "@/types/auto-message";
+import { Widget } from "@/types/widget";
+import { ColumnDef } from "@tanstack/react-table";
+import { Clock, GitBranchIcon, Globe, MapPin, MessageCircle, MoreHorizontal, Settings, Tag, Text } from "lucide-react";
 import CellAction from "./cell-actions";
 
 export const createColumns = (widgets: Widget[]): ColumnDef<AutoMessage>[] => [

@@ -2,12 +2,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,21 +19,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { toast } from "sonner";
 
 import { useInitialAdminSignupMutation } from "@/lib/api";
 import {
   AdminRegisterDto,
-  ApiErrorResponse,
   AdminSignupSuccessResponse,
+  ApiErrorResponse,
 } from "@/types"; // Updated types
 import { Globe, Lock, Mail, Phone, User } from "lucide-react";
 

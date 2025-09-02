@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,11 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useDeleteDepartmentMutation, DEPARTMENTS_QUERY_KEY } from "@/lib/department.api";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { DEPARTMENTS_QUERY_KEY, useDeleteDepartmentMutation } from "@/lib/department.api";
 import { Department } from "@/types";
+import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface DeleteDepartmentDialogProps {
   open: boolean;
@@ -58,7 +57,7 @@ export default function DeleteDepartmentDialog({
         <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete the department "{department.name}" and remove it from your account.
+            This action cannot be undone. This will permanently delete the department &quot;{department.name}&quot; and remove it from your account.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

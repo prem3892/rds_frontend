@@ -82,6 +82,8 @@ export interface ChatMessageContent {
 
 export interface ChatMessage {
   _id: string;
+  readByCustomer: boolean;
+  readByAgent: boolean;
   chatSessionId: string;
   senderId: string; // Customer ID, Agent ID, or "SYSTEM"
   senderType: "CUSTOMER" | "AGENT" | "SYSTEM";

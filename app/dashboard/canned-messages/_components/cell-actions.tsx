@@ -1,11 +1,7 @@
 "use client";
 
-import { CannedMessage } from "@/types";
-import { useQueryClient } from "@tanstack/react-query";
-import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Loader2 } from "lucide-react";
-import React, { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -26,14 +22,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useUpdateCannedMessageMutation, useDeleteCannedMessageMutation, CANNED_MESSAGES_QUERY_KEY } from "@/lib/canned.api";
+import { CANNED_MESSAGES_QUERY_KEY, useDeleteCannedMessageMutation, useUpdateCannedMessageMutation } from "@/lib/canned.api";
 import { useGetAllDepartments } from "@/lib/department.api";
+import { CannedMessage } from "@/types/canned-message";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { Row } from "@tanstack/react-table";
+import { Edit, Globe, Loader2, MessageSquare, Tag, Trash, Users } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { MessageSquare, Globe, Users, Tag } from "lucide-react";
+import * as z from "zod";
 
 // Zod schema for canned message form validation
 const cannedMessageFormSchema = z.object({
@@ -338,7 +338,7 @@ function CellAction({ row }: Props) {
           <DialogHeader>
             <DialogTitle>Are you absolutely sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the canned message "{message.title}" and remove it from your account.
+              This action cannot be undone. This will permanently delete the canned message &quot;{message.title}&quot; and remove it from your account.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

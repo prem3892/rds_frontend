@@ -2,13 +2,16 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ApiErrorResponse, CannedMessage, PaginatedCannedMessageResponse } from "@/types";
+import { ApiErrorResponse } from "@/types";
+import { PaginatedCannedMessageResponse } from "@/types/canned-message";
+import { CannedMessage } from "@/types/canned-message";
 import { Row } from "@tanstack/react-table";
 import { Globe, MessageSquare, Tag, User, Users } from "lucide-react";
 import { columns } from "./canned-message-columns";
 import CellAction from "./cell-actions";
 import { CannedMessageDataTable } from "./canned-message-data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { Department } from "@/types/department";
 
 type Props = {
   messageData: PaginatedCannedMessageResponse | null;
@@ -78,7 +81,7 @@ const CannedMessageCard = ({ message }: { message: CannedMessage }) => {
                 </span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {message.departmentIds.length > 0 ? (
-                    message.departmentIds.map((dept, index) => (
+                    message.departmentIds.map((dept: any, index: number | string) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {dept.name}
                       </Badge>
@@ -101,7 +104,7 @@ const CannedMessageCard = ({ message }: { message: CannedMessage }) => {
                 </span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {message.tags.length > 0 ? (
-                    message.tags.map((tag, index) => (
+                    message.tags.map((tag: string, index: number | string) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {tag}
                       </Badge>
@@ -233,7 +236,7 @@ const CannedMessageTable = (props: Props) => {
           </div>
         ) : (
           <div className="space-y-4">
-            {messages.map((message) => (
+            {messages.map((message: CannedMessage, index: number | string) => (
               <CannedMessageCard key={message._id} message={message} />
             ))}
           </div>

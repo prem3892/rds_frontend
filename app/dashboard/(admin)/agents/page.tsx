@@ -1,34 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { cn } from "@/lib/utils";
-import { useGetAllAgents, useSetAgentStatusMutation, AGENTS_QUERY_KEY, AgentProfile } from "@/lib/agent.api";
-import { useGetAllDepartments, useDeleteDepartmentMutation, DEPARTMENTS_QUERY_KEY } from "@/lib/department.api";
-import { useCurrentUser } from "@/stores/auth";
-import { motion } from "framer-motion";
-import { AlertTriangle, Users, PlusCircle, Building2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AGENTS_QUERY_KEY, AgentProfile, useGetAllAgents, useSetAgentStatusMutation } from "@/lib/agent.api";
+import { useGetAllDepartments } from "@/lib/department.api";
+import { cn } from "@/lib/utils";
+import { useCurrentUser } from "@/stores/auth";
+import { Department } from "@/types";
+import { useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { AlertTriangle, Building2, PlusCircle, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   AgentTable,
   CreateAgentDialog,
-  EditAgentForm,
-  SearchFilters,
-  DepartmentTable,
-  DepartmentMobileCard,
   CreateDepartmentDialog,
-  EditDepartmentForm,
   DeleteDepartmentDialog,
+  DepartmentMobileCard,
   DepartmentSearchFilters,
-  createDepartmentColumns,
+  EditAgentForm,
+  EditDepartmentForm,
+  SearchFilters,
+  createDepartmentColumns
 } from "./_components";
-import { Department } from "@/types";
 
 interface AgentFilters {
   search: string;

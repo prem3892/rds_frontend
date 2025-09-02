@@ -1,9 +1,9 @@
 // src/app/page.tsx
 "use client";
 
-import { useEffect } from "react";
+import { useIsAuthenticated } from "@/stores/auth";
 import { useRouter } from "next/navigation";
-import { useIsAuthenticated, useCurrentUser } from "@/stores/auth";
+import { useEffect } from "react";
 
 export default function HomePage() {
   const router = useRouter();

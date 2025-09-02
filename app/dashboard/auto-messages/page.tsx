@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useGetAutoMessages } from "@/lib/auto-message.api";
 import { useGetAllWidgetsList } from "@/lib/widget.api";
 import { cn } from "@/lib/utils";
-import { AutoMessageFilters } from "@/types";
+import { AutoMessage, AutoMessageFilters } from "@/types/auto-message";
 import { motion } from "framer-motion";
 import { MessageSquare, PlusCircle } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -41,7 +41,7 @@ export default function AutoMessagesPage() {
   // Extract unique domains and widgets for filters
   const availableDomains = useMemo(() => {
     const domains = new Set<string>();
-    messages.forEach(message => {
+    messages.forEach((message: AutoMessage) => {
       if (message.domain) domains.add(message.domain);
     });
     return Array.from(domains).sort();

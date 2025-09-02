@@ -1,46 +1,44 @@
 // src/app/(dashboard)/history/page.tsx
 "use client";
-import { useState, useEffect } from "react";
-import { useCurrentUser } from "@/stores/auth";
-import { useGetAllChatSessions, useGetChatMessages } from "@/lib/api";
-import { useGetAllAgents } from "@/lib/agent.api";
-import { useGetAllDepartments } from "@/lib/department.api";
-import {
-  ChatSession,
-  GetChatSessionsQueryDto,
-  ChatSessionStatus,
-  ChatMessage,
-} from "@/types";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { format, parseISO } from "date-fns";
-import { motion } from "framer-motion";
-import { MessageCircle, Filter, HistoryIcon } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
-import { PaginationControls } from "@/components/ui/pagination-controls";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useGetAllAgents } from "@/lib/agent.api";
+import { useGetAllChatSessions, useGetChatMessages } from "@/lib/api";
+import { useGetAllDepartments } from "@/lib/department.api";
+import { useCurrentUser } from "@/stores/auth";
+import {
+  ChatMessage,
+  ChatSession,
+  ChatSessionStatus,
+  GetChatSessionsQueryDto,
+} from "@/types";
+import { format, parseISO } from "date-fns";
+import { motion } from "framer-motion";
+import { HistoryIcon, MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   HistoryMobileCard,
   HistorySearchFilters,
   createHistoryColumns,
 } from "./_components";
 
-const historyStatusOptions: ChatSessionStatus[] = [
-  "RESOLVED",
-  "CLOSED_BY_AGENT",
-  "CLOSED_BY_CUSTOMER",
-  "ABANDONED_BY_CUSTOMER",
-  "ABANDONED_BY_AGENT",
-  "EXPIRED_PENDING_ASSIGNMENT",
-  "OFFLINE_MESSAGE",
-];
+// const historyStatusOptions: ChatSessionStatus[] = [
+//   "RESOLVED",
+//   "CLOSED_BY_AGENT",
+//   "CLOSED_BY_CUSTOMER",
+//   "ABANDONED_BY_CUSTOMER",
+//   "ABANDONED_BY_AGENT",
+//   "EXPIRED_PENDING_ASSIGNMENT",
+//   "OFFLINE_MESSAGE",
+// ];
 
 interface HistoryFilters {
   search: string;
@@ -99,7 +97,7 @@ export default function ChatHistoryPage() {
     data: sessions,
     isLoading,
     error,
-    refetch,
+    
   } = useGetAllChatSessions(apiFilters, {
     enabled: !!currentUser,
   });

@@ -15,16 +15,16 @@ const PendingChatRequestCard = ({
   const [elapsedTime, setElapsedTime] = useState("00:00:00");
 
   const getCustomerDisplay = () => {
-    if (typeof session.customerId === "object") {
-      return session.customerId?.email || session.customerId?.firstName || session.customerId._id.slice(-6);
-    }
-    return session.customerId.slice(-6);
+  
+      return session.customerId?.email || session.customerId?.name || session.customerId._id.slice(-6);
+    
+    
   };
 
   const getDepartmentDisplay = () => {
-    return session.department?.name ||
+    return session.departmentId?.name ||
       (typeof session.departmentId === "object" && session.departmentId?.name) ||
-      (typeof session.departmentId === "string" && session.departmentId?.slice(-6)) ||
+     
       "N/A";
   };
 

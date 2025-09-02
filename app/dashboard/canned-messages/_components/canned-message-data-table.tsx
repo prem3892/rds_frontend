@@ -31,11 +31,11 @@ interface CannedMessageDataTableProps<TData, TValue> {
 }
 
 // Loading skeleton component for the table
-function CannedMessageDataTableSkeleton({ 
+function CannedMessageDataTableSkeleton<TData, TValue>({ 
   columns, 
   skeletonRows = 5 
 }: { 
-  columns: ColumnDef<any, any>[]; 
+  columns: ColumnDef<TData ,TValue>[]; 
   skeletonRows?: number; 
 }) {
   return (
@@ -102,7 +102,7 @@ export function CannedMessageDataTable<TData, TValue>({
 
   // Show skeleton when loading
   if (isLoading) {
-    return <CannedMessageDataTableSkeleton columns={columns} skeletonRows={skeletonRows} />;
+    return <CannedMessageDataTableSkeleton<TData, TValue> columns={columns} skeletonRows={skeletonRows} />;
   }
 
   return (

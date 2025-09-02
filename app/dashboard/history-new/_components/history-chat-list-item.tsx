@@ -1,10 +1,9 @@
-import React from "react";
-import { parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
-import { Chrome, Apple, Globe, Clock, User } from "lucide-react";
-import { HistoryChatListItemSkeleton } from "./history-chat-list-item-skeleton";
+import { parseISO } from "date-fns";
+import { Apple, Chrome, Clock, Globe, User } from "lucide-react";
+import React from "react";
 
 interface HistoryChatListItemProps {
   session: ChatSession;

@@ -7,13 +7,14 @@ import {
 } from "@tanstack/react-query";
 import { customFetch } from "./api";
 import { 
-  ApiErrorResponse, 
+   
   CannedMessage, 
   CreateCannedMessageDto, 
   UpdateCannedMessageDto, 
   CannedMessageFilters, 
   PaginatedCannedMessageResponse 
-} from "@/types";
+} from "@/types/canned-message";
+import { ApiErrorResponse } from "@/types";
 
 // Query key constants
 export const CANNED_MESSAGES_QUERY_KEY = "canned-messages";

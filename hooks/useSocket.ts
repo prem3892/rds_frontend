@@ -75,8 +75,8 @@ export function useSocketInitializer() {
             break;
           case "appointmentBookedAck":
             chatActions.updateActiveSession(data.chatSessionId, {
-              appointmentBooked: true,
-              appointmentData: data.appointment,
+              // appointmentBooked: true,
+              // appointmentData: data.appointment,
             });
             chatActions.setAppointmentBookingInProgress(
               data.chatSessionId,

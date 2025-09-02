@@ -1,15 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, X } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AutoMessageFilters, Widget } from "@/types";
-import debounce from "lodash/debounce";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -17,6 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { AutoMessageFilters } from "@/types/auto-message";
+import { Widget } from "@/types/widget";
+import debounce from "lodash/debounce";
+import { Filter, Search, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 interface SearchFiltersProps {
   filters: AutoMessageFilters;
@@ -199,7 +199,7 @@ export default function SearchFilters({
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
           />
-        </div>
+        </div>  
         <Button
           variant="outline"
 

@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Search, Tag } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { useGetCannedMessages } from "@/lib/canned.api";
-import { CannedMessage } from "@/types";
 import { cn } from "@/lib/utils";
-import debounce from "lodash/debounce";
+import { MessageSquare, Tag } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface CannedMessageSelectorProps {
   isVisible: boolean;

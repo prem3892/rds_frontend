@@ -1,10 +1,7 @@
-import React from "react";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
 import { ChatSession } from "@/types";
 import HistoryChatListItem from "./history-chat-list-item";
-import { ChatIcon } from "@/components/icons";
-import { PaginationControls } from "@/components/ui/pagination-controls";
 import { HistoryChatSidebarSkeleton } from "./history-chat-sidebar-skeleton";
 
 interface HistoryChatSidebarProps {

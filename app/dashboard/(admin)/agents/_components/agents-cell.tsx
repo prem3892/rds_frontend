@@ -1,17 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Department, AgentProfile } from "@/types";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { AgentProfile, Department } from "@/types";
+import { useState } from "react";
 import { AgentsModal } from "./agents-modal";
 
 interface AgentsCellProps {

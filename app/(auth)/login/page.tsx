@@ -1,12 +1,12 @@
 // src/app/(auth)/login/page.tsx
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,21 +18,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { toast } from "sonner";
 
 import { useLoginMutation } from "@/lib/api";
 import { ApiErrorResponse } from "@/types";
-import Link from "next/link";
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 // Zod schema for form validation based on LoginDto
 const loginFormSchema = z.object({
@@ -193,7 +185,7 @@ export default function LoginPage() {
             
 
               <div className="text-center text-sm text-gray-600">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/signup"
                   className="text-blue-600 hover:text-blue-700 font-medium"

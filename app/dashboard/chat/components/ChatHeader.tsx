@@ -31,15 +31,15 @@ const ChatHeader = ({
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
 
   const customerName =
-    typeof session.customerId === "object"
-      ? session.customerId?.firstName ||
+
+       session.customerId?.name ||
         session.customerId?.email ||
         session.customerId._id.slice(-6)
-      : session.customerId.slice(-6);
+   
 
   const customerInitial =
     typeof session.customerId === "object"
-      ? session.customerId?.firstName?.charAt(0)?.toUpperCase() ||
+      ? session.customerId?.name?.charAt(0)?.toUpperCase() ||
         session.customerId?.email?.charAt(0)?.toUpperCase() ||
         "C"
       : "C";
@@ -115,7 +115,7 @@ const ChatHeader = ({
               </Button>
             )}
             
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={handleBookClick}
@@ -139,7 +139,7 @@ const ChatHeader = ({
                   </span>
                 </>
               )}
-            </Button>
+            </Button> */}
             
             <Button
               variant="destructive"

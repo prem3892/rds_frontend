@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useGetCannedMessages } from "@/lib/canned.api";
 import { useGetAllDepartments } from "@/lib/department.api";
 import { cn } from "@/lib/utils";
-import { CannedMessageFilters } from "@/types";
+import { CannedMessageFilters } from "@/types/canned-message";
+import { CannedMessage } from "@/types/canned-message";
 import { motion } from "framer-motion";
 import { MessageSquare, PlusCircle } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -34,17 +35,25 @@ export default function CannedMessagesPage() {
 
   // Handle page change
   const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...prev, page }));
+    setFilters((prev: CannedMessageFilters) => ({ ...prev, page }));
   };
 
   // Extract unique tags and departments for filters
-  const availableTags = useMemo(() => {
-    const tags = new Set<string>();
-    messages.forEach(message => {
-      message.tags.forEach(tag => tags.add(tag));
-    });
-    return Array.from(tags).sort();
-  }, [messages]);
+
+  // The 'messages' logical expression could make the dependencies of useEffect Hook (at line 129) change on every render. To fix this, wrap the initialization of 'messages' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+  //   const availableTags = useMemo(() => {
+
+  //   const tags = new Set<string>();
+  //   messages.forEach(message => {
+  //     message.tags.forEach(tag => tags.add(tag));
+  //   });
+  //   return Array.from(tags).sort();
+  // }, [messages]);
+const availableTags = useMemo(() => {
+  return messages.map((message: CannedMessage) => message.tags).flat().filter((tag: string, index: number, self: string[]) => self.indexOf(tag) === index).sort();
+}, [messages]);
+
 
   const availableDepartments = useMemo(() => {
     return departments || [];
@@ -81,7 +90,7 @@ export default function CannedMessagesPage() {
           <SearchFilters
             filters={filters}
             onFiltersChange={setFilters}
-            availableTags={availableTags}
+            availableTags={availableTags || []}
             availableDepartments={availableDepartments}
           />
         </div>

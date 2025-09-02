@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { CannedMessageFilters } from "@/types";
+import { CannedMessageFilters } from "@/types/canned-message";
 import debounce from "lodash/debounce";
 import { cn } from "@/lib/utils";
 
@@ -61,9 +61,9 @@ export default function SearchFilters({
   }, [debouncedSearch]);
 
   const handleTagToggle = (tag: string) => {
-    const currentTags = filters.tags ? filters.tags.split(",").filter(t => t.trim()) : [];
+    const currentTags = filters.tags ? filters.tags.split(",").filter( (t: string) => t.trim()) : [];
     const newTags = currentTags.includes(tag)
-      ? currentTags.filter(t => t !== tag)
+      ? currentTags.filter((t: string) => t !== tag)
       : [...currentTags, tag];
     
     onFiltersChange({
@@ -74,9 +74,9 @@ export default function SearchFilters({
   };
 
   const handleDepartmentToggle = (deptId: string) => {
-    const currentDepts = filters.departmentIds ? filters.departmentIds.split(",").filter(d => d.trim()) : [];
+    const currentDepts = filters.departmentIds ? filters.departmentIds.split(",").filter((d: string) => d.trim()) : [];
     const newDepts = currentDepts.includes(deptId)
-      ? currentDepts.filter(d => d !== deptId)
+      ? currentDepts.filter((d: string) => d !== deptId)
       : [...currentDepts, deptId];
     
     onFiltersChange({
@@ -191,7 +191,7 @@ export default function SearchFilters({
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Tags</Label>
                 <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                  {availableTags.map((tag) => {
+                  {availableTags.map((tag: string) => {
                     const isSelected = filters.tags?.includes(tag) || false;
                     return (
                       <Badge

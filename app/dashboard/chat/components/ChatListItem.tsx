@@ -61,17 +61,17 @@ const ChatListItem = React.memo(
     };
 
     const getCustomerName = () => {
-      if (typeof session.customerId === "object") {
-        return session.customerId?.firstName || 
+  
+        return session.customerId?.name || 
                session.customerId?.email || 
                `Guest${session.customerId._id.slice(-6)}`;
-      }
-      return `Guest${session.customerId.slice(-6)}`;
+      
+     
     };
 
     const getTimeDisplay = () => {
-      if (session.lastMessageTimestamp) {
-        const date = parseISO(session.lastMessageTimestamp);
+      if (session.lastMessageAt) {
+        const date = parseISO(session.lastMessageAt);
         const now = new Date();
         const isToday = date.toDateString() === now.toDateString();
         

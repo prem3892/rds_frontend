@@ -1,22 +1,20 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { ChatSession } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, User, Building2, Globe } from "lucide-react";
+import { ChatSession } from "@/types";
+import { ColumnDef } from "@tanstack/react-table";
 import { format, parseISO } from "date-fns";
+import { Building2, Globe, MessageCircle, User } from "lucide-react";
 
-interface HistoryColumnsProps {
-  onViewMessages: (session: ChatSession) => void;
-}
+
 
 export const createHistoryColumns = (
   onViewMessages: (session: ChatSession) => void
 ): ColumnDef<ChatSession>[] => [
   {
     accessorKey: "widgetId",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="flex items-center space-x-2">
           <Globe className="h-4 w-4" />
@@ -37,7 +35,7 @@ export const createHistoryColumns = (
   },
   {
     accessorKey: "customerId",
-    header: ({ column }) => {
+      header: () => {
       return (
         <div className="flex items-center space-x-2">
           <User className="h-4 w-4" />
@@ -60,7 +58,7 @@ export const createHistoryColumns = (
   },
   {
     accessorKey: "agentId",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="flex items-center space-x-2">
           <User className="h-4 w-4" />
@@ -83,7 +81,7 @@ export const createHistoryColumns = (
   },
   {
     accessorKey: "departmentId",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="flex items-center space-x-2">
           <Building2 className="h-4 w-4" />
@@ -102,7 +100,7 @@ export const createHistoryColumns = (
   },
   {
     accessorKey: "status",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="flex items-center space-x-2">
           <span>Status</span>
@@ -137,7 +135,7 @@ export const createHistoryColumns = (
   },
   {
     accessorKey: "lastMessageAt",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="flex items-center space-x-2">
           <span>Last Activity</span>
@@ -162,7 +160,7 @@ export const createHistoryColumns = (
   },
   {
     accessorKey: "initialMessage",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="flex items-center space-x-2">
           <span>Initial Message</span>

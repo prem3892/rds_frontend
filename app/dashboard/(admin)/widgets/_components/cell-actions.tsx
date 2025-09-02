@@ -1,11 +1,7 @@
 "use client";
 
-import { Widget } from "@/types";
-import { useQueryClient } from "@tanstack/react-query";
-import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, Trash, Loader2 } from "lucide-react";
-import React, { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -26,21 +22,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { HexColorPicker, HexColorInput } from "react-colorful";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useEffect, useRef } from "react";
-import { useUpdateWidgetMutation, useDeleteWidgetMutation, WIDGETS_QUERY_KEY } from "@/lib/widget.api";
 import { useGetAllDepartments } from "@/lib/department.api";
+import { useDeleteWidgetMutation, useUpdateWidgetMutation, WIDGETS_QUERY_KEY } from "@/lib/widget.api";
+import { Widget } from "@/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { Row } from "@tanstack/react-table";
+import { Copy, Edit, Globe, Loader2, MessageSquareText, Palette, ShieldCheck, Trash } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { HexColorInput, HexColorPicker } from "react-colorful";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Globe, Palette, MessageSquareText, ShieldCheck } from "lucide-react";
+import * as z from "zod";
 
 // Zod schema for widget form validation (same as in page.tsx)
 const widgetFormSchema = z.object({
@@ -436,7 +429,7 @@ function CelAction({ row }: Props) {
           <DialogHeader>
             <DialogTitle>Are you absolutely sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the widget "{widget.name}" and remove it from your account.
+              This action cannot be undone. This will permanently delete the widget &quot;{widget.name}&quot; and remove it from your account.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

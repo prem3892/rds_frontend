@@ -48,7 +48,7 @@ const MessageBubble = React.memo(({ message }: MessageBubbleProps) => {
         {!isOwnMessage &&
           message.senderType === "AGENT" && ( // If another agent sent message (e.g. transferred chat)
             <p className="text-xs font-semibold mb-1 opacity-70">
-              Agent: {message.senderId.slice(-4)}
+              Agent: {message.senderId?.slice(-4)}
             </p>
           )}
         <p className="text-sm whitespace-pre-wrap">

@@ -1,18 +1,19 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ApiErrorResponse, AutoMessage, PaginatedAutoMessageResponse, Widget } from "@/types";
-import { Row } from "@tanstack/react-table";
-import { Globe, MessageSquare, Tag, Clock, MapPin, Settings, Edit, Eye, EyeOff, Trash2 } from "lucide-react";
-import { createColumns } from "./auto-message-columns";
-import CellAction from "./cell-actions";
-import { AutoMessageDataTable } from "./auto-message-data-table";
+import { Card, CardContent } from "@/components/ui/card";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import EditAutoMessageDialog from "./edit-auto-message-dialog";
-import DeleteAutoMessageDialog from "./delete-auto-message-dialog";
+  import { ApiErrorResponse } from "@/types";
+import { PaginatedAutoMessageResponse } from "@/types/auto-message";
+import { AutoMessage } from "@/types/auto-message";
+import { Widget } from "@/types/widget";
+import { Clock, Edit, Globe, MapPin, MessageSquare, Settings, Tag, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { createColumns } from "./auto-message-columns";
+import { AutoMessageDataTable } from "./auto-message-data-table";
+import DeleteAutoMessageDialog from "./delete-auto-message-dialog";
+import EditAutoMessageDialog from "./edit-auto-message-dialog";
 
 type Props = {
   messageData: PaginatedAutoMessageResponse | null;
@@ -86,7 +87,7 @@ const AutoMessageCard = ({ message, widgets }: { message: AutoMessage; widgets: 
                     Page Paths
                   </span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {message.pagePaths.map((path, index) => (
+                    {message.pagePaths.map((path: string, index: number) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {path}
                       </Badge>
@@ -240,7 +241,7 @@ export default function AutoMessageTable({
 
       {/* Mobile Cards */}
       <div className="md:hidden">
-        {messageData.items.map((message) => (
+        {messageData.items.map((message: AutoMessage) => (
           <AutoMessageCard key={message._id} message={message} widgets={widgets} />
         ))}
       </div>

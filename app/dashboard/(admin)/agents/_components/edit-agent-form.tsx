@@ -1,10 +1,7 @@
 "use client";
 
-import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -23,25 +20,25 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { 
-  useUpdateAgentProfileMutation, 
+import {
+  AgentProfile,
+  AGENTS_QUERY_KEY,
   UpdateAgentProfileDto,
-  AgentProfile 
+  useUpdateAgentProfileMutation
 } from "@/lib/agent.api";
 import { Department } from "@/types";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { AGENTS_QUERY_KEY } from "@/lib/agent.api";
-import { 
-  User, 
-  Building, 
-  Globe, 
-  MessageSquare, 
-  ShieldCheck 
+import {
+  Building,
+  Globe, Loader2, MessageSquare,
+  ShieldCheck, User
 } from "lucide-react";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
 // Zod schema for agent form validation (for editing existing agents)
 const agentFormSchema = z.object({

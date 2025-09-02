@@ -7,13 +7,14 @@ import {
 } from "@tanstack/react-query";
 import { customFetch } from "./api";
 import { 
-  ApiErrorResponse, 
-  AutoMessage, 
-  CreateAutoMessageDto, 
-  UpdateAutoMessageDto, 
-  AutoMessageFilters, 
-  PaginatedAutoMessageResponse 
-} from "@/types";
+
+        AutoMessage,
+  CreateAutoMessageDto,
+  UpdateAutoMessageDto,
+  AutoMessageFilters,
+  PaginatedAutoMessageResponse
+} from "@/types/auto-message";
+import { ApiErrorResponse } from "@/types";
 
 // Query key constants
 export const AUTO_MESSAGES_QUERY_KEY = "auto-messages";

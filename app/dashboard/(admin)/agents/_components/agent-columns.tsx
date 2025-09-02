@@ -1,23 +1,21 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AgentProfile } from "@/lib/agent.api";
 import { Department } from "@/types";
-import { 
-  Edit, 
-  ToggleLeft, 
-  MessageSquare, 
-  Building, 
-  Globe, 
-  User,
+import { ColumnDef } from "@tanstack/react-table";
+import {
+  Building,
+  Edit,
+  Globe,
   Mail,
-  ShieldCheck,
+  MessageSquare,
   MoreHorizontal,
-  Settings
+  Settings,
+  ToggleLeft,
+  User
 } from "lucide-react";
-import CellActions from "./cell-actions";
 
 interface AgentColumnsProps {
   departments: Department[];

@@ -1,17 +1,16 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { Department, AgentProfile } from "@/types";
 import { Button } from "@/components/ui/button";
+import { AgentProfile, Department } from "@/types";
+import { ColumnDef } from "@tanstack/react-table";
 import { Edit, MoreHorizontal, Trash2, Users } from "lucide-react";
 import { AgentsCell } from "./agents-cell";
-import { Checkbox } from "@/components/ui/checkbox";
 
-interface DepartmentColumnsProps {
-  agents: AgentProfile[];
-  onEdit: (department: Department) => void;
-  onDelete: (department: Department) => void;
-}
+// interface DepartmentColumnsProps {
+//   agents: AgentProfile[];
+//   onEdit: (department: Department) => void;
+//   onDelete: (department: Department) => void;
+// }
 
 export const createDepartmentColumns = (
   agents: AgentProfile[],
@@ -40,7 +39,7 @@ export const createDepartmentColumns = (
   // },
   {
     accessorKey: "name",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="flex items-center space-x-2 ">
           <Users className="h-4 w-4" />
@@ -59,7 +58,7 @@ export const createDepartmentColumns = (
   },
   {
     accessorKey: "agents",
-    header: ({ column }) => {
+    header: () => {
       return (
         <div className="flex items-center space-x-2">
           <Users className="h-4 w-4" />

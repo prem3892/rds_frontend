@@ -1,8 +1,5 @@
 "use client"
 
-import type React from "react"
-import Link from "next/link"
-import { useState, useEffect, useMemo } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -17,27 +14,28 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import {
-  Home,
-  Users,
-  MessageSquare,
-  UserCheck,
-  Globe,
-  Mail,
-  MessageCircle,
-  UserX,
-  LogOut,
-  ChevronDown,
-  RadioTower,
-  Loader2,
-} from "lucide-react"
-import Image from "next/image"
-import { cn } from "@/lib/utils"
 import { useSocketOperations } from "@/hooks/useSocket"
+import { cn } from "@/lib/utils"
+import { socketService } from "@/services/socketService"
 import { useAuthActions, useIsOnline } from "@/stores"
 import { useQueryClient } from "@tanstack/react-query"
+import {
+  ChevronDown,
+  Globe,
+  Loader2,
+  LogOut,
+  Mail,
+  MessageCircle,
+  MessageSquare,
+  UserCheck,
+  Users,
+  UserX
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { socketService } from "@/services/socketService"
+import type React from "react"
+import { useEffect, useMemo, useState } from "react"
 import { HomeIcon } from "../icons"
 
 // Utility function to get screen name based on route
@@ -97,7 +95,7 @@ export function MainLayoutWrapper({ currentScreen, children }: DashboardLayoutPr
 
   // Listen for online status updates from server
   useEffect(() => {
-    const removeListener = socketService.addListener((event, data) => {
+    const removeListener = socketService.addListener((event) => {
       if (event === "onlineStatusUpdated") {
         setIsStatusLoading(false);
       }

@@ -1,19 +1,8 @@
-import { ColumnDef } from "@tanstack/react-table";
-import { Widget } from "@/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Copy, Globe, IdCard, MessageCircle, MoreHorizontal, Paintbrush, Text, Users, Workflow } from "lucide-react";
-import { ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Widget } from "@/types";
+import { ColumnDef } from "@tanstack/react-table";
+import { Globe, IdCard, MessageCircle, MoreHorizontal, Paintbrush, Text, Workflow } from "lucide-react";
 import CelAction from "./cell-actions";
 
 export const columns: ColumnDef<Widget>[] = [

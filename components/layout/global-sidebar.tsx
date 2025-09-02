@@ -1,22 +1,22 @@
 // src/components/layout/global-sidebar.tsx
 "use client";
 
+import { motion } from "framer-motion";
+import { ChevronLeft, LogOut, Menu, RadioTower } from "lucide-react"; // For Online/Offline status toggle
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { LogOut, Power, RadioTower, Menu, ChevronLeft } from "lucide-react"; // For Online/Offline status toggle
 
-import { cn } from "@/lib/utils";
-import { User } from "@/types";
-import { dashboardNavItems, NavItem } from "@/config/dashboard-nav";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label"; // For Online/Offline
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useAuthActions, useCurrentUser, useIsOnline } from "@/stores/auth";
-import { useSidebarExpanded, useSharedActions } from "@/stores/shared";
-import { useQueryClient } from "@tanstack/react-query";
 import { Switch } from "@/components/ui/switch"; // For Online/Offline
-import { Label } from "@/components/ui/label"; // For Online/Offline
+import { dashboardNavItems } from "@/config/dashboard-nav";
+import { cn } from "@/lib/utils";
+import { useAuthActions, useIsOnline } from "@/stores/auth";
+import { useSharedActions, useSidebarExpanded } from "@/stores/shared";
+import { User } from "@/types";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useSocketOperations } from "@/hooks/useSocket";
 import Image from "next/image";

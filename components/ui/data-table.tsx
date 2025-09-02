@@ -4,17 +4,18 @@ import * as React from "react";
 
 import {
   ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
   flexRender,
   getCoreRowModel,
-  useReactTable,
-  SortingState,
-  ColumnFiltersState,
-  VisibilityState,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  getFilteredRowModel,
+  useReactTable,
 } from "@tanstack/react-table";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -23,12 +24,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
-import { DropdownMenuCheckboxItem } from "@radix-ui/react-dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,7 +33,7 @@ interface DataTableProps<TData, TValue> {
 }
 
 // Loading skeleton component for the table
-function DataTableSkeleton({ columns, skeletonRows = 5 }: { columns: ColumnDef<any, any>[]; skeletonRows?: number }) {
+function DataTableSkeleton<TData, TValue>({ columns, skeletonRows = 5 }: { columns: ColumnDef<TData, TValue>[]; skeletonRows?: number }) {
   return (
     <div className="w-full">
       <div className="flex items-center py-4">

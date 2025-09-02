@@ -1,20 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
-import { useDeleteAutoMessageMutation, AUTO_MESSAGES_QUERY_KEY } from "@/lib/auto-message.api";
+import { AUTO_MESSAGES_QUERY_KEY, useDeleteAutoMessageMutation } from "@/lib/auto-message.api";
+import { AutoMessage } from "@/types/auto-message";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { AutoMessage, Widget } from "@/types";
+import { toast } from "sonner";
 
 interface DeleteAutoMessageDialogProps {
   open: boolean;
@@ -58,7 +57,7 @@ export default function DeleteAutoMessageDialog({
         <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete the auto message "{autoMessage.title}" and remove it from your account.
+            This action cannot be undone. This will permanently delete the auto message &quot;{autoMessage.title}&quot; and remove it from your account.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
