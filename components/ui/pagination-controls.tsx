@@ -16,17 +16,19 @@ export function PaginationControls({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center space-x-2 py-4">
+    <div className="flex items-center justify-center space-x-2 py-4 overflow-hidden">
       <Button
         variant="outline"
         size="sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage <= 1}
+        className="flex-shrink-0"
       >
         <ChevronLeft className="h-4 w-4 mr-1" />
-        Previous
+        <span className="hidden sm:inline">Previous</span>
+        <span className="sm:hidden">Prev</span>
       </Button>
-      <span className="text-sm">
+      <span className="text-sm flex-shrink-0">
         Page {currentPage} of {totalPages}
       </span>
       <Button
@@ -34,8 +36,10 @@ export function PaginationControls({
         size="sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage >= totalPages}
+        className="flex-shrink-0"
       >
-        Next
+        <span className="hidden sm:inline">Next</span>
+        <span className="sm:hidden">Next</span>
         <ChevronRight className="h-4 w-4 ml-1" />
       </Button>
     </div>

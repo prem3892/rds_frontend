@@ -239,7 +239,7 @@ export default function MyChatsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="flex h-full overflow-hidden bg-[#f2f4f8] rounded-3xl"
+          className="flex h-full overflow-hidden bg-[#f2f4f8]  rounded-3xl"
         >
           {/* Mobile Sidebar */}
           <ChatSidebar

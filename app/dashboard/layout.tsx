@@ -46,7 +46,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-muted/40 overflow-hidden">
+    <div className="flex min-h-screen bg-muted/40 overflow-hidden mobile-no-overflow">
       <GlobalSocketInitializer /> {/* Global persistent socket */}
       {/* <GlobalSidebar currentUser={currentUser} /> */}
       <MainLayoutWrapper>{children}</MainLayoutWrapper>

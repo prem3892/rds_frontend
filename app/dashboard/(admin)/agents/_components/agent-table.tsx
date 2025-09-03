@@ -182,7 +182,7 @@ const AgentTable = (props: Props) => {
   const columns = createAgentColumns({ departments, onEdit, onToggleStatus });
 
   return (
-    <div className="bg-white p-4 rounded-xl mt-4">
+    <div className="bg-white p-2 sm:p-3 md:p-4 rounded-xl mt-3 sm:mt-4 overflow-hidden">
       {/* Mobile Card View */}
       <div className="block md:hidden">
         {isLoadingAgents ? (

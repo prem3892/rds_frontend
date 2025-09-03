@@ -35,11 +35,11 @@ interface DataTableProps<TData, TValue> {
 // Loading skeleton component for the table
 function DataTableSkeleton<TData, TValue>({ columns, skeletonRows = 5 }: { columns: ColumnDef<TData, TValue>[]; skeletonRows?: number }) {
   return (
-    <div className="w-full">
+    <div className="w-full overflow-hidden">
       <div className="flex items-center py-4">
         <Skeleton className="h-10 w-[300px]" />
       </div>
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-hidden rounded-md border mobile-no-overflow">
         <Table>
           <TableHeader className="bg-slate-100">
             <TableRow>
@@ -113,7 +113,7 @@ export function DataTable<TData, TValue>({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-hidden">
       {/* <div className="flex items-center py-4">
         <Input
           placeholder="Filter..."
@@ -125,7 +125,7 @@ export function DataTable<TData, TValue>({
         />
     
       </div> */}
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-hidden rounded-md border mobile-no-overflow">
         <Table>
           <TableHeader className="bg-slate-100">
             {table.getHeaderGroups().map((headerGroup) => (

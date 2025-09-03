@@ -141,7 +141,7 @@ export default function NewWidgetPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mx-auto p-4 md:p-6 lg:p-8 space-y-6 bg-[#f2f4f8] rounded-3xl min-h-full"
+      className="mx-auto p-2 sm:p-4 lg:p-8 space-y-6 bg-[#f2f4f8] rounded-3xl min-h-full"
     >
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -164,11 +164,11 @@ export default function NewWidgetPage() {
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column - Form */}
-        <Card className="p-6">
+        <Card className="p-4 px-1 sm:px-4">
           <CardHeader>
             <CardTitle>Widget Configuration</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 px-2 sm:px-4">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleFormSubmit)}
