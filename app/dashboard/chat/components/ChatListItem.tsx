@@ -3,7 +3,22 @@ import { parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
-import { Chrome, Apple, Globe } from "lucide-react";
+import { 
+  Chrome, 
+  Apple, 
+  Globe, 
+  Monitor, 
+  Smartphone, 
+  Tablet,
+  MonitorSmartphone,
+  Laptop,
+  MonitorIcon
+} from "lucide-react";
+import { rawTimeZones } from '@vvo/tzdb';
+
+import { FaChrome, FaFirefox, FaSafari, FaEdge, FaTablet,FaOpera, FaQuestionCircle, FaWindows } from 'react-icons/fa';
+import {  SiApple, SiLinux, SiAndroid, SiMacos,  SiTableau } from 'react-icons/si'; // Simple Icons for brands
+
 
 interface ChatListItemProps {
   session: ChatSession & {
@@ -14,59 +29,74 @@ interface ChatListItemProps {
   onSelect: () => void;
 }
 
+const countryCodeToEmoji = (code: string) => {
+  try {
+    const OFFSET = 127397;
+    const codePoints = code.toUpperCase().split('').map(char => char.charCodeAt(0) + OFFSET);
+    return String.fromCodePoint(...codePoints);
+  } catch (error) {
+    return "🏳️"; // Return neutral flag if conversion fails
+  }
+};
+
 const ChatListItem = React.memo(
   ({ session, isSelected, onSelect }: ChatListItemProps) => {
-    const getCountryFlag = (country?: string) => {
+    const getCountryFlag = (timezone: string) => {
+      try {
+        // Get the timezone from the session data
+        // const timezone = session.customerId?.metadata?.browserInfo?.timezone;
+        console.log(timezone, "timezone");
+        if (!timezone) return "🏳️"; // Return a neutral flag if no timezone
 
-      const flagMap: Record<string, string> = {
-        india: "🇮🇳",
-        us: "🇺🇸",
-        uk: "🇬🇧",
-        canada: "🇨🇦",
-        australia: "🇦🇺",
-        germany: "🇩🇪",
-        france: "🇫🇷",
-        spain: "🇪🇸",
-        italy: "🇮🇹",
-        japan: "🇯🇵",
-        china: "🇨🇳",
-        brazil: "🇧🇷",
-        mexico: "🇲🇽",
-        russia: "🇷🇺",
-        south_korea: "🇰🇷",
-      };
-      
-      return flagMap[country?.toLowerCase() || ""] || "🇺🇸";
+        // Find the timezone in the database
+        const tz = rawTimeZones.find(t =>  t.group.includes(timezone));
+        const countryCode = tz?.countryCode;
+        console.log(tz, "tz");
+        console.log(countryCode, "countryCode");
+        
+        // If we found a country code, convert it to an emoji
+        if (countryCode && countryCode.length === 2) {
+          console.log(countryCode, "countryCode");
+          return countryCodeToEmoji(countryCode);
+        }
+        
+        return "🏳️"; // Return a neutral flag as a fallback
+      } catch (error) {
+        return "🏳️"; // Return neutral flag if anything goes wrong
+      }
     };
 
+
     const getBrowserIcon = (userAgent?: string) => {
-      if (!userAgent) return <Globe className="w-3 h-3" />;
+      if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
       
-      if (userAgent.includes("Chrome")) return <Chrome className="w-3 h-3" />;
-      if (userAgent.includes("Firefox")) return <Globe className="w-3 h-3" />;
-      if (userAgent.includes("Safari")) return <Globe className="w-3 h-3" />;
-      if (userAgent.includes("Edge")) return <Globe className="w-3 h-3" />;
-      return <Globe className="w-3 h-3" />;
+      const ua = userAgent.toLowerCase();
+      if (ua.includes("chrome") && !ua.includes("edg")) return <FaChrome className="w-3 h-3 text-blue-600" />;
+      if (ua.includes("firefox")) return <FaFirefox className="w-3 h-3 text-orange-500" />;
+      if (ua.includes("safari") && !ua.includes("chrome")) return <FaSafari className="w-3 h-3 text-blue-500" />;
+      if (ua.includes("edge")) return <FaEdge className="w-3 h-3 text-blue-700" />;
+      if (ua.includes("opera")) return <FaOpera className="w-3 h-3 text-red-500" />;
+      return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
     };
 
     const getPlatformIcon = (platform?: string) => {
-      if (!platform) return <Globe className="w-3 h-3" />;
+      if (!platform) return <Monitor className="w-3 h-3 text-gray-500" />;
       
-      if (platform.includes("Mac")) return <Apple className="w-3 h-3" />;
-      if (platform.includes("Windows")) return <Globe className="w-3 h-3" />;
-      if (platform.includes("Linux")) return <Globe className="w-3 h-3" />;
-      if (platform.includes("iOS")) return <Apple className="w-3 h-3" />;
-      if (platform.includes("Android")) return <Globe className="w-3 h-3" />;
-      return <Globe className="w-3 h-3" />;
+      const platformLower = platform.toLowerCase();
+      if (platformLower.includes("mac")) return <SiMacos className="w-3 h-3 text-gray-800" />;
+        if (platformLower.includes("win")) return <FaWindows className="w-3 h-3 text-blue-600" />;
+      if (platformLower.includes("linux")) return <SiLinux className="w-3 h-3 text-green-600" />;
+      if (platformLower.includes("ios")) return <SiApple className="w-3 h-3 text-blue-500" />;
+      if (platformLower.includes("android")) return <SiAndroid className="w-3 h-3 text-green-500" />;
+      if (platformLower.includes("mobile")) return <SiAndroid className="w-3 h-3 text-gray-600" />;
+      if (platformLower.includes("tablet")) return <FaTablet className="w-3 h-3 text-gray-600" />;
+      return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
     };
 
     const getCustomerName = () => {
-  
-        return session.customerId?.name || 
-               session.customerId?.email || 
-               `Guest${session.customerId._id.slice(-6)}`;
-      
-     
+      return session.customerId?.name || 
+             session.customerId?.email || 
+             `Guest${session.customerId._id.slice(-6)}`;
     };
 
     const getTimeDisplay = () => {
@@ -91,6 +121,13 @@ const ChatListItem = React.memo(
       return "N/A";
     };
 
+    const getDomainDisplay = () => {
+      // Use metadata.initialDomain if available, otherwise fall back to session.domain
+      return session.customerId?.metadata?.initialDomain || session.domain || "N/A";
+    };
+
+
+
     return (
       <Button
         variant={isSelected ? "secondary" : "ghost"}
@@ -108,11 +145,11 @@ const ChatListItem = React.memo(
                 {getCustomerName()}
               </span>
               <span className="text-base sm:text-lg flex-shrink-0">
-                {getCountryFlag()}
+                {getCountryFlag(session.customerId?.metadata?.browserInfo?.timezone || "")}
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
-                {getBrowserIcon()}
-                {getPlatformIcon()}
+                {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}
+                {getPlatformIcon(session.customerId?.metadata?.browserInfo?.platform)}
               </div>
             </div>
             <div className="text-xs text-gray-500 flex-shrink-0 ml-1">
@@ -120,9 +157,12 @@ const ChatListItem = React.memo(
             </div>
           </div>
           
-          <div className="text-xs text-gray-600 truncate">
-            At: {session.initialMessage || "testing-chat-app-theta.vercel.app/"}
+          <div className="text-xs text-gray-600 truncate mb-1">
+            At: {getDomainDisplay()}
           </div>
+
+          {/* Additional metadata info */}
+      
           
           {session.unreadCount && session.unreadCount > 0 && (
             <Badge

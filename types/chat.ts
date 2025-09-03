@@ -11,6 +11,19 @@ export interface ChatSession {
     _id: string;
     email: string;
     name: string;
+    metadata?: {
+      browserInfo?: {
+        userAgent?: string;
+        language?: string;
+        platform?: string;
+        cookieEnabled?: boolean;
+        screenResolution?: string;
+        timezone?: string;
+        timestamp?: string;
+      };
+      currentPageUrl?: string;
+      initialDomain?: string;
+    };
   };
   agentId: {
     _id: string;

@@ -178,8 +178,8 @@ export function MainLayoutWrapper({
     {
       icon: UserX,
       label: "Blocked Guests",
-      href: "/dashboard/blocked-guests",
-      active: pathname.includes("/blocked-guests"),
+      href: "/dashboard/blocked-customers",
+      active: pathname.includes("/blocked-customers"),
     },
   ];
 

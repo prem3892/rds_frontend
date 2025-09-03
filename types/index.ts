@@ -5,7 +5,9 @@ export * from "./department"; // If you created department.ts
 export * from "./widget"; // Export all from widget.ts
 export * from "./agent"; // Export all from agent.ts
 export * from "./visitor"; // Export all from visitor.ts
-// Export all from auto-message.ts
+export * from "./auto-message"; // Export all from auto-message.ts
+export * from "./blocked-customer"; // Export all from blocked-customer.ts
+// Export all from shared.ts
 
 export interface User {
   id: string; // Note: Login returns 'id'

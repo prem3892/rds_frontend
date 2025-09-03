@@ -2,7 +2,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
 import { parseISO } from "date-fns";
-import { Apple, Chrome, Clock, Globe, User } from "lucide-react";
+import { 
+  Apple, 
+  Chrome, 
+  Clock, 
+  Globe, 
+  User, 
+  Monitor, 
+  Smartphone, 
+  Tablet,
+  MonitorIcon
+} from "lucide-react";
+import { rawTimeZones } from '@vvo/tzdb';
 import React from "react";
 
 interface HistoryChatListItemProps {
@@ -13,47 +24,63 @@ interface HistoryChatListItemProps {
 
 const HistoryChatListItem = React.memo(
   ({ session, isSelected, onSelect }: HistoryChatListItemProps) => {
-    const getCountryFlag = (country?: string) => {
-      const flagMap: Record<string, string> = {
-        india: "🇮🇳",
-        us: "🇺🇸",
-        uk: "🇬🇧",
-        canada: "🇨🇦",
-        australia: "🇦🇺",
-        germany: "🇩🇪",
-        france: "🇫🇷",
-        spain: "🇪🇸",
-        italy: "🇮🇹",
-        japan: "🇯🇵",
-        china: "🇨🇳",
-        brazil: "🇧🇷",
-        mexico: "🇲🇽",
-        russia: "🇷🇺",
-        south_korea: "🇰🇷",
-      };
+    const countryCodeToEmoji = (code: string) => {
+      try {
+        const OFFSET = 127397;
+        const codePoints = code.toUpperCase().split('').map(char => char.charCodeAt(0) + OFFSET);
+      console.log(codePoints, "codePoints");
+        return String.fromCodePoint(...codePoints);
+      } catch (error) {
+        return "🏳️"; // Return neutral flag if conversion fails
+      }
+    };
 
-      return flagMap[country?.toLowerCase() || ""] || "🇺🇸";
+    const getCountryFlag = () => {
+      try {
+        // Get the timezone from the session data
+        const timezone = session.customerId?.metadata?.browserInfo?.timezone;
+        if (!timezone) return "🏳️"; // Return a neutral flag if no timezone
+
+        // Find the timezone in the database
+        const tz = rawTimeZones.find(t => t.name === timezone);
+        const countryCode = tz?.countryCode;
+        
+        // If we found a country code, convert it to an emoji
+        if (countryCode && countryCode.length === 2) {
+          console.log(countryCode, "countryCode");
+          return countryCodeToEmoji(countryCode);
+        }
+        
+        return "🏳️"; // Return a neutral flag as a fallback
+      } catch (error) {
+        return "🏳️"; // Return neutral flag if anything goes wrong
+      }
     };
 
     const getBrowserIcon = (userAgent?: string) => {
-      if (!userAgent) return <Globe className="w-3 h-3" />;
+      if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
 
-      if (userAgent.includes("Chrome")) return <Chrome className="w-3 h-3" />;
-      if (userAgent.includes("Firefox")) return <Globe className="w-3 h-3" />;
-      if (userAgent.includes("Safari")) return <Globe className="w-3 h-3" />;
-      if (userAgent.includes("Edge")) return <Globe className="w-3 h-3" />;
-      return <Globe className="w-3 h-3" />;
+      const ua = userAgent.toLowerCase();
+      if (ua.includes("chrome") && !ua.includes("edg")) return <Chrome className="w-3 h-3 text-blue-600" />;
+      if (ua.includes("firefox")) return <Globe className="w-3 h-3 text-orange-500" />;
+      if (ua.includes("safari") && !ua.includes("chrome")) return <Globe className="w-3 h-3 text-blue-500" />;
+      if (ua.includes("edge")) return <Globe className="w-3 h-3 text-blue-700" />;
+      if (ua.includes("opera")) return <Globe className="w-3 h-3 text-red-500" />;
+      return <Globe className="w-3 h-3 text-gray-500" />;
     };
 
     const getPlatformIcon = (platform?: string) => {
-      if (!platform) return <Globe className="w-3 h-3" />;
+      if (!platform) return <Monitor className="w-3 h-3 text-gray-500" />;
 
-      if (platform.includes("Mac")) return <Apple className="w-3 h-3" />;
-      if (platform.includes("Windows")) return <Globe className="w-3 h-3" />;
-      if (platform.includes("Linux")) return <Globe className="w-3 h-3" />;
-      if (platform.includes("iOS")) return <Apple className="w-3 h-3" />;
-      if (platform.includes("Android")) return <Globe className="w-3 h-3" />;
-      return <Globe className="w-3 h-3" />;
+      const platformLower = platform.toLowerCase();
+      if (platformLower.includes("mac")) return <Apple className="w-3 h-3 text-gray-800" />;
+      if (platformLower.includes("win")) return <MonitorIcon className="w-3 h-3 text-blue-600" />;
+      if (platformLower.includes("linux")) return <Monitor className="w-3 h-3 text-green-600" />;
+      if (platformLower.includes("ios")) return <Smartphone className="w-3 h-3 text-blue-500" />;
+      if (platformLower.includes("android")) return <Smartphone className="w-3 h-3 text-green-500" />;
+      if (platformLower.includes("mobile")) return <Smartphone className="w-3 h-3 text-gray-600" />;
+      if (platformLower.includes("tablet")) return <Tablet className="w-3 h-3 text-gray-600" />;
+      return <Monitor className="w-3 h-3 text-gray-500" />;
     };
 
     const getCustomerName = () => {
@@ -85,6 +112,19 @@ const HistoryChatListItem = React.memo(
         }
       }
       return "N/A";
+    };
+
+    const getDomainDisplay = () => {
+      // Use metadata.initialDomain if available, otherwise fall back to session.domain
+      return session.customerId?.metadata?.initialDomain || session.domain || "N/A";
+    };
+
+    const getScreenResolution = () => {
+      return session.customerId?.metadata?.browserInfo?.screenResolution || "N/A";
+    };
+
+    const getLanguage = () => {
+      return session.customerId?.metadata?.browserInfo?.language || "N/A";
     };
 
     const getStatusColor = (status: string) => {
@@ -126,8 +166,8 @@ const HistoryChatListItem = React.memo(
                 {getCountryFlag()}
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
-                {getBrowserIcon()}
-                {getPlatformIcon()}
+                {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}
+                {getPlatformIcon(session.customerId?.metadata?.browserInfo?.platform)}
               </div>
             </div>
             <div className="flex  gap-x-1 justify-center text-xs text-gray-500 flex-shrink-0 ml-2">
@@ -135,8 +175,21 @@ const HistoryChatListItem = React.memo(
             </div>
           </div>
 
-          <div className="text-xs text-gray-600 truncate mb-2">
-            At: {session.domain || "testing-chat-app-theta.vercel.app/"}
+          <div className="text-xs text-gray-600 truncate mb-1">
+            At: {getDomainDisplay()}
+          </div>
+
+          {/* Additional metadata info */}
+          <div className="text-xs text-gray-500 space-y-0.5 mb-2">
+            <div className="flex items-center gap-2">
+              <span>Screen: {getScreenResolution()}</span>
+              <span>Lang: {getLanguage()}</span>
+            </div>
+            {session.customerId?.metadata?.browserInfo?.timezone && (
+              <div className="text-xs text-gray-500">
+                TZ: {session.customerId.metadata.browserInfo.timezone}
+              </div>
+            )}
           </div>
 
           {/* Status Badge and Agent Info */}
