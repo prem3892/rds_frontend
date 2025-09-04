@@ -61,8 +61,8 @@ const getScreenNameFromRoute = (pathname: string): string => {
     "/dashboard/contacts": "Contacts",
     "/dashboard/agents": "Agents",
     "/dashboard/canned-messages": "Canned Messages",
-    "/dashboard/auto-message": "Auto Message",
-    "/dashboard/blocked-guests": "Blocked Guests",
+    "/dashboard/auto-messages": "Auto Message",
+    "/dashboard/blocked-customers": "Blocked Guests",
   };
 
   // Check for exact matches first

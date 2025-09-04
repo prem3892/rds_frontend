@@ -162,3 +162,4 @@ export * from "./chat.api";
 export * from "./widget.api";
 export * from "./department.api";
 export * from "./agent.api";
+export * from "./contact.api";

@@ -13,6 +13,7 @@ import {
   Power,
   FileText,
   ShieldX,
+  UserCheck,
 } from "lucide-react"; // Example icons from lucide-react
 
 export type NavItem = {
@@ -46,6 +47,11 @@ export const dashboardNavItems: NavItem[] = [
     title: "Chat History (New)", // New chat history UI
     href: "/dashboard/history-new",
     icon: History,
+  },
+  {
+    title: "Contacts",
+    href: "/dashboard/contacts",
+    icon: UserCheck,
   },
   {
     title: "User Management",

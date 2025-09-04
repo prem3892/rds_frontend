@@ -36,7 +36,7 @@ const ChatHeader = ({
 
        session.customerId?.name ||
         session.customerId?.email ||
-        session.customerId._id.slice(-6)
+        session.customerId?._id.slice(-6)
    
 
   const customerInitial =

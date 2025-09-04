@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useCurrentUser } from "@/stores/auth";
-import { useGetAllChatSessions, useGetChatMessages } from "@/lib/api";
+import { useGetAllChatSessionsInfinite, useGetChatMessages } from "@/lib/chat.api";
 import { useGetAllAgents } from "@/lib/agent.api";
 import { useGetAllDepartments } from "@/lib/department.api";
 import {
@@ -158,8 +158,7 @@ export default function HistoryNewPage() {
     customerEmail: "",
   });
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(10);
   const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
 
   // Get agents and departments for filters
@@ -181,9 +180,8 @@ export default function HistoryNewPage() {
   }, [currentUser]);
 
   // Convert filters to API format
-  const apiFilters: GetChatSessionsQueryDto = {
+  const apiFilters: Omit<GetChatSessionsQueryDto, "page"> = {
     limit: pageSize,
-    page: currentPage,
     status: filters.status && filters.status !== "all" ? (filters.status as ChatSessionStatus) : undefined,
     agentId: filters.agentId && filters.agentId !== "all" ? filters.agentId : undefined,
     departmentId: filters.departmentId && filters.departmentId !== "all" ? filters.departmentId : undefined,
@@ -195,7 +193,10 @@ export default function HistoryNewPage() {
     data: sessions,
     isLoading,
     error,
-  } = useGetAllChatSessions(apiFilters, {
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetAllChatSessionsInfinite(apiFilters, {
     enabled: !!currentUser,
   });
 
@@ -208,15 +209,14 @@ export default function HistoryNewPage() {
     if (!filters.search) return true;
     
     const searchTerm = filters.search.toLowerCase();
-    const customerName = session.customerId.name.toLowerCase();
-    const customerEmail = session.customerId.email.toLowerCase();
+    const customerName = session.customerId?.name?.toLowerCase() || '';
+    const customerEmail = session.customerId?.email?.toLowerCase() || '';
     
     return customerName.includes(searchTerm) || customerEmail.includes(searchTerm);
   }) || [];
 
   const handleFiltersChange = (newFilters: HistoryFilters) => {
     setFilters(newFilters);
-    setCurrentPage(1);
   };
 
   const handleClearFilters = () => {
@@ -229,7 +229,6 @@ export default function HistoryNewPage() {
       customerEmail: "",
     };
     setFilters(clearedFilters);
-    setCurrentPage(1);
   };
 
   const handleSelectSession = (session: ChatSession) => {
@@ -244,8 +243,10 @@ export default function HistoryNewPage() {
     setSelectedSession(null);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
   };
 
   return (
@@ -302,9 +303,9 @@ export default function HistoryNewPage() {
                         selectedSessionId={selectedSession?._id || null}
                         onSelectSession={handleSelectSession}
                         isLoading={isLoading}
-                        currentPage={currentPage}
-                        totalPages={Math.ceil(filteredSessions.length / pageSize)}
-                        onPageChange={handlePageChange}
+                        hasNextPage={hasNextPage}
+                        isFetchingNextPage={isFetchingNextPage}
+                        onLoadMore={handleLoadMore}
                       />
                     </div>
                   ) : (
@@ -351,9 +352,9 @@ export default function HistoryNewPage() {
                       selectedSessionId={selectedSession?._id || null}
                       onSelectSession={handleSelectSession}
                       isLoading={isLoading}
-                      currentPage={currentPage}
-                      totalPages={Math.ceil(filteredSessions.length / pageSize)}
-                      onPageChange={handlePageChange}
+                      hasNextPage={hasNextPage}
+                      isFetchingNextPage={isFetchingNextPage}
+                      onLoadMore={handleLoadMore}
                     />
                   </div>
 
