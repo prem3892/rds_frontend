@@ -6,7 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AGENTS_QUERY_KEY, AgentProfile, useGetAllAgents, useSetAgentStatusMutation } from "@/lib/agent.api";
+import {
+  AGENTS_QUERY_KEY,
+  AgentProfile,
+  useGetAllAgents,
+  useSetAgentStatusMutation,
+} from "@/lib/agent.api";
 import { useGetAllDepartments } from "@/lib/department.api";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/stores/auth";
@@ -26,7 +31,7 @@ import {
   EditAgentForm,
   EditDepartmentForm,
   SearchFilters,
-  createDepartmentColumns
+  createDepartmentColumns,
 } from "./_components";
 
 interface AgentFilters {
@@ -42,7 +47,7 @@ interface DepartmentFilters {
 export default function AgentsPage() {
   const currentUser = useCurrentUser();
   const queryClient = useQueryClient();
-  
+
   // Agent states
   const [isCreateAgentDialogOpen, setIsCreateAgentDialogOpen] = useState(false);
   const [isEditAgentDialogOpen, setIsEditAgentDialogOpen] = useState(false);
@@ -54,14 +59,22 @@ export default function AgentsPage() {
   });
 
   // Department states
-  const [isCreateDepartmentDialogOpen, setIsCreateDepartmentDialogOpen] = useState(false);
-  const [isEditDepartmentDialogOpen, setIsEditDepartmentDialogOpen] = useState(false);
-  const [isDeleteDepartmentDialogOpen, setIsDeleteDepartmentDialogOpen] = useState(false);
-  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
-  const [deletingDepartment, setDeletingDepartment] = useState<Department | null>(null);
-  const [departmentFilters, setDepartmentFilters] = useState<DepartmentFilters>({
-    search: "",
-  });
+  const [isCreateDepartmentDialogOpen, setIsCreateDepartmentDialogOpen] =
+    useState(false);
+  const [isEditDepartmentDialogOpen, setIsEditDepartmentDialogOpen] =
+    useState(false);
+  const [isDeleteDepartmentDialogOpen, setIsDeleteDepartmentDialogOpen] =
+    useState(false);
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(
+    null
+  );
+  const [deletingDepartment, setDeletingDepartment] =
+    useState<Department | null>(null);
+  const [departmentFilters, setDepartmentFilters] = useState<DepartmentFilters>(
+    {
+      search: "",
+    }
+  );
   const [currentDepartmentPage, setCurrentDepartmentPage] = useState(1);
   const [departmentPageSize] = useState(10);
 
@@ -73,12 +86,10 @@ export default function AgentsPage() {
     enabled: currentUser?.role === "ADMIN",
   });
 
-  const { 
-    data: departments, 
-    isLoading: isLoadingDepartments 
-  } = useGetAllDepartments({
-    enabled: currentUser?.role === "ADMIN",
-  });
+  const { data: departments, isLoading: isLoadingDepartments } =
+    useGetAllDepartments({
+      enabled: currentUser?.role === "ADMIN",
+    });
 
   const setAgentStatusMutation = useSetAgentStatusMutation({
     onSuccess: () => {
@@ -94,31 +105,45 @@ export default function AgentsPage() {
     },
   });
 
-
-
   // Filter agents based on search and filters
-  const filteredAgents = agents?.filter((agent) => {
-    const matchesSearch = !agentFilters.search || 
-      agent.user.firstName.toLowerCase().includes(agentFilters.search.toLowerCase()) ||
-      agent.user.lastName.toLowerCase().includes(agentFilters.search.toLowerCase()) ||
-      agent.user.email.toLowerCase().includes(agentFilters.search.toLowerCase());
+  const filteredAgents =
+    agents?.filter((agent) => {
+      const matchesSearch =
+        !agentFilters.search ||
+        agent.user.firstName
+          .toLowerCase()
+          .includes(agentFilters.search.toLowerCase()) ||
+        agent.user.lastName
+          .toLowerCase()
+          .includes(agentFilters.search.toLowerCase()) ||
+        agent.user.email
+          .toLowerCase()
+          .includes(agentFilters.search.toLowerCase());
 
-    const matchesDepartment = !agentFilters.department || agentFilters.department === "all" || 
-      agent.departmentIds.includes(agentFilters.department);
+      const matchesDepartment =
+        !agentFilters.department ||
+        agentFilters.department === "all" ||
+        agent.departmentIds.includes(agentFilters.department);
 
-    const matchesStatus = !agentFilters.status || agentFilters.status === "all" || 
-      (agentFilters.status === "online" && agent.isOnline) ||
-      (agentFilters.status === "offline" && !agent.isOnline);
+      const matchesStatus =
+        !agentFilters.status ||
+        agentFilters.status === "all" ||
+        (agentFilters.status === "online" && agent.isOnline) ||
+        (agentFilters.status === "offline" && !agent.isOnline);
 
-    return matchesSearch && matchesDepartment && matchesStatus;
-  }) || [];
+      return matchesSearch && matchesDepartment && matchesStatus;
+    }) || [];
 
   // Filter departments based on search
-  const filteredDepartments = departments?.filter((department) => {
-    const matchesSearch = !departmentFilters.search || 
-      department.name.toLowerCase().includes(departmentFilters.search.toLowerCase());
-    return matchesSearch;
-  }) || [];
+  const filteredDepartments =
+    departments?.filter((department) => {
+      const matchesSearch =
+        !departmentFilters.search ||
+        department.name
+          .toLowerCase()
+          .includes(departmentFilters.search.toLowerCase());
+      return matchesSearch;
+    }) || [];
 
   // Paginate departments
   const paginatedDepartments = filteredDepartments.slice(
@@ -158,77 +183,88 @@ export default function AgentsPage() {
 
   if (currentUser?.role !== "ADMIN") {
     return (
-      <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mx-auto p-4 md:p-6 lg:p-8 space-y-6 bg-[#f2f4f8] rounded-3xl min-h-full"
-    > 
-    
-      <Alert variant="destructive" className="m-4">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Access Denied</AlertTitle>
-        <AlertDescription>
-          You do not have permission to manage agents and departments.
-        </AlertDescription>
-      </Alert>
-    </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mx-auto p-4 md:p-6 lg:p-8 space-y-6 bg-[#f2f4f8] rounded-3xl min-h-full"
+      >
+        <Alert variant="destructive" className="m-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>
+            You do not have permission to manage agents and departments.
+          </AlertDescription>
+        </Alert>
+      </motion.div>
     );
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mx-auto p-2 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 bg-[#f2f4f8] rounded-3xl min-h-full"
+      className="mx-auto p-2  md:p-4 lg:p-6 xl:p-8 space-y-3 sm:space-y-4 md:space-y-6 bg-[#f2f4f8] rounded-3xl min-h-full mobile-no-overflow"
     >
-      <div className="bg-white rounded-3xl p-2 sm:p-4">
-        <div className="flex justify-between items-center mx-2 sm:mx-4 mt-4 mb-6">
+      <div className="bg-white rounded-3xl p-2 md:p-4 overflow-hidden">
+        <div className="flex justify-between items-center mx-1 sm:mx-2 md:mx-4 mt-2 sm:mt-4 mb-4 sm:mb-6">
           <div className="flex items-center space-x-2">
-            <h1 className="text-2xl md:text-3xl font-semibold flex items-center">
-              <span className="p-2 bg-blue-500 text-white mr-1 rounded-md">
-                <Users className="text-2xl" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold flex items-center">
+              <span className="p-1 sm:p-2 bg-blue-500 text-white mr-1 rounded-md">
+                <Users className="text-lg sm:text-xl md:text-2xl" />
               </span>
-              Agents
+              <span className="truncate">Agents</span>
             </h1>
           </div>
         </div>
 
-        <Tabs defaultValue="agents" className="mx-2 sm:mx-4">
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100 p-1 rounded-lg">
-            <TabsTrigger 
-              value="agents" 
+        <Tabs defaultValue="agents" className="mx-1 sm:mx-2 md:mx-4">
+          <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6 bg-gray-100 p-1 rounded-lg">
+            <TabsTrigger
+              value="agents"
               className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md transition-all text-xs sm:text-sm"
             >
               <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="font-medium truncate">{agents?.length || 0} Agents</span>
+              <span className="font-medium truncate">
+                {agents?.length || 0} Agents
+              </span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="departments" 
+            <TabsTrigger
+              value="departments"
               className="flex items-center space-x-1 sm:space-x-2 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md transition-all text-xs sm:text-sm"
             >
               <Building2 className="h-4 w-4" />
-              <span className="font-medium truncate">{departments?.length || 0} Departments</span>
+              <span className="font-medium truncate">
+                {departments?.length || 0} Departments
+              </span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="agents" className="space-y-4 sm:space-y-6">
-            <div className="flex justify-between items-center gap-2">
-              <div className="flex-1">
+          <TabsContent value="agents" className="space-y-3 sm:space-y-4 md:space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
+              <div className="flex-1 w-full min-w-0">
                 <SearchFilters
                   filters={agentFilters}
                   onFiltersChange={setAgentFilters}
                   departments={departments || []}
                 />
+                <div className="gap-2 mt-2 flex justify-start sm:justify-end">
+                  <Button
+                    className="bg-[#1B76FF] hover:bg-blue-600 w-full sm:w-auto"
+                    onClick={() => setIsCreateAgentDialogOpen(true)}
+                  >
+                    <PlusCircle
+                      className={cn(
+                        "sm:mr-2 h-4 w-4",
+                        "md:hidden size-6 md:mr-0"
+                      )}
+                    />
+                    <span className="hidden md:block">Create New Agent</span>
+                    <span className="md:hidden">Create Agent</span>
+                  </Button>
+                </div>
               </div>
-              <Button
-                className="bg-[#1B76FF] hover:bg-blue-600"
-                onClick={() => setIsCreateAgentDialogOpen(true)}
-              >
-                <PlusCircle className={cn("mr-2 h-4 w-4", "md:hidden size-6 md:mr-0")} /> 
-                <span className="hidden md:block">Create New Agent</span>
-              </Button>
             </div>
 
             <AgentTable
@@ -243,24 +279,27 @@ export default function AgentsPage() {
             />
           </TabsContent>
 
-          <TabsContent value="departments" className="space-y-4 sm:space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="flex-1">
+          <TabsContent value="departments" className="space-y-3 sm:space-y-4 md:space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+              <div className="flex-1 w-full min-w-0">
                 <DepartmentSearchFilters
                   filters={departmentFilters}
                   onFiltersChange={setDepartmentFilters}
                 />
               </div>
               <Button
-                className="bg-[#1B76FF] hover:bg-blue-600"
+                className="bg-[#1B76FF] hover:bg-blue-600 w-full sm:w-auto"
                 onClick={() => setIsCreateDepartmentDialogOpen(true)}
               >
-                <PlusCircle className={cn("mr-2 h-4 w-4", "md:hidden size-6 md:mr-0")} /> 
+                <PlusCircle
+                  className={cn("mr-2 h-4 w-4", "md:hidden size-6 md:mr-0")}
+                />
                 <span className="hidden md:block">Add Department</span>
+                <span className="md:hidden">Add Dept</span>
               </Button>
             </div>
 
-            <div className="bg-white p-2 sm:p-4 rounded-xl mt-4">
+            <div className="bg-white p-2 sm:p-3 md:p-4 rounded-xl mt-3 sm:mt-4 overflow-hidden">
               {/* Mobile Card View */}
               <div className="block md:hidden">
                 {isLoadingDepartments ? (
@@ -309,20 +348,26 @@ export default function AgentsPage() {
 
               {/* Desktop Table View */}
               <div className="hidden md:block">
-                <DataTable 
-                  columns={createDepartmentColumns(agents || [], handleEditDepartment, handleDeleteDepartment)} 
-                  data={paginatedDepartments} 
+                <DataTable
+                  columns={createDepartmentColumns(
+                    agents || [],
+                    handleEditDepartment,
+                    handleDeleteDepartment
+                  )}
+                  data={paginatedDepartments}
                   isLoading={isLoadingDepartments}
                   skeletonRows={8}
                 />
               </div>
-              
+
               {/* Pagination Controls */}
               {filteredDepartments.length > departmentPageSize && (
-                <div className="mt-6">
+                <div className="mt-4 sm:mt-6 overflow-hidden">
                   <PaginationControls
                     currentPage={currentDepartmentPage}
-                    totalPages={Math.ceil(filteredDepartments.length / departmentPageSize)}
+                    totalPages={Math.ceil(
+                      filteredDepartments.length / departmentPageSize
+                    )}
                     onPageChange={handleDepartmentPageChange}
                   />
                 </div>

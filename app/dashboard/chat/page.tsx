@@ -4,6 +4,7 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import { useGetMyActiveChatSessions, useGetChatMessages } from "@/lib/api";
+import { useBlockCustomerMutation } from "@/lib/blocked-customer.api";
 import {
   useChatActions,
   useActiveChatSessions,
@@ -19,6 +20,7 @@ import {
   TypingIndicator,
   GuestFeed,
   GuestInfo,
+  BlockCustomerDialog,
 } from "./components";
 import { useSocketOperations } from "@/hooks/useSocket";
 
@@ -38,12 +40,25 @@ export default function MyChatsPage() {
     bookCustomer,
   } = useSocketOperations();
 
+  // Block customer mutation
+  const blockCustomerMutation = useBlockCustomerMutation({
+    onSuccess: () => {
+      console.log('Customer blocked successfully');
+      // You might want to show a toast notification here
+    },
+    onError: (error) => {
+      console.error('Failed to block customer:', error);
+    },
+  });
+
   const activeSessionsMap = useActiveChatSessions();
   const pendingRequests = usePendingChatRequests();
   const selectedSessionId = useSelectedChatSessionId();
   const [isTyping, setIsTyping] = useState(false);
   const [isGuestInfoOpen, setIsGuestInfoOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
+  const [isBlockCustomerDialogOpen, setIsBlockCustomerDialogOpen] = useState(false);
+  const [customerToBlock, setCustomerToBlock] = useState<{ sessionId: string; name: string } | null>(null);
 
   // Check for mobile view
   useEffect(() => {
@@ -157,11 +172,51 @@ export default function MyChatsPage() {
     setIsGuestInfoOpen(false);
   }, []);
 
-  const handleBlockGuest = useCallback((sessionId: string) => {
-    // Implement block guest functionality
-    console.log('Blocking guest:', sessionId);
-    handleCloseGuestInfo();
-  }, [handleCloseGuestInfo]);
+  const handleCloseBlockCustomerDialog = useCallback(() => {
+    setIsBlockCustomerDialogOpen(false);
+    setCustomerToBlock(null);
+  }, []);
+
+  const handleBlockCustomer = useCallback((sessionId: string) => {
+    const session = activeSessionsMap[sessionId];
+    if (!session || !session.customerId) {
+      console.error('No customer found for session:', sessionId);
+      return;
+    }
+
+    // Get customer name for display
+    const customerName = typeof session.customerId === 'object' 
+      ? session.customerId.name || session.customerId.email || 'Customer'
+      : 'Customer';
+
+    // Open the confirmation dialog
+    setCustomerToBlock({ sessionId, name: customerName });
+    setIsBlockCustomerDialogOpen(true);
+  }, [activeSessionsMap]);
+
+  const handleConfirmBlockCustomer = useCallback(() => {
+    if (!customerToBlock) return;
+
+    const session = activeSessionsMap[customerToBlock.sessionId];
+    if (!session || !session.customerId) {
+      console.error('No customer found for session:', customerToBlock.sessionId);
+      return;
+    }
+
+    // Extract customer fingerprint
+    const customerId = typeof session.customerId === 'object' ? session.customerId._id : session.customerId;
+    
+    // Use the block customer mutation
+    blockCustomerMutation.mutate({ customerId }, {
+      onSuccess: () => {
+        // Close the dialog
+        setIsBlockCustomerDialogOpen(false);
+        setCustomerToBlock(null);
+        // Optionally end the chat after blocking
+        handleEndChat(customerToBlock.sessionId);
+      }
+    });
+  }, [customerToBlock, activeSessionsMap, blockCustomerMutation, handleEndChat]);
 
   const activeSessionsArray = Object.values(activeSessionsMap).sort(
     (a, b) =>
@@ -200,6 +255,7 @@ export default function MyChatsPage() {
                 onEnd={handleEndChat}
                 onBack={handleBackToChats}
                 onShowGuestInfo={handleShowGuestInfo}
+                onBlockCustomer={handleBlockCustomer}
               />
 
               <ChatMessages
@@ -229,7 +285,16 @@ export default function MyChatsPage() {
             session={selectedSessionDetails}
             isOpen={isGuestInfoOpen}
             onClose={handleCloseGuestInfo}
-            onBlockGuest={handleBlockGuest}
+            onBlockGuest={handleBlockCustomer}
+          />
+
+          {/* Block Customer Dialog */}
+          <BlockCustomerDialog
+            open={isBlockCustomerDialogOpen}
+            onOpenChange={handleCloseBlockCustomerDialog}
+            onConfirm={handleConfirmBlockCustomer}
+            customerName={customerToBlock?.name || 'Customer'}
+            isLoading={blockCustomerMutation.isPending}
           />
         </motion.div>
       );
@@ -239,7 +304,7 @@ export default function MyChatsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="flex h-full overflow-hidden bg-[#f2f4f8] rounded-3xl"
+          className="flex h-full overflow-hidden bg-[#f2f4f8]  rounded-3xl"
         >
           {/* Mobile Sidebar */}
           <ChatSidebar
@@ -287,6 +352,7 @@ export default function MyChatsPage() {
               onEnd={handleEndChat}
               onBack={handleBackToChats}
               onShowGuestInfo={handleShowGuestInfo}
+              onBlockCustomer={handleBlockCustomer}
             />
 
             <ChatMessages
@@ -315,12 +381,21 @@ export default function MyChatsPage() {
         )}
       </main>
 
-      {/* Guest Info Drawer */}
+            {/* Guest Info Drawer */}
       <GuestInfo
         session={selectedSessionDetails}
         isOpen={isGuestInfoOpen}
         onClose={handleCloseGuestInfo}
-        onBlockGuest={handleBlockGuest}
+        onBlockGuest={handleBlockCustomer}
+      />
+
+      {/* Block Customer Dialog */}
+      <BlockCustomerDialog
+        open={isBlockCustomerDialogOpen}
+        onOpenChange={handleCloseBlockCustomerDialog}
+        onConfirm={handleConfirmBlockCustomer}
+        customerName={customerToBlock?.name || 'Customer'}
+        isLoading={blockCustomerMutation.isPending}
       />
     </motion.div>
   );

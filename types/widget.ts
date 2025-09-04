@@ -36,15 +36,7 @@ export interface Widget {
   __v: number;
 }
 
-// Pagination metadata interface
-export interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrev: boolean;
-}
+import { PaginationMeta } from "./shared";
 
 // Paginated response interface
 export interface PaginatedWidgetResponse {

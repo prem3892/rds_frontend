@@ -13,3 +13,4 @@ export { default as VisitorsList } from "./VisitorsList";
 export { default as GuestFeed } from "./GuestFeed";
 export { default as GuestInfo } from "./GuestInfo";
 export { default as CannedMessageSelector } from "./CannedMessageSelector";
+export { default as BlockCustomerDialog } from "./BlockCustomerDialog";

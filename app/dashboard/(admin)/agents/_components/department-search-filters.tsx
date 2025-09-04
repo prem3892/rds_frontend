@@ -21,14 +21,14 @@ export default function DepartmentSearchFilters({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-      <div className="relative flex-1 max-w-md">
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between w-full overflow-hidden">
+      <div className="relative flex-1 w-full min-w-0 max-w-md">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
           placeholder="Search by department name"
           value={filters.search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-10"
+          className="pl-10 w-full"
         />
       </div>
     </div>

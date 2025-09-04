@@ -11,6 +11,19 @@ export interface ChatSession {
     _id: string;
     email: string;
     name: string;
+    metadata?: {
+      browserInfo?: {
+        userAgent?: string;
+        language?: string;
+        platform?: string;
+        cookieEnabled?: boolean;
+        screenResolution?: string;
+        timezone?: string;
+        timestamp?: string;
+      };
+      currentPageUrl?: string;
+      initialDomain?: string;
+    };
   };
   agentId: {
     _id: string;
@@ -63,11 +76,15 @@ export interface GetChatSessionsQueryDto {
 
 // For paginated responses like GET /chat/sessions and GET /chat/sessions/:sessionId/messages
 export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  items: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 // From GET /chat/sessions/:sessionId/messages

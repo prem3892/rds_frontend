@@ -8,7 +8,7 @@ import {
   ChatSession,
   GetChatSessionsQueryDto,
 } from "@/types";
-import { useQuery, UseQueryOptions } from "@tanstack/react-query"; // Removed useInfiniteQuery
+import { useQuery, useInfiniteQuery, UseQueryOptions, UseInfiniteQueryOptions } from "@tanstack/react-query";
 import { customFetch } from "./api";
 
 // 1. Get All Chat Sessions (Admin / Filtered for Agent History) - Now fetches all
@@ -16,20 +16,27 @@ export const CHAT_SESSIONS_QUERY_KEY_PREFIX = "chatSessions";
 
 // Define the response type for chat sessions
 interface ChatSessionsResponse {
-  data: ChatSession[];
-  count: number;
+  items: ChatSession[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 export const useGetAllChatSessions = (
-  params: Omit<GetChatSessionsQueryDto, "limit" | "page"> = {}, // Omitting limit and page
+  params: GetChatSessionsQueryDto = {},
   options?: Omit<
     UseQueryOptions<
-      ChatSessionsResponse, // API returns {data, count}
+      ChatSessionsResponse, // API returns {items, meta}
       ApiErrorResponse,
-      ChatSession[], // But we still transform to just the array for consumers
+      ChatSessionsResponse, // Return full response to access meta
       [
         string,
-        Omit<GetChatSessionsQueryDto, "limit" | "page" | "forCurrentAgent">
+        GetChatSessionsQueryDto
       ]
     >,
     "queryKey" | "queryFn"
@@ -50,13 +57,15 @@ export const useGetAllChatSessions = (
   return useQuery<
     ChatSessionsResponse,
     ApiErrorResponse,
-    ChatSession[],
+    ChatSessionsResponse,
     [string, typeof apiParams]
   >({
     queryKey: [CHAT_SESSIONS_QUERY_KEY_PREFIX, apiParams],
     queryFn: () => {
       const queryParams = new URLSearchParams();
-      // Do NOT append limit or page
+      // Include limit and page for pagination
+      if (apiParams.limit) queryParams.append("limit", apiParams.limit.toString());
+      if (apiParams.page) queryParams.append("page", apiParams.page.toString());
       if (apiParams.status) queryParams.append("status", apiParams.status);
       if (apiParams.agentId) queryParams.append("agentId", apiParams.agentId);
       if (apiParams.departmentId)
@@ -66,14 +75,16 @@ export const useGetAllChatSessions = (
       if (apiParams.customerEmail)
         queryParams.append("customerEmail", apiParams.customerEmail);
       const queryString = queryParams.toString();
+      const url = `/chat/sessions${queryString ? `?${queryString}` : ""}`;
+      
+      // Debug logging
+      console.log('API URL:', url);
+      console.log('Query params:', queryString);
 
-      // API returns {data: ChatSession[], count: number}
-      return customFetch<ChatSessionsResponse>(
-        `/chat/sessions${queryString ? `?${queryString}` : ""}`
-      );
+      // API returns {items: ChatSession[], meta: {...}}
+      return customFetch<ChatSessionsResponse>(url);
     },
-    // Extract just the data array from the response
-    select: (response) => response.data,
+    // Return full response to access both items and meta
     ...options,
   });
 };
@@ -126,6 +137,72 @@ export const useGetChatMessages = (
       return customFetch<ChatMessage[]>(`/chat/sessions/${sessionId}/messages`);
     },
     enabled: !!sessionId, // Query will only run if sessionId is truthy
+    ...options,
+  });
+};
+
+// 4. Infinite Query for Chat Sessions (for infinite scroll)
+export const CHAT_SESSIONS_INFINITE_QUERY_KEY_PREFIX = "chatSessionsInfinite";
+
+export const useGetAllChatSessionsInfinite = (
+  params: Omit<GetChatSessionsQueryDto, "page"> = {},
+  options?: Omit<
+    UseInfiniteQueryOptions<
+      ChatSessionsResponse,
+      ApiErrorResponse,
+      ChatSession[],
+      [string, Omit<GetChatSessionsQueryDto, "page">],
+      number
+    >,
+    "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"
+  >
+) => {
+  const currentUser = useCurrentUser();
+  const stableParams = { ...params };
+
+  if (
+    stableParams.forCurrentAgent &&
+    currentUser &&
+    (currentUser.role === "AGENT" || currentUser.role === "ADMIN")
+  ) {
+    stableParams.agentId = currentUser.id;
+  }
+  const { ...apiParams } = stableParams;
+
+  return useInfiniteQuery<
+    ChatSessionsResponse,
+    ApiErrorResponse,
+    ChatSession[],
+    [string, typeof apiParams],
+    number
+  >({
+    queryKey: [CHAT_SESSIONS_INFINITE_QUERY_KEY_PREFIX, apiParams],
+    queryFn: ({ pageParam = 1 }) => {
+      const queryParams = new URLSearchParams();
+      queryParams.append("page", pageParam.toString());
+      if (apiParams.limit) queryParams.append("limit", apiParams.limit.toString());
+      if (apiParams.status) queryParams.append("status", apiParams.status);
+      if (apiParams.agentId) queryParams.append("agentId", apiParams.agentId);
+      if (apiParams.departmentId)
+        queryParams.append("departmentId", apiParams.departmentId);
+      if (apiParams.customerName)
+        queryParams.append("customerName", apiParams.customerName);
+      if (apiParams.customerEmail)
+        queryParams.append("customerEmail", apiParams.customerEmail);
+      const queryString = queryParams.toString();
+
+      return customFetch<ChatSessionsResponse>(
+        `/chat/sessions${queryString ? `?${queryString}` : ""}`
+      );
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.meta.hasNext ? allPages.length + 1 : undefined;
+    },
+    initialPageParam: 1,
+    select: (data) => {
+      // Flatten all pages into a single array
+      return data.pages.flatMap(page => page.items);
+    },
     ...options,
   });
 };

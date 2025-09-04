@@ -126,6 +126,7 @@
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
+    line-clamp: 1;
     -webkit-line-clamp: 1;
   }
   
@@ -133,6 +134,7 @@
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
+    line-clamp: 2;
     -webkit-line-clamp: 2;
   }
   
@@ -140,6 +142,54 @@
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
+    line-clamp: 3;
     -webkit-line-clamp: 3;
+  }
+}
+
+/* Mobile overflow fixes */
+@media (max-width: 640px) {
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+  
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .overflow-hidden {
+    overflow: hidden !important;
+  }
+  
+  /* Ensure inputs and buttons don't overflow */
+  input, button, select, textarea {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Prevent horizontal scrolling on mobile */
+  .mobile-no-overflow {
+    overflow-x: hidden;
+    width: 100%;
+  }
+}
+
+/* iPhone SE specific fixes */
+@media (max-width: 375px) {
+  .container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  /* Reduce padding on very small screens */
+  .p-responsive {
+    padding: 0.5rem;
+  }
+  
+  .px-responsive {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }

@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Loader2, ArrowLeft, User } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ArrowLeft, User, ShieldX } from "lucide-react";
 import { ChatSession } from "@/types";
 import { useIsBookingInProgress, useChatActions } from "@/stores/chat";
 import BookingForm from "./BookingForm";
@@ -17,6 +17,7 @@ interface ChatHeaderProps {
   onEnd: (sessionId: string) => void;
   onBack?: () => void;
   onShowGuestInfo?: () => void;
+  onBlockCustomer?: (sessionId: string) => void;
 }
 
 const ChatHeader = ({ 
@@ -24,7 +25,8 @@ const ChatHeader = ({
   onResolve, 
   onEnd, 
   onBack,
-  onShowGuestInfo 
+  onShowGuestInfo,
+  onBlockCustomer
 }: ChatHeaderProps) => {
   const isBookingInProgress = useIsBookingInProgress(session._id);
   const chatActions = useChatActions();
@@ -34,7 +36,7 @@ const ChatHeader = ({
 
        session.customerId?.name ||
         session.customerId?.email ||
-        session.customerId._id.slice(-6)
+        session.customerId?._id.slice(-6)
    
 
   const customerInitial =
@@ -115,6 +117,19 @@ const ChatHeader = ({
               </Button>
             )}
             
+            {onBlockCustomer && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onBlockCustomer(session._id)}
+                disabled={session.status !== "ACTIVE"}
+                className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              >
+                <ShieldX className="h-4 w-4 mr-1" />
+                <span className="hidden md:inline">Block</span>
+              </Button>
+            )}
+            
             {/* <Button
               variant="outline"
               size="sm"
@@ -135,7 +150,7 @@ const ChatHeader = ({
                 <>
                   <CheckCircle2 className="h-4 w-4 mr-1.5" />
                   <span className="hidden sm:inline">
-                    {session.appointmentBooked ? "Booked" : "Book Now"}
+                    {session.appointmentBooked ? "Book Now" : "Book Now"}
                   </span>
                 </>
               )}
@@ -146,7 +161,7 @@ const ChatHeader = ({
               size="sm"
               onClick={() => onEnd(session._id)}
               disabled={session.status !== "ACTIVE"}
-              className="text-xs"
+              className="text-2xs"
             >
               <XCircle className="h-4 w-4 mr-1.5" />
               <span className="hidden sm:inline">End Chat</span>

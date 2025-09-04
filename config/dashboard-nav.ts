@@ -12,6 +12,8 @@ import {
   CircleUserRound,
   Power,
   FileText,
+  ShieldX,
+  UserCheck,
 } from "lucide-react"; // Example icons from lucide-react
 
 export type NavItem = {
@@ -47,6 +49,11 @@ export const dashboardNavItems: NavItem[] = [
     icon: History,
   },
   {
+    title: "Contacts",
+    href: "/dashboard/contacts",
+    icon: UserCheck,
+  },
+  {
     title: "User Management",
     href: "/dashboard/users",
     icon: Users,
@@ -80,6 +87,12 @@ export const dashboardNavItems: NavItem[] = [
     title: "Auto Messages",
     href: "/dashboard/auto-messages",
     icon: MessageSquare,
+  },
+  {
+    title: "Blocked Customers",
+    href: "/dashboard/blocked-customers",
+    icon: ShieldX,
+    role: "ADMIN",
   },
   {
     title: "All Chat Sessions", // Admin monitoring

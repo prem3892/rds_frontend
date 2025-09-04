@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, getColorFromString } from "@/lib/utils";
+import { useCreateContact, useGetContactsByCustomer, useUpdateContact } from "@/lib/contact.api";
 import { ChatSession } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -14,8 +15,16 @@ import {
   Globe,
   MapPin,
   User as UserIcon,
-  X
+  X,
+  Save,
+  Loader2,
+  Edit,
+  Mail,
+  Phone,
+  User
 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface GuestInfoProps {
   session: ChatSession | null;
@@ -30,6 +39,29 @@ export function GuestInfo({
   onClose,
   onBlockGuest,
 }: GuestInfoProps) {
+  const [contactForm, setContactForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+  });
+  const [isEditingContact, setIsEditingContact] = useState(false);
+
+  const createContactMutation = useCreateContact();
+  const updateContactMutation = useUpdateContact();
+  
+  // Check if contacts exist for this customer
+  const {
+    data: existingContacts,
+    isLoading: isLoadingContact,
+    error: contactError,
+  } = useGetContactsByCustomer(session?.customerId?._id || null, {
+    retry: false, // Don't retry if contact doesn't exist
+  });
+
+  // Get the first contact if any exist
+  const existingContact = existingContacts && existingContacts.length > 0 ? existingContacts[0] : null;
+
   if (!session) return null;
 
   const getCustomerName = () => {
@@ -61,6 +93,75 @@ export function GuestInfo({
       return `${Math.floor(diffInMinutes / 1440)} day${Math.floor(diffInMinutes / 1440) > 1 ? 's' : ''} ago`;
     }
     return "Unknown";
+  };
+
+  const handleContactFormChange = (field: string, value: string) => {
+    setContactForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveContact = async () => {
+    if (!contactForm.firstName || !contactForm.lastName || !contactForm.email) {
+      toast.error("Please fill in all required fields (First Name, Last Name, Email)");
+      return;
+    }
+
+    try {
+      await createContactMutation.mutateAsync({
+        firstName: contactForm.firstName,
+        lastName: contactForm.lastName,
+        email: contactForm.email,
+        phone: contactForm.phone,
+        customer: session.customerId._id,
+      });
+
+      toast.success("Contact saved successfully!");
+      setContactForm({ firstName: "", lastName: "", email: "", phone: "" });
+    } catch (error) {
+      toast.error("Failed to save contact");
+      console.error("Error saving contact:", error);
+    }
+  };
+
+  const handleUpdateContact = async () => {
+    if (!existingContact || !contactForm.firstName || !contactForm.lastName || !contactForm.email) {
+      toast.error("Please fill in all required fields (First Name, Last Name, Email)");
+      return;
+    }
+
+    try {
+      await updateContactMutation.mutateAsync({
+        id: existingContact._id,
+        data: {
+          firstName: contactForm.firstName,
+          lastName: contactForm.lastName,
+          email: contactForm.email,
+          phone: contactForm.phone,
+        },
+      });
+
+      toast.success("Contact updated successfully!");
+      setIsEditingContact(false);
+    } catch (error) {
+      toast.error("Failed to update contact");
+      console.error("Error updating contact:", error);
+    }
+  };
+
+  const handleEditContact = () => {
+    if (existingContact) {
+      setContactForm({
+        firstName: existingContact.firstName,
+        lastName: existingContact.lastName,
+        email: existingContact.email,
+        phone: existingContact.phone,
+      });
+      setIsEditingContact(true);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingContact(false);
+    setContactForm({ firstName: "", lastName: "", email: "", phone: "" });
   };
 
   return (
@@ -132,41 +233,131 @@ export function GuestInfo({
                   {/* Contact Details */}
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base font-semibold">Contact Details</CardTitle>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base font-semibold">Contact Details</CardTitle>
+                        {existingContact && !isEditingContact && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleEditContact}
+                            className="text-xs"
+                          >
+                            <Edit className="mr-1 h-3 w-3" />
+                            Edit
+                          </Button>
+                        )}
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-sm font-medium">Email:</Label>
-                        <Input
-                          id="email"
-                          placeholder="Enter email"
-                          className="text-sm"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName" className="text-sm font-medium">First Name:</Label>
-                        <Input
-                          id="firstName"
-                          placeholder="Enter first name"
-                          className="text-sm"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName" className="text-sm font-medium">Last Name:</Label>
-                        <Input
-                          id="lastName"
-                          placeholder="Enter last name"
-                          className="text-sm"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-sm font-medium">Phone:</Label>
-                        <Input
-                          id="phone"
-                          placeholder="Enter phone number"
-                          className="text-sm"
-                        />
-                      </div>
+                      {isLoadingContact ? (
+                        <div className="flex items-center justify-center py-4">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span className="ml-2 text-sm text-gray-500">Loading contact...</span>
+                        </div>
+                      ) : existingContact && !isEditingContact ? (
+                        // Show existing contact details
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <span className="text-gray-600">Name:</span>
+                            <span className="font-medium">
+                              {existingContact.firstName} {existingContact.lastName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail className="w-4 h-4 text-gray-500" />
+                            <span className="text-gray-600">Email:</span>
+                            <span className="font-medium">{existingContact.email}</span>
+                          </div>
+                          {existingContact.phone && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Phone className="w-4 h-4 text-gray-500" />
+                              <span className="text-gray-600">Phone:</span>
+                              <span className="font-medium">{existingContact.phone}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock className="w-4 h-4 text-gray-500" />
+                            <span className="text-gray-600">Saved:</span>
+                            <span className="font-medium">
+                              {new Date(existingContact.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        // Show contact form (for new contact or editing)
+                        <div className="space-y-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="firstName" className="text-sm font-medium">First Name *</Label>
+                            <Input
+                              id="firstName"
+                              placeholder="Enter first name"
+                              value={contactForm.firstName}
+                              onChange={(e) => handleContactFormChange("firstName", e.target.value)}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="lastName" className="text-sm font-medium">Last Name *</Label>
+                            <Input
+                              id="lastName"
+                              placeholder="Enter last name"
+                              value={contactForm.lastName}
+                              onChange={(e) => handleContactFormChange("lastName", e.target.value)}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="Enter email"
+                              value={contactForm.email}
+                              onChange={(e) => handleContactFormChange("email", e.target.value)}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="phone" className="text-sm font-medium">Phone:</Label>
+                            <Input
+                              id="phone"
+                              placeholder="Enter phone number"
+                              value={contactForm.phone}
+                              onChange={(e) => handleContactFormChange("phone", e.target.value)}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="flex gap-2 mt-4">
+                            <Button
+                              onClick={isEditingContact ? handleUpdateContact : handleSaveContact}
+                              disabled={createContactMutation.isPending || updateContactMutation.isPending}
+                              className="flex-1"
+                            >
+                              {(createContactMutation.isPending || updateContactMutation.isPending) ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  {isEditingContact ? "Updating..." : "Saving..."}
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="mr-2 h-4 w-4" />
+                                  {isEditingContact ? "Update Contact" : "Save Contact"}
+                                </>
+                              )}
+                            </Button>
+                            {isEditingContact && (
+                              <Button
+                                variant="outline"
+                                onClick={handleCancelEdit}
+                                className="flex-1"
+                              >
+                                Cancel
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 

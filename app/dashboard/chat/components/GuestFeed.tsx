@@ -18,9 +18,16 @@ import {
   Chrome,
   Globe,
   Search,
-  Users
+  Users,
+  Monitor,
+  Smartphone,
+  Tablet
 } from "lucide-react";
 import { useState } from "react";
+import { rawTimeZones } from '@vvo/tzdb';
+
+import { FaChrome, FaFirefox, FaSafari, FaEdge, FaTablet,FaOpera, FaQuestionCircle, FaWindows } from 'react-icons/fa';
+import {  SiApple, SiLinux, SiAndroid, SiMacos,  SiTableau } from 'react-icons/si'; // Simple Icons for brands
 
 
 interface GuestFeedProps {
@@ -28,6 +35,17 @@ interface GuestFeedProps {
   maxHeight?: string;
   onInitiateChat?: (visitorId: string) => void;
 }
+
+
+const countryCodeToEmoji = (code: string) => {
+  try {
+    const OFFSET = 127397;
+    const codePoints = code.toUpperCase().split('').map(char => char.charCodeAt(0) + OFFSET);
+    return String.fromCodePoint(...codePoints);
+  } catch (error) {
+    return "🏳️"; // Return neutral flag if conversion fails
+  }
+};
 
 export function GuestFeed({
   className,
@@ -99,49 +117,56 @@ export function GuestFeed({
     }
   };
 
-  const getCountryFlag = (country?: string) => {
-    // Simple country flag emoji mapping
-    const flagMap: Record<string, string> = {
-      india: "🇮🇳",
-      us: "🇺🇸",
-      uk: "🇬🇧",
-      canada: "🇨🇦",
-      australia: "🇦🇺",
-      germany: "🇩🇪",
-      france: "🇫🇷",
-      spain: "🇪🇸",
-      italy: "🇮🇹",
-      japan: "🇯🇵",
-      china: "🇨🇳",
-      brazil: "🇧🇷",
-      mexico: "🇲🇽",
-      russia: "🇷🇺",
-      south_korea: "🇰🇷",
+    const getCountryFlag = (timezone: string) => {
+      try {
+        // Get the timezone from the session data
+        // const timezone = session.customerId?.metadata?.browserInfo?.timezone;
+        console.log(timezone, "timezone");
+        if (!timezone) return "🏳️"; // Return a neutral flag if no timezone
+
+        // Find the timezone in the database
+        const tz = rawTimeZones.find(t =>  t.group.includes(timezone));
+        const countryCode = tz?.countryCode;
+        console.log(tz, "tz");
+        console.log(countryCode, "countryCode");
+        
+        // If we found a country code, convert it to an emoji
+        if (countryCode && countryCode.length === 2) {
+          console.log(countryCode, "countryCode");
+          return countryCodeToEmoji(countryCode);
+        }
+        
+        return "🏳️"; // Return a neutral flag as a fallback
+      } catch (error) {
+        return "🏳️"; // Return neutral flag if anything goes wrong
+      }
     };
-    
-    return flagMap[country?.toLowerCase() || ""] || "🇺🇸";
-  };
 
   const getBrowserIcon = (userAgent?: string) => {
-    if (!userAgent) return <Globe className="w-3 h-3" />;
-    
-    if (userAgent.includes("Chrome")) return <Chrome className="w-3 h-3" />;
-    if (userAgent.includes("Firefox")) return <Globe className="w-3 h-3" />;
-    if (userAgent.includes("Safari")) return <Globe className="w-3 h-3" />;
-    if (userAgent.includes("Edge")) return <Globe className="w-3 h-3" />;
-    return <Globe className="w-3 h-3" />;
-  };
+      if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
+      
+      const ua = userAgent.toLowerCase();
+      if (ua.includes("chrome") && !ua.includes("edg")) return <FaChrome className="w-3 h-3 text-blue-600" />;
+      if (ua.includes("firefox")) return <FaFirefox className="w-3 h-3 text-orange-500" />;
+      if (ua.includes("safari") && !ua.includes("chrome")) return <FaSafari className="w-3 h-3 text-blue-500" />;
+      if (ua.includes("edge")) return <FaEdge className="w-3 h-3 text-blue-700" />;
+      if (ua.includes("opera")) return <FaOpera className="w-3 h-3 text-red-500" />;
+      return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
+    };
 
-  const getPlatformIcon = (platform?: string) => {
-    if (!platform) return <Globe className="w-3 h-3" />;
-    
-    if (platform.includes("Mac")) return <Apple className="w-3 h-3" />;
-    if (platform.includes("Windows")) return <Globe className="w-3 h-3" />;
-    if (platform.includes("Linux")) return <Globe className="w-3 h-3" />;
-    if (platform.includes("iOS")) return <Apple className="w-3 h-3" />;
-    if (platform.includes("Android")) return <Globe className="w-3 h-3" />;
-    return <Globe className="w-3 h-3" />;
-  };
+    const getPlatformIcon = (platform?: string) => {
+      if (!platform) return <Monitor className="w-3 h-3 text-gray-500" />;
+      
+      const platformLower = platform.toLowerCase();
+      if (platformLower.includes("mac")) return <SiMacos className="w-3 h-3 text-gray-800" />;
+        if (platformLower.includes("win")) return <FaWindows className="w-3 h-3 text-blue-600" />;
+      if (platformLower.includes("linux")) return <SiLinux className="w-3 h-3 text-green-600" />;
+      if (platformLower.includes("ios")) return <SiApple className="w-3 h-3 text-blue-500" />;
+      if (platformLower.includes("android")) return <SiAndroid className="w-3 h-3 text-green-500" />;
+      if (platformLower.includes("mobile")) return <SiAndroid className="w-3 h-3 text-gray-600" />;
+      if (platformLower.includes("tablet")) return <FaTablet className="w-3 h-3 text-gray-600" />;
+      return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
+    };
 
   return (
     <Card className={cn("w-full h-full  rounded-3xl border-none shadow-sm ", className)}>
@@ -260,7 +285,7 @@ export function GuestFeed({
                                 {visitor.name}
                               </span>
                               <span className="text-lg">
-                                {getCountryFlag(visitor.browserInfo.language)}
+                                {getCountryFlag(visitor.browserInfo.timezone || "")}
                               </span>
                               {getBrowserIcon(visitor.browserInfo.userAgent)}
                               {getPlatformIcon(visitor.browserInfo.platform)}

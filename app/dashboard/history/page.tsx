@@ -62,7 +62,7 @@ export default function ChatHistoryPage() {
   const [selectedSessionForMessages, setSelectedSessionForMessages] =
     useState<ChatSession | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20); // API default
+  const [pageSize] = useState(10); // API default
 
   // Get agents and departments for filters
   const { data: agents } = useGetAllAgents({
@@ -93,14 +93,25 @@ export default function ChatHistoryPage() {
     customerEmail: filters.customerEmail || undefined,
   };
 
+  // Debug logging
+  console.log('apiFilters:', apiFilters);
+  console.log('currentPage:', currentPage);
+
   const {
-    data: sessions,
+    data: sessionsResponse,
     isLoading,
     error,
-    
   } = useGetAllChatSessions(apiFilters, {
     enabled: !!currentUser,
   });
+
+  const sessions = sessionsResponse?.items || [];
+  const paginationMeta = sessionsResponse?.meta;
+
+  // Debug logging
+  console.log('sessionsResponse:', sessionsResponse);
+  console.log('paginationMeta:', paginationMeta);
+  console.log('sessions length:', sessions.length);
 
   const { data: messages, isLoading: isLoadingMessages } = useGetChatMessages(
     selectedSessionForMessages?._id || null
@@ -128,6 +139,8 @@ export default function ChatHistoryPage() {
   };
 
   const handlePageChange = (page: number) => {
+    console.log('handlePageChange called with page:', page);
+    console.log('Current page before update:', currentPage);
     setCurrentPage(page);
   };
 
@@ -140,17 +153,11 @@ export default function ChatHistoryPage() {
     if (!filters.search) return true;
     
     const searchTerm = filters.search.toLowerCase();
-    const customerName = session.customerId.name.toLowerCase();
-    const customerEmail = session.customerId.email.toLowerCase();
+    const customerName = session.customerId?.name?.toLowerCase() || '';
+    const customerEmail = session.customerId?.email?.toLowerCase() || '';
     
     return customerName.includes(searchTerm) || customerEmail.includes(searchTerm);
   }) || [];
-
-  // Paginate filtered sessions
-  const paginatedSessions = filteredSessions.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
 
   return (
     <motion.div
@@ -201,7 +208,7 @@ export default function ChatHistoryPage() {
               {/* Mobile Card View */}
               <div className="block md:hidden">
                 <div className="space-y-4">
-                  {paginatedSessions.map((session) => (
+                  {filteredSessions.map((session) => (
                     <HistoryMobileCard
                       key={session._id}
                       session={session}
@@ -215,22 +222,24 @@ export default function ChatHistoryPage() {
               <div className="hidden md:block">
                 <DataTable 
                   columns={createHistoryColumns(handleViewMessages)} 
-                  data={paginatedSessions} 
+                  data={filteredSessions} 
                   isLoading={isLoading}
                   skeletonRows={8}
                 />
               </div>
               
               {/* Pagination Controls */}
-              {filteredSessions.length > pageSize && (
+              {paginationMeta && paginationMeta.totalPages > 1 && (
                 <div className="mt-6">
                   <PaginationControls
                     currentPage={currentPage}
-                    totalPages={Math.ceil(filteredSessions.length / pageSize)}
+                    totalPages={paginationMeta.totalPages}
                     onPageChange={handlePageChange}
                   />
                 </div>
               )}
+              
+             
             </div>
           )}
 
