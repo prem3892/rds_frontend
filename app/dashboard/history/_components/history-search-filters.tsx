@@ -11,11 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Filter, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChatSessionStatus } from "@/types";
 import { Department, AgentProfile } from "@/types";
 import { cn } from "@/lib/utils";
 import { HistorySearchFiltersSkeleton } from "./history-search-filters-skeleton";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface HistoryFilters {
   search: string;
@@ -57,13 +58,51 @@ export default function HistorySearchFilters({
   isLoading = false,
 }: HistorySearchFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Local state for customer name and email inputs
+  const [localCustomerName, setLocalCustomerName] = useState(filters.customerName);
+  const [localCustomerEmail, setLocalCustomerEmail] = useState(filters.customerEmail);
+  
+  // Debounced values for customer name and email
+  const debouncedCustomerName = useDebounce(localCustomerName, 500);
+  const debouncedCustomerEmail = useDebounce(localCustomerEmail, 500);
+
+  // Update parent filters when debounced values change
+  useEffect(() => {
+    if (debouncedCustomerName !== filters.customerName) {
+      onFiltersChange({ ...filters, customerName: debouncedCustomerName });
+    }
+  }, [debouncedCustomerName, filters, onFiltersChange]);
+
+  useEffect(() => {
+    if (debouncedCustomerEmail !== filters.customerEmail) {
+      onFiltersChange({ ...filters, customerEmail: debouncedCustomerEmail });
+    }
+  }, [debouncedCustomerEmail, filters, onFiltersChange]);
+
+  // Sync local state when filters change from parent (e.g., when clearing filters)
+  useEffect(() => {
+    setLocalCustomerName(filters.customerName);
+  }, [filters.customerName]);
+
+  useEffect(() => {
+    setLocalCustomerEmail(filters.customerEmail);
+  }, [filters.customerEmail]);
 
   if (isLoading) {
     return <HistorySearchFiltersSkeleton />;
   }
 
   const handleInputChange = (field: keyof HistoryFilters, value: string) => {
-    onFiltersChange({ ...filters, [field]: value });
+    // Handle customer name and email with local state for debouncing
+    if (field === 'customerName') {
+      setLocalCustomerName(value);
+    } else if (field === 'customerEmail') {
+      setLocalCustomerEmail(value);
+    } else {
+      // For other fields, update immediately
+      onFiltersChange({ ...filters, [field]: value });
+    }
   };
 
   const hasActiveFilters = Object.values(filters).some(value => value !== "" && value !== "all");
@@ -171,7 +210,7 @@ export default function HistorySearchFilters({
             <Label htmlFor="customerName">Customer Name</Label>
             <Input
               placeholder="Filter by customer name..."
-              value={filters.customerName}
+              value={localCustomerName}
               onChange={(e) => handleInputChange("customerName", e.target.value)}
             />
           </div>
@@ -181,7 +220,7 @@ export default function HistorySearchFilters({
             <Label htmlFor="customerEmail">Customer Email</Label>
             <Input
               placeholder="Filter by customer email..."
-              value={filters.customerEmail}
+              value={localCustomerEmail}
               onChange={(e) => handleInputChange("customerEmail", e.target.value)}
             />
           </div>
