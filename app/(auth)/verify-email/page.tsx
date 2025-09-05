@@ -84,7 +84,7 @@ export default function VerifyEmailPage() {
       // No token provided, show error
       setVerificationState("error");
     }
-  }, [token, router, verifyMutation]);
+  }, [token, router]);
 
   const handleResendVerification = async (data: ResendVerificationFormValues) => {
     resendMutation.mutate(data, {
