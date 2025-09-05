@@ -39,6 +39,7 @@ async function callRefreshTokenEndpoint(refreshToken: string): Promise<RefreshTo
  */
 async function callLogoutEndpoint(): Promise<void> {
   const refreshToken = useAuthStore.getState().refreshToken;
+  const accessToken = useAuthStore.getState().accessToken;
   
   if (!refreshToken) {
     return; // No token to logout with
@@ -49,8 +50,10 @@ async function callLogoutEndpoint(): Promise<void> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ refreshToken } as RefreshTokenRequest),
+
+    
     });
   } catch (error) {
     // Log error but don't throw - logout should always succeed on frontend
@@ -226,4 +229,5 @@ export function initializeTokenRefresh(): () => void {
 
   // Return cleanup function
   return () => clearInterval(interval);
+  
 }
