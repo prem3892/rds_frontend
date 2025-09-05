@@ -2,45 +2,131 @@
 
 import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper";
 import { GlobalSocketInitializer } from "@/hooks/useSocket";
-import {
-  useCurrentUser,
-  useHasHydrated,
-  useIsAuthenticated,
-} from "@/stores/auth";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useTokenRefresh } from "@/hooks/useTokenRefresh";
+import { useCurrentUser, useHasHydrated } from "@/stores/auth";
+import { useEffect, useState } from "react";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const isAuthenticated = useIsAuthenticated();
   const currentUser = useCurrentUser();
   const hasHydrated = useHasHydrated();
-  // const sidebarExpanded = useSidebarExpanded();
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // Initialize token refresh
+  useTokenRefresh();
+
+  // Initialize the layout after hydration
   useEffect(() => {
-    // Only check authentication after the store has hydrated
     if (hasHydrated) {
-      console.log(
-        "Store hydrated, checking auth:",
-        isAuthenticated,
-        currentUser
-      );
-      if (!isAuthenticated) {
-        console.log("Not Authenticated, redirecting to login");
-        router.replace("/login");
-      }
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setIsInitialized(true);
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [hasHydrated, isAuthenticated, router]);
+  }, [hasHydrated]);
 
-  // Show loading while store is hydrating or while not authenticated
-  if (!hasHydrated || !isAuthenticated || !currentUser) {
+  // Show loading skeleton during hydration and initialization
+  if (!hasHydrated || !isInitialized) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p>Loading dashboard...</p>
+      <div className="flex min-h-screen bg-muted/40 overflow-hidden mobile-no-overflow">
+        {/* Sidebar Skeleton */}
+        <div className="border-r-0 p-4 px-2 bg-white outline-none border-none flex-shrink-0">
+          <div className="flex h-full flex-col rounded-3xl bg-gradient-to-b from-[#00398F] to-[#001433]">
+            {/* Sidebar Header Skeleton */}
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col items-center gap-2 justify-center pb-2">
+                <div className="h-20 w-32 bg-white/20 animate-pulse rounded" />
+                <div className="h-px w-full bg-white/20" />
+              </div>
+            </div>
+
+            {/* Sidebar Content Skeleton */}
+            <div className="px-2 sm:px-4 flex-1">
+              <div className="h-full px-4 flex flex-col gap-4">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <div key={index} className="flex items-center gap-4 px-2 sm:px-3 md:px-4 py-2 sm:py-3">
+                    <div className="h-5 w-5 bg-white/20 animate-pulse rounded" />
+                    <div className="h-4 w-24 bg-white/20 animate-pulse rounded" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Sidebar Footer Skeleton */}
+            <div className="p-2 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 md:px-4 py-2 sm:py-3">
+                <div className="h-4 sm:h-5 w-4 sm:w-5 bg-white/20 animate-pulse rounded" />
+                <div className="h-4 w-16 bg-white/20 animate-pulse rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Area Skeleton */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Header Skeleton */}
+          <header className="flex h-16 items-center justify-between bg-white px-3 sm:px-4 md:px-6 overflow-hidden">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0">
+              <div className="h-8 w-8 bg-gray-200 animate-pulse rounded" />
+              {/* Mobile logo skeleton */}
+              <div className="block md:hidden">
+                <div className="h-16 w-32 bg-gray-200 animate-pulse rounded" />
+              </div>
+              {/* Desktop title skeleton */}
+              <div className="hidden md:block h-8 w-48 bg-gray-200 animate-pulse rounded" />
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              {/* Online/Offline Toggle Skeleton */}
+              <div className="hidden sm:flex bg-gray-100 rounded-full p-1 flex-shrink-0">
+                <div className="h-8 w-16 bg-gray-200 animate-pulse rounded-full" />
+                <div className="h-8 w-20 bg-gray-200 animate-pulse rounded-full" />
+              </div>
+              {/* Mobile status switch skeleton */}
+              <div className="sm:hidden">
+                <div className="h-8 w-12 bg-gray-200 animate-pulse rounded-full" />
+              </div>
+
+              {/* Profile Section Skeleton */}
+              <div className="flex items-center gap-2 p-2 flex-shrink-0">
+                <div className="h-8 w-8 bg-gray-200 animate-pulse rounded-full" />
+                <div className="hidden sm:flex flex-col items-start text-sm min-w-0 gap-1">
+                  <div className="h-4 w-32 bg-gray-200 animate-pulse rounded" />
+                  <div className="h-3 w-40 bg-gray-200 animate-pulse rounded" />
+                </div>
+                <div className="h-4 w-4 bg-gray-200 animate-pulse rounded" />
+              </div>
+            </div>
+          </header>
+
+          {/* Main Content Skeleton */}
+          <main className="flex-1 overflow-auto bg-white p-2 sm:p-3 md:p-4 lg:p-5 mobile-no-overflow">
+            <div className="space-y-6">
+              {/* Page Title Skeleton */}
+              <div className="space-y-2">
+                <div className="h-8 w-64 bg-gray-200 animate-pulse rounded" />
+                <div className="h-4 w-96 bg-gray-200 animate-pulse rounded" />
+              </div>
+
+              {/* Content Grid Skeleton */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="space-y-3">
+                    <div className="h-48 w-full bg-gray-200 animate-pulse rounded-lg" />
+                    <div className="space-y-2">
+                      <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded" />
+                      <div className="h-3 w-1/2 bg-gray-200 animate-pulse rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
@@ -48,18 +134,7 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen bg-muted/40 overflow-hidden mobile-no-overflow">
       <GlobalSocketInitializer /> {/* Global persistent socket */}
-      {/* <GlobalSidebar currentUser={currentUser} /> */}
       <MainLayoutWrapper>{children}</MainLayoutWrapper>
-      {/* <main
-        className={cn(
-          "flex flex-1 flex-col overflow-hidden transition-all duration-300 "
-        )}
-      >
-
-        <div className="flex-1 p-6 sm:p-6 lg:p-8 overflow-hidden">
-       
-        </div>
-      </main> */}
     </div>
   );
 }

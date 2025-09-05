@@ -13,6 +13,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { handleApiError, isUnauthorizedError } from "@/lib/error-handler";
+import { fetchWithTokenRefresh, logoutUser } from "@/lib/token-refresh";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
@@ -34,30 +35,12 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Custom fetch wrapper
+// Custom fetch wrapper with automatic token refresh
 export const customFetch = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  const token = useAuthStore.getState().accessToken; // Get token directly from Zustand store
-
-  const defaultHeaders: HeadersInit = {
-    "Content-Type": "application/json",
-  };
-
-  if (token) {
-    defaultHeaders["Authorization"] = `Bearer ${token}`;
-  }
-
-  const config: RequestInit = {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-  };
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  const response = await fetchWithTokenRefresh(`${API_BASE_URL}${endpoint}`, options);
 
   if (!response.ok) {
     let errorData: ApiErrorResponse;
@@ -81,9 +64,10 @@ export const customFetch = async <T>(
       };
     }
 
-    // Handle 401 errors globally
+    // Handle 401 errors globally (after token refresh attempt)
     if (isUnauthorizedError(errorData) && !endpoint.includes("/auth/login")) {
-      handleApiError(errorData, endpoint);
+      // If we still get 401 after token refresh, logout the user
+      await logoutUser();
     }
     throw errorData;
   }
@@ -115,7 +99,7 @@ export const useLoginMutation = (
         body: JSON.stringify(loginData),
       }),
     onSuccess: (data, variables, context) => {
-      loginAction(data.user, data.accessToken); // Update Zustand store
+      loginAction(data.user, data.accessToken, data.refreshToken); // Update Zustand store with refresh token
       if (options?.onSuccess) {
         options.onSuccess(data, variables, context);
       }
