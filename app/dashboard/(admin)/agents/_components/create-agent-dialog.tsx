@@ -22,12 +22,32 @@ import {
 import { Input } from "@/components/ui/input";
 import { AGENTS_QUERY_KEY, RegisterAgentDto, useRegisterAgentMutation } from "@/lib/agent.api";
 import { Department } from "@/types";
+import { AgentShift } from "@/types/agent";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import { AgentShiftsForm } from "./agent-shifts-form";
+
+// Zod schema for time slots
+const timeSlotSchema = z.object({
+  startHour: z.number().min(0).max(23),
+  startMinute: z.number().min(0).max(59),
+  endHour: z.number().min(0).max(23),
+  endMinute: z.number().min(0).max(59),
+});
+
+// Zod schema for agent shifts
+const agentShiftSchema = z.object({
+  dayOfWeek: z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]),
+  isWorkingDay: z.boolean(),
+  timeSlots: z.array(timeSlotSchema),
+  isActive: z.boolean(),
+  priority: z.number(),
+  description: z.string().optional(),
+});
 
 // Zod schema for creating new agents
 const createAgentFormSchema = z.object({
@@ -37,8 +57,12 @@ const createAgentFormSchema = z.object({
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters." }),
+  phoneNo: z.string().optional(),
+  website: z.string().url().optional().or(z.literal("")),
   departmentIds: z.array(z.string()),
   role: z.enum(["AGENT"]),
+  shifts: z.array(agentShiftSchema).optional(),
+  timezone: z.string().optional(),
 });
 
 type CreateAgentFormValues = z.infer<typeof createAgentFormSchema>;
@@ -59,9 +83,12 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
       lastName: "",
       email: "",
       password: "",
+      phoneNo: "",
+      website: "",
       departmentIds: [],
       role: "AGENT",
-
+      shifts: [],
+      timezone: "America/New_York",
     },
   });
 
@@ -88,6 +115,11 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
       email: values.email,
       password: values.password,
       role: "AGENT",
+      // Only include optional fields if they have values
+      ...(values.phoneNo && values.phoneNo.trim() && { phoneNo: values.phoneNo.trim() }),
+      ...(values.website && values.website.trim() && { website: values.website.trim() }),
+      ...(values.shifts && values.shifts.length > 0 && { shifts: values.shifts }),
+      ...(values.timezone && { timezone: values.timezone }),
     };
 
     registerAgentMutation.mutate(agentData);
@@ -102,7 +134,7 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Agent</DialogTitle>
           <DialogDescription>
@@ -185,6 +217,44 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
               )}
             />
 
+            {/* Phone Number */}
+            <FormField
+              name="phoneNo"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="tel"
+                      placeholder="+1234567890"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Website */}
+            <FormField
+              name="website"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Website (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="url"
+                      placeholder="https://example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Departments */}
             {departments && departments.length > 0 && (
               <FormField
@@ -242,6 +312,9 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
                 )}
               />
             )}
+
+            {/* Agent Shifts */}
+            <AgentShiftsForm control={form.control} name="shifts" />
 
             <DialogFooter>
               <Button
