@@ -12,6 +12,7 @@ import {
   UseMutationOptions,
   QueryClient,
 } from "@tanstack/react-query";
+import { handleApiError, isUnauthorizedError } from "@/lib/error-handler";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
@@ -80,12 +81,9 @@ export const customFetch = async <T>(
       };
     }
 
-    // Specific handling for 401 Unauthorized (e.g., token expired) on non-login routes
-    if (response.status === 401 && !endpoint.includes("/auth/login")) {
-      // Consider a more robust way to handle global logout, e.g., via a React context or queryClient default onError
-      // useAuthStore.getState().actions.logout();
-      // window.location.href = '/login'; // Can cause issues if not handled carefully
-      console.error("Authentication error (401) on non-login route:", endpoint);
+    // Handle 401 errors globally
+    if (isUnauthorizedError(errorData) && !endpoint.includes("/auth/login")) {
+      handleApiError(errorData, endpoint);
     }
     throw errorData;
   }
@@ -153,6 +151,33 @@ export const useInitialAdminSignupMutation = (
         // Corrected endpoint
         method: "POST",
         body: JSON.stringify(signupData),
+      }),
+    ...options,
+  });
+};
+
+// API Hook for Resend Email Verification
+export const useResendVerificationMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, { email: string }>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, { email: string }>({
+    mutationFn: (data: { email: string }) =>
+      customFetch<{ message: string }>("/auth/admin/resend-verification", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    ...options,
+  });
+};
+
+// API Hook for Email Verification
+export const useEmailVerificationMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, { token: string }>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, { token: string }>({
+    mutationFn: (data: { token: string }) =>
+      customFetch<{ message: string }>(`/auth/verify-email?token=${data.token}`, {
+        method: "GET",
       }),
     ...options,
   });
