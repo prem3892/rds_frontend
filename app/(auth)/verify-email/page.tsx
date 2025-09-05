@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -33,7 +33,39 @@ type ResendVerificationFormValues = z.infer<typeof resendVerificationSchema>;
 
 type VerificationState = "loading" | "success" | "error" | "resend";
 
-export default function VerifyEmailPage() {
+// Loading component for Suspense fallback
+function VerifyEmailLoading() {
+  return (
+    <div className="flex-1 flex items-center justify-center p-4 lg:p-8 bg-white">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        <div className="text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+              <Mail className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              Loading...
+            </h2>
+            <p className="text-gray-600">
+              Please wait while we prepare the verification page.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// Component that uses useSearchParams
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -316,5 +348,14 @@ export default function VerifyEmailPage() {
         {renderContent()}
       </motion.div>
     </div>
+  );
+}
+
+// Main component that wraps VerifyEmailContent with Suspense
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<VerifyEmailLoading />}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
