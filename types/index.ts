@@ -27,7 +27,18 @@ export interface LoginDto {
 
 export interface LoginResponse {
   accessToken: string;
+  refreshToken: string;
   user: User;
+}
+
+// Refresh token request/response types
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
 }
 
 // Standard API error response structure
