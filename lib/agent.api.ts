@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { customFetch } from "./api";
 import { ApiErrorResponse, User } from "@/types";
+import { AgentShift } from "@/types/agent";
 
 // Register DTO for creating agents
 export interface RegisterAgentDto {
@@ -15,7 +16,10 @@ export interface RegisterAgentDto {
   firstName: string;
   lastName: string;
   role: "AGENT";
-
+  phoneNo?: string;
+  website?: string;
+  shifts?: AgentShift[];
+  timezone?: string;
 }
 
 // Agent types
