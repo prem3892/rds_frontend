@@ -178,7 +178,7 @@ export function AgentShiftsForm({ control, name }: AgentShiftsFormProps) {
           <CardContent className="flex flex-col items-center justify-center py-8">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-4">
-                No shifts configured. Click "Add Shift" to get started.
+                No shifts configured. Click &quot;Add Shift&quot; to get started.
               </p>
               <Button type="button" variant="outline" onClick={addShift}>
                 <Plus className="h-4 w-4 mr-2" />
