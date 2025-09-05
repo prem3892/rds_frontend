@@ -3,6 +3,7 @@ import { parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
+import ChatStatusIndicator from "./ChatStatusIndicator";
 import { 
   Chrome, 
   Apple, 
@@ -161,17 +162,18 @@ const ChatListItem = React.memo(
             At: {getDomainDisplay()}
           </div>
 
-          {/* Additional metadata info */}
-      
-          
-          {session.unreadCount && session.unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="mt-1 text-xs px-1.5 py-0.5 flex-shrink-0"
-            >
-              {session.unreadCount}
-            </Badge>
-          )}
+          {/* Status and unread count */}
+          <div className="flex items-center justify-between mt-1">
+            <ChatStatusIndicator status={session.status} className="text-xs" />
+            {session.unreadCount && session.unreadCount > 0 && (
+              <Badge
+                variant="destructive"
+                className="text-xs px-1.5 py-0.5 flex-shrink-0"
+              >
+                {session.unreadCount}
+              </Badge>
+            )}
+          </div>
         </div>
       </Button>
     );

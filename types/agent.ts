@@ -1,6 +1,22 @@
 // src/types/agent.ts
 import { User } from "./index";
 
+export interface TimeSlot {
+  startHour: number;
+  startMinute: number;
+  endHour: number;
+  endMinute: number;
+}
+
+export interface AgentShift {
+  dayOfWeek: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+  isWorkingDay: boolean;
+  timeSlots: TimeSlot[];
+  isActive: boolean;
+  priority: number;
+  description?: string;
+}
+
 export interface AgentProfile {
   _id: string;
   userId: string;

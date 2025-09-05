@@ -21,29 +21,33 @@ interface HistoryChatListItemProps {
   isSelected: boolean;
   onSelect: () => void;
 }
-
+const countryCodeToEmoji = (code: string) => {
+  try {
+    const OFFSET = 127397;
+    const codePoints = code.toUpperCase().split('').map(char => char.charCodeAt(0) + OFFSET);
+  console.log(codePoints, "codePoints");
+    return String.fromCodePoint(...codePoints);
+  } catch (error) {
+    return "🏳️"; // Return neutral flag if conversion fails
+  }
+};
 const HistoryChatListItem = React.memo(
   ({ session, isSelected, onSelect }: HistoryChatListItemProps) => {
-    const countryCodeToEmoji = (code: string) => {
-      try {
-        const OFFSET = 127397;
-        const codePoints = code.toUpperCase().split('').map(char => char.charCodeAt(0) + OFFSET);
-      console.log(codePoints, "codePoints");
-        return String.fromCodePoint(...codePoints);
-      } catch (error) {
-        return "🏳️"; // Return neutral flag if conversion fails
-      }
-    };
+ 
+    console.log(session, "session");
 
-    const getCountryFlag = () => {
+    const getCountryFlag = (timezone: string) => {
       try {
         // Get the timezone from the session data
-        const timezone = session.customerId?.metadata?.browserInfo?.timezone;
+        // const timezone = session.customerId?.metadata?.browserInfo?.timezone;
+        console.log(timezone, "timezone");
         if (!timezone) return "🏳️"; // Return a neutral flag if no timezone
 
         // Find the timezone in the database
-        const tz = rawTimeZones.find(t => t.name === timezone);
+        const tz = rawTimeZones.find(t =>  t.group.includes(timezone));
         const countryCode = tz?.countryCode;
+        console.log(tz, "tz");
+        console.log(countryCode, "countryCode");
         
         // If we found a country code, convert it to an emoji
         if (countryCode && countryCode.length === 2) {
@@ -56,7 +60,6 @@ const HistoryChatListItem = React.memo(
         return "🏳️"; // Return neutral flag if anything goes wrong
       }
     };
-
     const getBrowserIcon = (userAgent?: string) => {
       if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
 
@@ -163,7 +166,7 @@ const HistoryChatListItem = React.memo(
                 {getCustomerName()}
               </span>
               <span className="text-base sm:text-lg flex-shrink-0">
-                {getCountryFlag()}
+                {getCountryFlag(session.customerId?.metadata?.browserInfo?.timezone || "")}
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}

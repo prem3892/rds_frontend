@@ -6,6 +6,7 @@ import { CheckCircle2, XCircle, Loader2, ArrowLeft, User, ShieldX } from "lucide
 import { ChatSession } from "@/types";
 import { useIsBookingInProgress, useChatActions } from "@/stores/chat";
 import BookingForm from "./BookingForm";
+import ChatStatusIndicator from "./ChatStatusIndicator";
 
 interface ChatHeaderProps {
   session: ChatSession;
@@ -93,12 +94,7 @@ const ChatHeader = ({
                 <h3 className="font-semibold text-md leading-tight truncate">
                   {customerName}
                 </h3>
-                <Badge
-                  variant={session.status === "ACTIVE" ? "default" : "outline"}
-                  className="text-xs py-0 px-1.5 h-5"
-                >
-                  {session.status.replace(/_/g, " ")}
-                </Badge>
+                <ChatStatusIndicator status={session.status} />
               </div>
             </div>
           </div>

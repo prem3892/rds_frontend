@@ -20,9 +20,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useSocketOperations } from "@/hooks/useSocket";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { cn } from "@/lib/utils";
 import { socketService } from "@/services/socketService";
-import { useAuthActions, useIsOnline } from "@/stores";
+import { useAuthActions, useIsOnline, useCurrentUser } from "@/stores";
+import { logoutUser } from "@/lib/token-refresh";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -90,9 +92,9 @@ export function MainLayoutWrapper({
   currentScreen,
   children,
 }: DashboardLayoutProps) {
-  const { setOnlineStatus } = useSocketOperations();
-  const { logout, setOnlineStatus: setAuthOnlineStatus } = useAuthActions();
-  const isOnline = useIsOnline();
+  const { logout } = useAuthActions();
+  const { isOnline, setOnlineStatus } = useOnlineStatus();
+  const currentUser = useCurrentUser();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isStatusLoading, setIsStatusLoading] = useState(false);
@@ -116,72 +118,95 @@ export function MainLayoutWrapper({
     };
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    queryClient.clear();
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      // Use the logoutUser function which handles:
+      // 1. Calling backend /auth/logout endpoint
+      // 2. Clearing frontend auth state
+      // 3. Clearing React Query cache
+      // 4. Redirecting to login
+      await logoutUser();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: clear local state and redirect even if backend call fails
+      logout();
+      queryClient.clear();
+      router.push("/login");
+    }
   };
 
   const handleStatusChange = (checked: boolean) => {
     // Set loading state
     setIsStatusLoading(true);
 
-    // Optimistically update the UI immediately
-    setAuthOnlineStatus(checked);
-    // Send the status change to the server
+    // Use the new hook which handles both local state and server sync
     setOnlineStatus(checked);
   };
 
-  const menuItems = [
+  const allMenuItems = [
     {
       icon: HomeIcon,
       label: "Dashboard",
       href: "/dashboard/chat",
       active: pathname.includes("/chat"),
+      roles: ["ADMIN", "AGENT"], // Available to both roles
     },
     {
       icon: Users,
       label: "Contacts",
       href: "/dashboard/contacts",
       active: pathname.includes("/contacts"),
+      roles: ["ADMIN", "AGENT"], // Available to both roles
     },
     {
       icon: MessageSquare,
       label: "Chat History",
       href: "/dashboard/history",
       active: pathname.includes("/history"),
+      roles: ["ADMIN", "AGENT"], // Available to both roles
     },
     {
       icon: UserCheck,
       label: "Agents",
       href: "/dashboard/agents",
       active: pathname.includes("/agents"),
+      roles: ["ADMIN"], // Admin only
     },
     {
       icon: Globe,
       label: "Domains",
       href: "/dashboard/widgets",
       active: pathname.includes("/widgets"),
+      roles: ["ADMIN"], // Admin only
     },
     {
       icon: Mail,
       label: "Canned Messages",
       href: "/dashboard/canned-messages",
       active: pathname.includes("/canned-messages"),
+      roles: ["ADMIN", "AGENT"], // Available to both roles
     },
     {
       icon: MessageCircle,
       label: "Auto Message",
       href: "/dashboard/auto-messages",
       active: pathname.includes("/auto-messages"),
+      roles: ["ADMIN", "AGENT"], // Available to both roles
     },
     {
       icon: UserX,
       label: "Blocked Guests",
       href: "/dashboard/blocked-customers",
       active: pathname.includes("/blocked-customers"),
+      roles: ["ADMIN"], // Admin only
     },
   ];
+
+  // Filter menu items based on user role
+  const menuItems = allMenuItems.filter(item => {
+    if (!currentUser?.role) return false; // Hide all items if no user role
+    return item.roles.includes(currentUser.role);
+  });
 
   return (
     <SidebarProvider>
@@ -310,23 +335,36 @@ export function MainLayoutWrapper({
                     <Avatar className="h-8 w-8">
                       <AvatarImage
                         src="/professional-headshot.png"
-                        alt="Cameron Williamson"
+                        alt={currentUser?.firstName ? `${currentUser.firstName} ${currentUser.lastName}` : "User"}
                       />
-                      <AvatarFallback>CW</AvatarFallback>
+                      <AvatarFallback>
+                        {currentUser?.firstName ? `${currentUser.firstName[0]}${currentUser.lastName?.[0] || ''}` : "U"}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="hidden sm:flex flex-col items-start text-sm min-w-0">
-                      <span className="font-medium truncate">Cameron Williamson</span>
+                      <span className="font-medium truncate">
+                        {currentUser?.firstName ? `${currentUser.firstName} ${currentUser.lastName}` : "User"}
+                      </span>
                       <span className="text-gray-500 truncate">
-                        williamson@gmail.com
+                        {currentUser?.email || "user@example.com"}
+                      </span>
+                      <span className="text-xs text-blue-600 font-medium">
+                        {currentUser?.role || "USER"}
                       </span>
                     </div>
                     <ChevronDown className="h-4 w-4 text-gray-500" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-                  <DropdownMenuItem>Account Settings</DropdownMenuItem>
-                  <DropdownMenuItem>Sign Out</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
+                    Profile Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
+                    Account Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Sign Out
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

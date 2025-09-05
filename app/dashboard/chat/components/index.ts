@@ -4,6 +4,8 @@ export { default as ChatListItem } from "./ChatListItem";
 export { default as ChatMessages } from "./ChatMessages";
 export { default as ChatSkeleton } from "./ChatSkeleton";
 export { default as ChatSidebar } from "./ChatSidebar";
+export { default as ChatStatusBanner } from "./ChatStatusBanner";
+export { default as ChatStatusIndicator } from "./ChatStatusIndicator";
 export { default as EmptyChatState } from "./EmptyChatState";
 export { default as MessageBubble } from "./MessageBubble";
 export { default as MessageInput } from "./MessageInput";

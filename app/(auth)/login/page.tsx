@@ -25,6 +25,7 @@ import { ApiErrorResponse } from "@/types";
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ResendVerificationModal } from "./_components/resend-verification-modal";
 
 // Zod schema for form validation based on LoginDto
 const loginFormSchema = z.object({
@@ -40,6 +41,7 @@ export default function LoginPage() {
   const router = useRouter();
   const loginMutation = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
+  const [isResendModalOpen, setIsResendModalOpen] = useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -160,7 +162,14 @@ export default function LoginPage() {
                 )}
               />
 
-              <div className="text-right">
+              <div className="flex justify-between items-center">
+                <button
+                  type="button"
+                  onClick={() => setIsResendModalOpen(true)}
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Verify Email?
+                </button>
                 <Link
                   href="/forgot-password"
                   className="text-sm text-gray-600 hover:text-gray-900"
@@ -197,6 +206,11 @@ export default function LoginPage() {
           </Form>
         </motion.div>
       </div>
+
+      <ResendVerificationModal
+        isOpen={isResendModalOpen}
+        onClose={() => setIsResendModalOpen(false)}
+      />
     </>
   );
 }
