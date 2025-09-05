@@ -100,6 +100,15 @@ class SocketService {
       }
     );
 
+    // Listen for agent pool status updates that might affect online status
+    this.socket.on(
+      "server:agent_pool_status_update",
+      (data: { departmentId: string; domain: string; onlineAgentsCount: number; isAvailable: boolean }) => {
+        console.log("Agent pool status update received:", data);
+        this.notifyListeners("agentPoolStatusUpdate", data);
+      }
+    );
+
     this.socket.on(
       "server:customer_typing_start",
       (data: { chatSessionId: string }) => {
@@ -141,6 +150,28 @@ class SocketService {
     this.socket.on("server:chat_session_restored", (session: ChatSession) => {
       console.log("Chat session restored:", session);
       this.notifyListeners("chatSessionRestored", session);
+    });
+
+    // Agent disconnection events
+    this.socket.on("server:agent_disconnected_from_chat", (data: { chatSessionId: string; agentName: string }) => {
+      console.log("Agent disconnected from chat:", data);
+      this.notifyListeners("agentDisconnectedFromChat", data);
+    });
+
+    this.socket.on("server:agent_reconnected_to_chat", (data: { chatSessionId: string; agentName: string }) => {
+      console.log("Agent reconnected to chat:", data);
+      this.notifyListeners("agentReconnectedToChat", data);
+    });
+
+    // Customer disconnection events
+    this.socket.on("server:customer_disconnected_from_chat", (data: { chatSessionId: string; customerName: string }) => {
+      console.log("Customer disconnected from chat:", data);
+      this.notifyListeners("customerDisconnectedFromChat", data);
+    });
+
+    this.socket.on("server:customer_reconnected_to_chat", (data: { chatSessionId: string; customerName: string }) => {
+      console.log("Customer reconnected to chat:", data);
+      this.notifyListeners("customerReconnectedToChat", data);
     });
 
     return this.socket;

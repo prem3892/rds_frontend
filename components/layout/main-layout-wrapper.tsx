@@ -20,6 +20,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useSocketOperations } from "@/hooks/useSocket";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { cn } from "@/lib/utils";
 import { socketService } from "@/services/socketService";
 import { useAuthActions, useIsOnline } from "@/stores";
@@ -90,9 +91,8 @@ export function MainLayoutWrapper({
   currentScreen,
   children,
 }: DashboardLayoutProps) {
-  const { setOnlineStatus } = useSocketOperations();
-  const { logout, setOnlineStatus: setAuthOnlineStatus } = useAuthActions();
-  const isOnline = useIsOnline();
+  const { logout } = useAuthActions();
+  const { isOnline, setOnlineStatus } = useOnlineStatus();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isStatusLoading, setIsStatusLoading] = useState(false);
@@ -126,9 +126,7 @@ export function MainLayoutWrapper({
     // Set loading state
     setIsStatusLoading(true);
 
-    // Optimistically update the UI immediately
-    setAuthOnlineStatus(checked);
-    // Send the status change to the server
+    // Use the new hook which handles both local state and server sync
     setOnlineStatus(checked);
   };
 

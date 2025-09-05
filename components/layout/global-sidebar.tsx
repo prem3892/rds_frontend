@@ -19,6 +19,7 @@ import { User } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useSocketOperations } from "@/hooks/useSocket";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import Image from "next/image";
 
 interface GlobalSidebarProps {
@@ -27,12 +28,11 @@ interface GlobalSidebarProps {
 }
 
 export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
-  const { setOnlineStatus } = useSocketOperations();
   const pathname = usePathname();
   const router = useRouter();
-  const { logout, setOnlineStatus: setAuthOnlineStatus } = useAuthActions();
+  const { logout } = useAuthActions();
   const { toggleSidebar } = useSharedActions();
-  const isOnline = useIsOnline(); // Get online status from auth store
+  const { isOnline, setOnlineStatus } = useOnlineStatus();
   const sidebarExpanded = useSidebarExpanded();
   const queryClient = useQueryClient();
 
@@ -43,9 +43,7 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
   };
 
   const handleStatusChange = (checked: boolean) => {
-    // Optimistically update the UI immediately
-    setAuthOnlineStatus(checked);
-    // Send the status change to the server
+    // Use the new hook which handles both local state and server sync
     setOnlineStatus(checked);
   };
 

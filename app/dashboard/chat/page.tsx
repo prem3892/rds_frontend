@@ -22,6 +22,7 @@ import {
   GuestInfo,
   BlockCustomerDialog,
 } from "./components";
+import ChatStatusBanner from "./components/ChatStatusBanner";
 import { useSocketOperations } from "@/hooks/useSocket";
 
 // --- Main Page Component ---
@@ -353,6 +354,12 @@ export default function MyChatsPage() {
               onBack={handleBackToChats}
               onShowGuestInfo={handleShowGuestInfo}
               onBlockCustomer={handleBlockCustomer}
+            />
+
+            {/* Real-time Status Banner */}
+            <ChatStatusBanner 
+              status={selectedSessionDetails.status}
+              customerName={getCustomerName()}
             />
 
             <ChatMessages

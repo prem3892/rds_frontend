@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 interface GuestInfoProps {
   session: ChatSession | null;
@@ -379,19 +381,19 @@ export function GuestInfo({
                         <span className="font-medium">Uttar Pradesh</span>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-sm">
+                      {/* <div className="flex items-center gap-2 text-sm">
                         <Globe className="w-4 h-4 text-gray-500" />
                         <span className="text-gray-600">Last Visited Pages:</span>
                         <span className="font-medium truncate">
                           &gt;&gt; At: {session.initialMessage || "testing-chat-app-theta.vercel.app/"}
                         </span>
-                      </div>
+                      </div> */}
                       
-                      <div className="flex items-center gap-2 text-sm">
+                      <Link href={`https://${session.customerId.metadata?.initialDomain || "N/A"}`} className="flex items-center gap-2 text-sm">
                         <Globe className="w-4 h-4 text-gray-500" />
                         <span className="text-gray-600">Source:</span>
-                        <span className="font-medium">No Referrer</span>
-                      </div>
+                        <Badge className="font-medium truncate  ">{session.customerId.metadata?.initialDomain || "N/A"}</Badge>
+                      </Link>
                     </CardContent>
                   </Card>
                 </div>

@@ -29,7 +29,12 @@ export function useSocketInitializer() {
             chatActions.setConnected(data);
             break;
           case "authenticated":
-            // Handle authenticated event if needed
+            // When authenticated, set the online status from the persisted state
+            const currentOnlineStatus = useAuthStore.getState().isOnline;
+            if (currentOnlineStatus) {
+              // If the user was online before, set them online again
+              socketService.setOnlineStatus(true);
+            }
             break;
           case "authFailed":
             // Handle auth failed (could show toast here)
@@ -59,7 +64,14 @@ export function useSocketInitializer() {
             chatActions.removePendingRequest(data.chatSessionId);
             break;
           case "onlineStatusUpdated":
+            // Update the online status in the store and persist it
+            // This handles status changes from other devices
             authActions.setOnlineStatus(data.isOnline);
+            console.log(`Online status synchronized from server: ${data.isOnline ? "Online" : "Offline"}`);
+            break;
+          case "agentPoolStatusUpdate":
+            // Handle agent pool status updates (this might include online status changes)
+            console.log("Agent pool status update received:", data);
             break;
           case "customerTypingStart":
             chatActions.setCustomerTypingStatus(data.chatSessionId, true);
@@ -90,6 +102,28 @@ export function useSocketInitializer() {
           case "chatSessionRestored":
             // Handle chat session restoration - add the session to active sessions
             chatActions.addActiveSession(data);
+            break;
+          case "agentDisconnectedFromChat":
+            // Handle agent disconnection - update session status to PENDING_AGENT_RECONNECT
+            chatActions.updateActiveSessionStatus(
+              data.chatSessionId,
+              "PENDING_AGENT_RECONNECT"
+            );
+            break;
+          case "agentReconnectedToChat":
+            // Handle agent reconnection - update session status to ACTIVE
+            chatActions.updateActiveSessionStatus(
+              data.chatSessionId,
+              "ACTIVE"
+            );
+            break;
+          case "customerDisconnectedFromChat":
+            // Handle customer disconnection - could show a notification or update UI
+            console.log(`Customer ${data.customerName} disconnected from chat ${data.chatSessionId}`);
+            break;
+          case "customerReconnectedToChat":
+            // Handle customer reconnection - could show a notification or update UI
+            console.log(`Customer ${data.customerName} reconnected to chat ${data.chatSessionId}`);
             break;
         }
       });
