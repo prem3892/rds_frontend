@@ -8,6 +8,7 @@ import {
 import { customFetch } from "./api";
 import { ApiErrorResponse, User } from "@/types";
 import { AgentShift } from "@/types/agent";
+import { useAuthStore } from "@/stores/auth";
 
 // Register DTO for creating agents
 export interface RegisterAgentDto {
@@ -20,6 +21,7 @@ export interface RegisterAgentDto {
   website?: string;
   shifts?: AgentShift[];
   timezone?: string;
+  profilePicture?: string;
 }
 
 // Agent types
@@ -30,6 +32,11 @@ export interface AgentProfile {
   domainAccess: string[];
   isOnline: boolean;
   maxConcurrentChats: number;
+  phoneNo?: string;
+  website?: string;
+  shifts?: AgentShift[];
+  timezone?: string;
+  profilePicture?: string;
   createdAt: string;
   updatedAt: string;
   user: {
@@ -48,6 +55,11 @@ export interface UpdateAgentProfileDto {
   lastName?: string;
   email?: string;
   password?: string;
+  phoneNo?: string;
+  website?: string;
+  shifts?: AgentShift[];
+  timezone?: string;
+  profilePicture?: string;
 }
 
 export interface UpdateMyAgentProfileDto {
@@ -155,6 +167,50 @@ export const useRegisterAgentMutation = (
         method: "POST",
         body: JSON.stringify(data),
       }),
+    ...options,
+  });
+};
+
+// Upload profile picture
+export const useUploadProfilePictureMutation = (
+  options?: UseMutationOptions<{ profilePictureUrl: string; message: string }, ApiErrorResponse, File>
+) => {
+  return useMutation<{ profilePictureUrl: string; message: string }, ApiErrorResponse, File>({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+      
+      // Get the auth token
+      const token = useAuthStore.getState().accessToken;
+      
+      // Make the request directly with fetch to avoid the customFetch wrapper
+      // which automatically sets Content-Type: application/json
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+      
+      const response = await fetch(`${API_BASE_URL}/agents/profile-picture/upload`, {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+          // Don't set Content-Type - let the browser set it with boundary for FormData
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errorData: ApiErrorResponse;
+        try {
+          errorData = await response.json();
+        } catch (error) {
+          errorData = {
+            statusCode: response.status,
+            message: response.statusText || "Upload failed",
+          };
+        }
+        throw errorData;
+      }
+
+      return response.json();
+    },
     ...options,
   });
 };

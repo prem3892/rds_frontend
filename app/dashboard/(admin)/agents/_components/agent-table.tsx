@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable } from "@/components/ui/data-table";
 import { AgentProfile, ApiErrorResponse, Department } from "@/types";
 import { Row } from "@tanstack/react-table";
@@ -14,6 +15,20 @@ import {
 } from "lucide-react";
 import { createAgentColumns } from "./agent-columns";
 import CellAction from "./cell-actions";
+
+// Helper function to get the full image URL
+const getFullImageUrl = (imagePath: string) => {
+  if (!imagePath) return null;
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the API base URL
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+  return `${API_BASE_URL}${imagePath}`;
+};
 
 type Props = {
   agentData: AgentProfile[] | null;
@@ -44,8 +59,16 @@ const AgentCard = ({
         <div className="flex justify-between items-start">
           <div className="flex-1 space-y-3">
             {/* Agent Name */}
-            <div className="flex items-center gap-2">
-              <User className="size-4 text-blue-500 flex-shrink-0" />
+            <div className="flex items-center gap-3">
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                <AvatarImage 
+                  src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined} 
+                  alt={`${agent.user.firstName} ${agent.user.lastName}`} 
+                />
+                <AvatarFallback className="bg-blue-100 text-blue-600 text-xs font-medium">
+                  {agent.user.firstName[0]}{agent.user.lastName[0]}
+                </AvatarFallback>
+              </Avatar>
               <span className="font-semibold text-sm text-gray-900">
                 {agent.user.firstName} {agent.user.lastName}
               </span>

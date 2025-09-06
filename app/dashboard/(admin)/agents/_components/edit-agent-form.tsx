@@ -25,9 +25,11 @@ import {
   AgentProfile,
   AGENTS_QUERY_KEY,
   UpdateAgentProfileDto,
-  useUpdateAgentProfileMutation
+  useUpdateAgentProfileMutation,
+  useUploadProfilePictureMutation
 } from "@/lib/agent.api";
 import { Department } from "@/types";
+import { AgentShift, TimeSlot } from "@/types/agent";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -35,10 +37,30 @@ import {
   Globe, Loader2, MessageSquare,
   ShieldCheck, User
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import { AgentShiftsForm } from "./agent-shifts-form";
+import { ProfilePictureUpload } from "./profile-picture-upload";
+
+// Zod schema for time slots
+const timeSlotSchema = z.object({
+  startHour: z.number().min(0).max(23),
+  startMinute: z.number().min(0).max(59),
+  endHour: z.number().min(0).max(23),
+  endMinute: z.number().min(0).max(59),
+});
+
+// Zod schema for agent shifts
+const agentShiftSchema = z.object({
+  dayOfWeek: z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]),
+  isWorkingDay: z.boolean(),
+  timeSlots: z.array(timeSlotSchema),
+  isActive: z.boolean(),
+  priority: z.number(),
+  description: z.string().optional(),
+});
 
 // Zod schema for agent form validation (for editing existing agents)
 const agentFormSchema = z.object({
@@ -51,12 +73,17 @@ const agentFormSchema = z.object({
       message: "Password must be at least 8 characters if provided.",
     })
     .optional(),
+  phoneNo: z.string().optional(),
+  website: z.string().url().optional().or(z.literal("")),
   departmentIds: z.array(z.string()),
   domainAccess: z.array(z.string()),
   isOnline: z.boolean(),
   maxConcurrentChats: z
     .number()
     .min(1, { message: "Must handle at least 1 chat." }),
+  shifts: z.array(agentShiftSchema).optional(),
+  timezone: z.string().optional(),
+  profilePicture: z.string().optional(),
 });
 
 type AgentFormValues = z.infer<typeof agentFormSchema>;
@@ -70,6 +97,8 @@ interface EditAgentFormProps {
 
 const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentFormProps) => {
   const queryClient = useQueryClient();
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
 
   const form = useForm<AgentFormValues>({
     resolver: zodResolver(agentFormSchema),
@@ -78,10 +107,23 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
       lastName: "",
       email: "",
       password: "",
+      phoneNo: "",
+      website: "",
       departmentIds: [],
       domainAccess: [],
       isOnline: false,
       maxConcurrentChats: 3,
+      shifts: [],
+      timezone: "America/New_York",
+      profilePicture: "",
+    },
+  });
+
+  const uploadProfilePictureMutation = useUploadProfilePictureMutation({
+    onError: (error) => {
+      toast.error("Failed to upload profile picture", {
+        description: error.message,
+      });
     },
   });
 
@@ -93,6 +135,8 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
       queryClient.invalidateQueries({ queryKey: [AGENTS_QUERY_KEY] });
       onOpenChange(false);
       form.reset();
+      setProfilePictureFile(null);
+      setProfilePictureUrl(null);
     },
     onError: (error) => {
       toast.error("Update Failed", {
@@ -101,40 +145,74 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
     },
   });
 
-  const handleSubmit = (values: AgentFormValues) => {
+  const handleSubmit = async (values: AgentFormValues) => {
     if (!agent) {
       toast.error("No agent selected for editing.");
       return;
     }
 
-    const processedValues: UpdateAgentProfileDto = {
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      departmentIds: values.departmentIds,
-      domainAccess: values.domainAccess
-        .filter((domain) => domain.trim() !== "")
-        .map((d) => d.trim()),
-      isOnline: values.isOnline,
-      maxConcurrentChats: values.maxConcurrentChats,
-    };
+    try {
+      let finalProfilePictureUrl = "";
 
-    // Only include password if it was provided and not empty
-    if (values.password && values.password.trim() !== "") {
-      processedValues.password = values.password;
+      // Handle profile picture changes
+      if (profilePictureFile) {
+        // New file uploaded - upload it
+        const uploadResult = await uploadProfilePictureMutation.mutateAsync(profilePictureFile);
+        finalProfilePictureUrl = uploadResult.profilePictureUrl;
+      } else if (profilePictureUrl === null) {
+        // User removed the profile picture - set empty string
+        finalProfilePictureUrl = "";
+      } else {
+        // Keep existing profile picture
+        finalProfilePictureUrl = agent.profilePicture || "";
+      }
+
+      const processedValues: UpdateAgentProfileDto = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        departmentIds: values.departmentIds,
+        domainAccess: values.domainAccess
+          .filter((domain) => domain.trim() !== "")
+          .map((d) => d.trim()),
+        isOnline: values.isOnline,
+        maxConcurrentChats: values.maxConcurrentChats,
+        // Only include optional fields if they have values
+        ...(values.phoneNo && values.phoneNo.trim() && { phoneNo: values.phoneNo.trim() }),
+        ...(values.website && values.website.trim() && { website: values.website.trim() }),
+        ...(values.shifts && values.shifts.length > 0 && { shifts: values.shifts }),
+        ...(values.timezone && { timezone: values.timezone }),
+        // Always include profilePicture - either new URL, existing URL, or empty string
+        profilePicture: finalProfilePictureUrl,
+      };
+
+      // Only include password if it was provided and not empty
+      if (values.password && values.password.trim() !== "") {
+        processedValues.password = values.password;
+      }
+
+      updateAgentMutation.mutate({
+        agentId: agent._id,
+        data: processedValues,
+      });
+    } catch (error) {
+      // Error handling is done in the mutation onError callbacks
+      console.error("Error updating agent:", error);
     }
-
-    updateAgentMutation.mutate({
-      agentId: agent._id,
-      data: processedValues,
-    });
   };
 
   const handleOpenChange = (open: boolean) => {
     onOpenChange(open);
     if (!open) {
       form.reset();
+      setProfilePictureFile(null);
+      setProfilePictureUrl(null);
     }
+  };
+
+  const handleProfilePictureChange = (file: File | null, previewUrl?: string) => {
+    setProfilePictureFile(file);
+    setProfilePictureUrl(previewUrl || null);
   };
 
   // Update form when agent changes
@@ -147,22 +225,49 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
         deptIds = deptIds.map((dept: any) => dept._id);
       }
 
+      // Debug: Log the agent data to see what fields are available
+      console.log("Agent data:", agent);
+      console.log("Phone number:", agent.phoneNo);
+      console.log("Website:", agent.website);
+
       form.reset({
         firstName: agent.user.firstName || "",
         lastName: agent.user.lastName || "",
         email: agent.user.email || "",
+        phoneNo: agent.phoneNo || "",
+        website: agent.website || "",
         departmentIds: deptIds,
         domainAccess: agent.domainAccess || [],
         isOnline: agent.isOnline || false,
         maxConcurrentChats: agent.maxConcurrentChats || 3,
+        shifts: agent.shifts || [],
+        timezone: agent.timezone || "America/New_York",
+        profilePicture: agent.profilePicture || "",
         password: "", // Always reset password field
       });
+
+      // Set the profile picture URL for display
+      setProfilePictureUrl(agent.profilePicture || null);
+
+      // Explicitly set the optional fields using setValue to ensure they're set
+      if (agent.phoneNo) {
+        form.setValue("phoneNo", agent.phoneNo);
+      }
+      if (agent.website) {
+        form.setValue("website", agent.website);
+      }
+      if (agent.shifts) {
+        form.setValue("shifts", agent.shifts);
+      }
+      if (agent.timezone) {
+        form.setValue("timezone", agent.timezone);
+      }
     }
   }, [agent, open, form]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[625px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Agent Profile</DialogTitle>
           <DialogDescription>
@@ -174,6 +279,12 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6 py-4"
           >
+            {/* Profile Picture Upload */}
+            <ProfilePictureUpload
+              value={profilePictureUrl || ""}
+              onChange={handleProfilePictureChange}
+              disabled={updateAgentMutation.isPending || uploadProfilePictureMutation.isPending}
+            />
             {/* User Details Section */}
             <div className="space-y-4">
               <h3 className="font-semibold flex items-center">
@@ -246,6 +357,48 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+
+              <FormField
+                name="phoneNo"
+                control={form.control}
+                render={({ field }) => {
+                  console.log("Phone field value:", field.value);
+                  return (
+                    <FormItem>
+                      <FormLabel>Phone Number (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          placeholder="+1234567890"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+
+              <FormField
+                name="website"
+                control={form.control}
+                render={({ field }) => {
+                  console.log("Website field value:", field.value);
+                  return (
+                    <FormItem>
+                      <FormLabel>Website (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="url"
+                          placeholder="https://example.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 
@@ -383,9 +536,12 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
               />
             </div>
 
+            {/* Agent Shifts */}
+            <AgentShiftsForm control={form.control} name="shifts" />
+
             <DialogFooter>
-              <Button type="submit" disabled={updateAgentMutation.isPending}>
-                {updateAgentMutation.isPending && (
+              <Button type="submit" disabled={updateAgentMutation.isPending || uploadProfilePictureMutation.isPending}>
+                {(updateAgentMutation.isPending || uploadProfilePictureMutation.isPending) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 Save Changes

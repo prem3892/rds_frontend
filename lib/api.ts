@@ -146,7 +146,7 @@ export const useResendVerificationMutation = (
 ) => {
   return useMutation<{ message: string }, ApiErrorResponse, { email: string }>({
     mutationFn: (data: { email: string }) =>
-      customFetch<{ message: string }>("/auth/admin/resend-verification", {
+      customFetch<{ message: string }>("/auth/resend-verification", {
         method: "POST",
         body: JSON.stringify(data),
       }),
