@@ -137,8 +137,8 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
               <strong>To enable notifications:</strong>
             </p>
             <ol className="text-sm text-yellow-700 dark:text-yellow-300 mt-2 space-y-1 list-decimal list-inside">
-              <li>Click the lock icon in your browser's address bar</li>
-              <li>Set notifications to "Allow"</li>
+              <li>Click the lock icon in your browser&apos;s address bar</li>
+              <li>Set notifications to &quot;Allow&quot;</li>
               <li>Refresh this page</li>
             </ol>
           </div>
@@ -153,7 +153,7 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
               </p>
             </div>
             <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-              You'll receive push notifications for new messages and chat requests, 
+              You&apos;ll receive push notifications for new messages and chat requests, 
               even when this tab is not active.
             </p>
           </div>
