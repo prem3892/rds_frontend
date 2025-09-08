@@ -8,6 +8,11 @@ export function useServiceWorker() {
   const router = useRouter();
 
   useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return;
+    }
+    
     if ('serviceWorker' in navigator) {
       // Register service worker
       navigator.serviceWorker

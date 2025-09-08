@@ -47,6 +47,11 @@ export function useNotifications(): UseNotificationsReturn {
 
   const handleNotificationClick = useCallback(
     (sessionId: string) => {
+      // Only run in browser environment
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
       // Focus the window
       if (window) {
         window.focus();

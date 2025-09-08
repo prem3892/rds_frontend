@@ -24,22 +24,39 @@ class NotificationService {
   private clickHandlers = new Map<string, (data: any) => void>();
 
   constructor() {
-    this.checkSupport();
-    this.initializePermission();
-    this.setupNotificationClickHandler();
+    // Only initialize if we're in the browser
+    if (typeof window !== "undefined") {
+      this.checkSupport();
+      this.initializePermission();
+      this.setupNotificationClickHandler();
+    }
   }
 
   private checkSupport() {
+    // Check if we're in browser environment
+    if (typeof window === "undefined" || typeof navigator === "undefined") {
+      this.isSupported = false;
+      return;
+    }
     this.isSupported = "Notification" in window && "serviceWorker" in navigator;
   }
 
   private initializePermission() {
+    if (typeof window === "undefined") {
+      this.permission = "default";
+      return;
+    }
     if (this.isSupported) {
       this.permission = Notification.permission;
     }
   }
 
   private setupNotificationClickHandler() {
+    // Ensure we're in browser environment
+    if (typeof window === "undefined" || typeof navigator === "undefined") {
+      return;
+    }
+    
     if (this.isSupported) {
       // Listen for notification clicks
       navigator.serviceWorker?.ready.then((registration) => {
@@ -75,6 +92,11 @@ class NotificationService {
   }
 
   async requestPermission(): Promise<NotificationPermission> {
+    // Early return if not in browser environment
+    if (typeof window === "undefined") {
+      return "denied";
+    }
+    
     if (!this.isSupported) {
       console.warn("Notifications are not supported in this browser");
       return "denied";
@@ -88,6 +110,11 @@ class NotificationService {
   }
 
   async showNotification(options: NotificationOptions): Promise<void> {
+    // Early return if not in browser environment
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      return;
+    }
+    
     if (!this.isSupported) {
       console.warn("Notifications are not supported");
       return;
@@ -253,5 +280,27 @@ class NotificationService {
   }
 }
 
-// Create a singleton instance
-export const notificationService = new NotificationService();
+// Create a singleton instance with lazy initialization
+let notificationServiceInstance: NotificationService | null = null;
+
+export const notificationService = (() => {
+  if (typeof window === "undefined") {
+    // Return a mock object during SSR
+    return {
+      isNotificationSupported: false,
+      notificationPermission: "default" as NotificationPermission,
+      isPermissionGranted: false,
+      requestPermission: async () => "denied" as NotificationPermission,
+      showNotification: async () => {},
+      onNotificationClick: () => {},
+      removeClickHandler: () => {},
+      showMessageNotification: async () => {},
+      showChatRequestNotification: async () => {},
+    };
+  }
+  
+  if (!notificationServiceInstance) {
+    notificationServiceInstance = new NotificationService();
+  }
+  return notificationServiceInstance;
+})();
