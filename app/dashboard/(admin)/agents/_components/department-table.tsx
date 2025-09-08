@@ -10,12 +10,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AgentProfile, Department } from "@/types";
+import { Department } from "@/types";
+import { AgentProfile } from "@/lib/agent.api";
 import { Edit, Trash2, Users } from "lucide-react";
 
 // Helper function to get the full image URL
 const getFullImageUrl = (imagePath: string) => {
-  if (!imagePath) return null;
+  if (!imagePath) return undefined;
   
   // If it's already a full URL, return as is
   if (imagePath.startsWith('http')) {

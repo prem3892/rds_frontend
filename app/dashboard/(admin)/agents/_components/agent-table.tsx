@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable } from "@/components/ui/data-table";
-import { AgentProfile, ApiErrorResponse, Department } from "@/types";
+import { ApiErrorResponse, Department } from "@/types";
+import { AgentProfile } from "@/lib/agent.api";
 import { Row } from "@tanstack/react-table";
 import {
   Building,
@@ -18,7 +19,7 @@ import CellAction from "./cell-actions";
 
 // Helper function to get the full image URL
 const getFullImageUrl = (imagePath: string) => {
-  if (!imagePath) return null;
+  if (!imagePath) return undefined;
   
   // If it's already a full URL, return as is
   if (imagePath.startsWith('http')) {

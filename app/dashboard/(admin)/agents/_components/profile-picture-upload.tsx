@@ -19,7 +19,7 @@ export function ProfilePictureUpload({ value, onChange, disabled }: ProfilePictu
 
   // Function to get the full image URL (only for API paths, not blob URLs)
   const getFullImageUrl = (imagePath: string) => {
-    if (!imagePath) return null;
+    if (!imagePath) return undefined;
     
     // If it's already a full URL, return as is
     if (imagePath.startsWith('http')) {

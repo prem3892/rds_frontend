@@ -26,7 +26,7 @@ interface AgentColumnsProps {
 
 // Helper function to get the full image URL
 const getFullImageUrl = (imagePath: string) => {
-  if (!imagePath) return null;
+  if (!imagePath) return undefined;
   
   // If it's already a full URL, return as is
   if (imagePath.startsWith('http')) {
