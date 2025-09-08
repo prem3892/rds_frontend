@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,8 +10,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AgentProfile, Department } from "@/types";
+import { Department } from "@/types";
+import { AgentProfile } from "@/lib/agent.api";
 import { Edit, Trash2, Users } from "lucide-react";
+
+// Helper function to get the full image URL
+const getFullImageUrl = (imagePath: string) => {
+  if (!imagePath) return undefined;
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the API base URL
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+  return `${API_BASE_URL}${imagePath}`;
+};
 
 interface DepartmentTableProps {
   departments: Department[];
@@ -121,6 +136,10 @@ export default function DepartmentTable({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Avatar className="h-8 w-8 border-2 border-white rounded-full bg-gray-100 hover:z-10 transition-transform hover:scale-110">
+                              <AvatarImage 
+                                src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined} 
+                                alt={`${agent.user.firstName} ${agent.user.lastName}`} 
+                              />
                               <AvatarFallback className="text-xs bg-blue-100 text-blue-600 font-medium">
                                 {agent.user.firstName[0]}{agent.user.lastName[0]}
                               </AvatarFallback>

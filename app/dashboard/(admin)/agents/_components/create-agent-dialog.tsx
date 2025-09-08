@@ -20,7 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AGENTS_QUERY_KEY, RegisterAgentDto, useRegisterAgentMutation } from "@/lib/agent.api";
+import { AGENTS_QUERY_KEY, RegisterAgentDto, useRegisterAgentMutation, useUploadProfilePictureMutation } from "@/lib/agent.api";
 import { Department } from "@/types";
 import { AgentShift } from "@/types/agent";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +30,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { AgentShiftsForm } from "./agent-shifts-form";
+import { ProfilePictureUpload } from "./profile-picture-upload";
+import { useState } from "react";
 
 // Zod schema for time slots
 const timeSlotSchema = z.object({
@@ -63,6 +65,7 @@ const createAgentFormSchema = z.object({
   role: z.enum(["AGENT"]),
   shifts: z.array(agentShiftSchema).optional(),
   timezone: z.string().optional(),
+  profilePicture: z.string().optional(),
 });
 
 type CreateAgentFormValues = z.infer<typeof createAgentFormSchema>;
@@ -75,6 +78,8 @@ interface CreateAgentDialogProps {
 
 const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialogProps) => {
   const queryClient = useQueryClient();
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
 
   const form = useForm<CreateAgentFormValues>({
     resolver: zodResolver(createAgentFormSchema),
@@ -89,6 +94,15 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
       role: "AGENT",
       shifts: [],
       timezone: "America/New_York",
+      profilePicture: "",
+    },
+  });
+
+  const uploadProfilePictureMutation = useUploadProfilePictureMutation({
+    onError: (error) => {
+      toast.error("Failed to upload profile picture", {
+        description: error.message,
+      });
     },
   });
 
@@ -100,6 +114,8 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
       queryClient.invalidateQueries({ queryKey: [AGENTS_QUERY_KEY] });
       onOpenChange(false);
       form.reset();
+      setProfilePictureFile(null);
+      setProfilePictureUrl(null);
     },
     onError: (error) => {
       toast.error("Failed to create agent", {
@@ -108,28 +124,49 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
     },
   });
 
-  const handleSubmit = (values: CreateAgentFormValues) => {
-    const agentData: RegisterAgentDto = {
-      firstName: values.firstName,
-      lastName: values.lastName,
-      email: values.email,
-      password: values.password,
-      role: "AGENT",
-      // Only include optional fields if they have values
-      ...(values.phoneNo && values.phoneNo.trim() && { phoneNo: values.phoneNo.trim() }),
-      ...(values.website && values.website.trim() && { website: values.website.trim() }),
-      ...(values.shifts && values.shifts.length > 0 && { shifts: values.shifts }),
-      ...(values.timezone && { timezone: values.timezone }),
-    };
+  const handleSubmit = async (values: CreateAgentFormValues) => {
+    try {
+      let profilePictureUrl = "";
 
-    registerAgentMutation.mutate(agentData);
+      // Upload profile picture if provided
+      if (profilePictureFile) {
+        const uploadResult = await uploadProfilePictureMutation.mutateAsync(profilePictureFile);
+        profilePictureUrl = uploadResult.profilePictureUrl;
+      }
+
+      const agentData: RegisterAgentDto = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+        role: "AGENT",
+        // Only include optional fields if they have values
+        ...(values.phoneNo && values.phoneNo.trim() && { phoneNo: values.phoneNo.trim() }),
+        ...(values.website && values.website.trim() && { website: values.website.trim() }),
+        ...(values.shifts && values.shifts.length > 0 && { shifts: values.shifts }),
+        ...(values.timezone && { timezone: values.timezone }),
+        ...(profilePictureUrl && { profilePicture: profilePictureUrl }),
+      };
+
+      registerAgentMutation.mutate(agentData);
+    } catch (error) {
+      // Error handling is done in the mutation onError callbacks
+      console.error("Error creating agent:", error);
+    }
   };
 
   const handleOpenChange = (open: boolean) => {
     onOpenChange(open);
     if (!open) {
       form.reset();
+      setProfilePictureFile(null);
+      setProfilePictureUrl(null);
     }
+  };
+
+  const handleProfilePictureChange = (file: File | null, previewUrl?: string) => {
+    setProfilePictureFile(file);
+    setProfilePictureUrl(previewUrl || null);
   };
 
   return (
@@ -146,6 +183,12 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6 py-4"
           >
+            {/* Profile Picture Upload */}
+            <ProfilePictureUpload
+              value={profilePictureUrl || ""}
+              onChange={handleProfilePictureChange}
+              disabled={registerAgentMutation.isPending || uploadProfilePictureMutation.isPending}
+            />
             {/* First Name */}
             <FormField
               name="firstName"
@@ -326,9 +369,9 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
               </Button>
               <Button
                 type="submit"
-                disabled={registerAgentMutation.isPending}
+                disabled={registerAgentMutation.isPending || uploadProfilePictureMutation.isPending}
               >
-                {registerAgentMutation.isPending && (
+                {(registerAgentMutation.isPending || uploadProfilePictureMutation.isPending) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 Create Agent

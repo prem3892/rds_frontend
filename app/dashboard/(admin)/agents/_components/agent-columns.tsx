@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AgentProfile } from "@/lib/agent.api";
 import { Department } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
@@ -23,6 +24,20 @@ interface AgentColumnsProps {
   onToggleStatus: (agent: AgentProfile) => void;
 }
 
+// Helper function to get the full image URL
+const getFullImageUrl = (imagePath: string) => {
+  if (!imagePath) return undefined;
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the API base URL
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+  return `${API_BASE_URL}${imagePath}`;
+};
+
 export const createAgentColumns = ({ 
   departments, 
   onEdit, 
@@ -41,8 +56,16 @@ export const createAgentColumns = ({
     cell: ({ row }) => {
       const agent = row.original;
       return (
-        <div className="flex items-center space-x-2">
-          <User className="h-4 w-4 text-blue-500" />
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-8 w-8">
+            <AvatarImage 
+              src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined} 
+              alt={`${agent.user.firstName} ${agent.user.lastName}`} 
+            />
+            <AvatarFallback className="bg-blue-100 text-blue-600 text-xs font-medium">
+              {agent.user.firstName[0]}{agent.user.lastName[0]}
+            </AvatarFallback>
+          </Avatar>
           <span className="font-medium capitalize">
             {agent.user.firstName} {agent.user.lastName}
           </span>
