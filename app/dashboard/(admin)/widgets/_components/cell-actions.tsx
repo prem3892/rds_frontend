@@ -25,17 +25,40 @@ import { Textarea } from "@/components/ui/textarea";
 import { useGetAllDepartments } from "@/lib/department.api";
 import { useDeleteWidgetMutation, useUpdateWidgetMutation, WIDGETS_QUERY_KEY } from "@/lib/widget.api";
 import { Widget } from "@/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Row } from "@tanstack/react-table";
 import { Copy, Edit, Globe, Loader2, MessageSquareText, Palette, ShieldCheck, Trash } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import { useCurrentUser } from "@/stores/auth";
 
-// Zod schema for widget form validation (same as in page.tsx)
+// Theme presets and schema (mirrors new page)
+const THEME_PRESETS = {
+  "Light blue": {
+    primaryColor: "#3B82F6",
+    secondaryColor: "#64748B",
+  },
+  "Sharp blue": {
+    primaryColor: "#2563EB",
+    secondaryColor: "#0EA5E9",
+  },
+  Custom: {
+    primaryColor: "#3B82F6",
+    secondaryColor: "#64748B",
+  },
+} as const;
+
 const widgetFormSchema = z.object({
   name: z.string().min(1, { message: "Widget name is required." }),
   domains: z.array(z.string()),
@@ -44,8 +67,26 @@ const widgetFormSchema = z.object({
   primaryColor: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, { message: "Invalid hex color." }),
+  secondaryColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, { message: "Invalid hex color." }),
+  themeName: z.enum(["Light blue", "Sharp blue", "Custom"]),
   welcomeMessage: z.string(),
   headerText: z.string(),
+  offline_text: z.string(),
+  notification_emails: z.array(z.string().email()),
+  button_location: z.enum([
+    "top_left",
+    "top_right",
+    "bottom_left",
+    "bottom_right",
+    "center_left",
+    "center_right",
+  ]),
+  button_label: z.string(),
+  widget_text_color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, { message: "Invalid hex color." }),
 });
 
 type WidgetFormValues = z.infer<typeof widgetFormSchema>;
@@ -57,8 +98,11 @@ type Props = {
 function CelAction({ row }: Props) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showPrimaryColorPicker, setShowPrimaryColorPicker] = useState(false);
+  const [showSecondaryColorPicker, setShowSecondaryColorPicker] = useState(false);
+  const [showTextColorPicker, setShowTextColorPicker] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+  const currentUser = useCurrentUser();
 
   const queryClient = useQueryClient();
   const widget = row.original;
@@ -67,18 +111,20 @@ function CelAction({ row }: Props) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
-        setShowColorPicker(false);
+        setShowPrimaryColorPicker(false);
+        setShowSecondaryColorPicker(false);
+        setShowTextColorPicker(false);
       }
     }
 
-    if (showColorPicker) {
+    if (showPrimaryColorPicker || showSecondaryColorPicker || showTextColorPicker) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showColorPicker]);
+  }, [showPrimaryColorPicker, showSecondaryColorPicker, showTextColorPicker]);
 
   // Get departments for the form
   const { data: departments, isLoading: isLoadingDepartments } = useGetAllDepartments();
@@ -91,9 +137,16 @@ function CelAction({ row }: Props) {
       domains: [],
       departmentIds: [],
       isEnabled: true,
-      primaryColor: "#3B82F6",
+      primaryColor: THEME_PRESETS["Light blue"].primaryColor,
+      secondaryColor: THEME_PRESETS["Light blue"].secondaryColor,
+      themeName: "Light blue",
       welcomeMessage: "Welcome! How can we help you today?",
       headerText: "Customer Support",
+      offline_text: "We are offline right now",
+      notification_emails: [],
+      button_location: "bottom_right",
+      button_label: "Chat with us",
+      widget_text_color: "#FFFFFF",
     },
   });
 
@@ -132,14 +185,30 @@ function CelAction({ row }: Props) {
   // Handle edit button click
   const handleEditClick = () => {
     // Prefill form with widget data
+    const initialPrimary = widget.primaryColor || THEME_PRESETS["Light blue"].primaryColor;
+    const initialSecondary = widget.secondaryColor || THEME_PRESETS["Light blue"].secondaryColor;
+    const matchedPreset = Object.entries(THEME_PRESETS).find(
+      ([name, preset]) =>
+        preset.primaryColor.toLowerCase() === initialPrimary.toLowerCase() &&
+        preset.secondaryColor.toLowerCase() === initialSecondary.toLowerCase()
+    );
+    const themeName = (widget.theme?.name as any) || (matchedPreset ? (matchedPreset[0] as any) : "Custom");
+
     form.reset({
       name: widget.name || "",
       domains: widget.domains || [],
       departmentIds: widget.departmentIds.map((dep) => dep._id) || [],
       isEnabled: widget.isEnabled ?? true,
-      primaryColor: widget.primaryColor || "#3B82F6",
+      primaryColor: initialPrimary,
+      secondaryColor: initialSecondary,
+      themeName,
       welcomeMessage: widget.welcomeMessage || "Welcome! How can we help you today?",
       headerText: widget.headerText || "Customer Support",
+      offline_text: widget.offline_text || "We are offline right now",
+      notification_emails: widget.notification_emails || (currentUser?.email ? [currentUser.email] : []),
+      button_location: (widget.button_location as any) || "bottom_right",
+      button_label: widget.button_label || "Chat with us",
+      widget_text_color: widget.widget_text_color || "#FFFFFF",
     });
     setIsEditDialogOpen(true);
   };
@@ -151,10 +220,19 @@ function CelAction({ row }: Props) {
 
   // Handle form submission
   const handleFormSubmit = (values: WidgetFormValues) => {
+    const { themeName, ...rest } = values;
+    const theme = {
+      name: themeName,
+      primaryColor: values.primaryColor,
+      secondaryColor: values.secondaryColor,
+    } as const;
+
     const processedValues = {
-      ...values,
+      ...rest,
+      theme,
       // Filter out empty strings from domains if any
       domains: values.domains?.filter((domain) => domain.trim() !== "").map((d) => d.trim()) || [],
+      notification_emails: values.notification_emails?.map((e) => e.trim()).filter((e) => e.length > 0) || [],
     };
 
     updateWidgetMutation.mutate({
@@ -307,8 +385,41 @@ function CelAction({ row }: Props) {
                 )}
               />
 
-              {/* Styling and Messages */}
+              {/* Theme & Styling */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Theme Name */}
+                <FormField
+                  name="themeName"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Theme</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={(val) => {
+                            field.onChange(val);
+                            if (val !== "Custom") {
+                              const preset = THEME_PRESETS[val as keyof typeof THEME_PRESETS];
+                              form.setValue("primaryColor", preset.primaryColor, { shouldDirty: true });
+                              form.setValue("secondaryColor", preset.secondaryColor, { shouldDirty: true });
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select theme" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Light blue">Light blue</SelectItem>
+                            <SelectItem value="Sharp blue">Sharp blue</SelectItem>
+                            <SelectItem value="Custom">Custom</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   name="primaryColor"
                   control={form.control}
@@ -322,7 +433,7 @@ function CelAction({ row }: Props) {
                           <div
                             className="size-6 rounded-full border cursor-pointer"
                             style={{ backgroundColor: field.value }}
-                            onClick={() => setShowColorPicker(!showColorPicker)}
+                            onClick={() => setShowPrimaryColorPicker(!showPrimaryColorPicker)}
                           />
                           <HexColorInput 
                             color={field.value} 
@@ -330,11 +441,63 @@ function CelAction({ row }: Props) {
                             className="flex-1 px-3 py-2 border rounded-md"
                             placeholder="#000000"
                           />
-                          {showColorPicker && (
+                          {showPrimaryColorPicker && (
                             <div className="absolute top-full left-0 mt-2 z-50">
                               <HexColorPicker 
                                 color={field.value} 
-                                onChange={field.onChange}
+                                onChange={(color) => {
+                                  field.onChange(color);
+                                  const matchesPreset = Object.entries(THEME_PRESETS).find(
+                                    ([name, preset]) =>
+                                      preset.primaryColor.toLowerCase() === color.toLowerCase() &&
+                                      preset.secondaryColor.toLowerCase() === form.getValues("secondaryColor").toLowerCase()
+                                  );
+                                  form.setValue("themeName", matchesPreset ? (matchesPreset[0] as any) : "Custom", { shouldDirty: true });
+                                }}
+                                onMouseDown={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="secondaryColor"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center">
+                        <Palette className="mr-2 h-4 w-4" /> Secondary Color
+                      </FormLabel>
+                      <FormControl>
+                        <div className="flex items-center space-x-2 relative" ref={colorPickerRef}>
+                          <div
+                            className="size-6 rounded-full border cursor-pointer"
+                            style={{ backgroundColor: field.value }}
+                            onClick={() => setShowSecondaryColorPicker(!showSecondaryColorPicker)}
+                          />
+                          <HexColorInput 
+                            color={field.value} 
+                            onChange={field.onChange}
+                            className="flex-1 px-3 py-2 border rounded-md"
+                            placeholder="#000000"
+                          />
+                          {showSecondaryColorPicker && (
+                            <div className="absolute top-full left-0 mt-2 z-50">
+                              <HexColorPicker 
+                                color={field.value} 
+                                onChange={(color) => {
+                                  field.onChange(color);
+                                  const matchesPreset = Object.entries(THEME_PRESETS).find(
+                                    ([name, preset]) =>
+                                      preset.secondaryColor.toLowerCase() === color.toLowerCase() &&
+                                      preset.primaryColor.toLowerCase() === form.getValues("primaryColor").toLowerCase()
+                                  );
+                                  form.setValue("themeName", matchesPreset ? (matchesPreset[0] as any) : "Custom", { shouldDirty: true });
+                                }}
                                 onMouseDown={(e) => e.stopPropagation()}
                               />
                             </div>
@@ -361,6 +524,48 @@ function CelAction({ row }: Props) {
                       <FormControl>
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Button appearance and behavior */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  name="button_location"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Button Location</FormLabel>
+                      <FormControl>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select location" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="top_left">Top left</SelectItem>
+                            <SelectItem value="top_right">Top right</SelectItem>
+                            <SelectItem value="bottom_left">Bottom left</SelectItem>
+                            <SelectItem value="bottom_right">Bottom right</SelectItem>
+                            <SelectItem value="center_left">Center left</SelectItem>
+                            <SelectItem value="center_right">Center right</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="button_label"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Button Label</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Chat with us" {...field} />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -395,6 +600,80 @@ function CelAction({ row }: Props) {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                name="offline_text"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Offline Message</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="We are offline right now. Please leave a message and we will get back to you in a few business hours." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  name="notification_emails"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notification Emails (optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="admin@example.com, support@example.com"
+                          value={field.value?.join(", ")}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? e.target.value.split(",").map((d) => d.trim()) : []
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="widget_text_color"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center">
+                        <Palette className="mr-2 h-4 w-4" /> Widget Text Color
+                      </FormLabel>
+                      <FormControl>
+                        <div className="flex items-center space-x-2 relative" ref={colorPickerRef}>
+                          <div
+                            className="size-6 rounded-full border cursor-pointer"
+                            style={{ backgroundColor: field.value || "#FFFFFF" }}
+                            onClick={() => setShowTextColorPicker(!showTextColorPicker)}
+                          />
+                          <HexColorInput 
+                            color={field.value || "#FFFFFF"} 
+                            onChange={field.onChange}
+                            className="flex-1 px-3 py-2 border rounded-md"
+                            placeholder="#ffffff"
+                          />
+                          {showTextColorPicker && (
+                            <div className="absolute top-full left-0 mt-2 z-50">
+                              <HexColorPicker 
+                                color={field.value || "#FFFFFF"} 
+                                onChange={field.onChange}
+                                onMouseDown={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <DialogFooter>
                 <Button
