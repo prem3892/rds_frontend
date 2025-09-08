@@ -2,8 +2,10 @@
 import { useEffect, useCallback } from "react";
 import { socketService } from "@/services/socketService";
 import { useAuthStore } from "@/stores/auth";
-import { useChatActions } from "@/stores/chat";
+import { useChatActions, useActiveChatSessions } from "@/stores/chat";
 import { useVisitorActions } from "@/stores/visitor";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { ChatMessage, VisitorActivityEvent } from "@/types";
 
 // Hook for initializing the socket only once
@@ -11,6 +13,9 @@ export function useSocketInitializer() {
   const { accessToken, user, actions: authActions } = useAuthStore();
   const chatActions = useChatActions();
   const visitorActions = useVisitorActions();
+  const activeSessions = useActiveChatSessions();
+  const { showMessageNotification, showChatRequestNotification } = useNotifications();
+  const { showMessageToast, showChatRequestToast } = useToastNotifications();
 
   useEffect(() => {
     if (
@@ -41,9 +46,20 @@ export function useSocketInitializer() {
             break;
           case "newMessage":
             chatActions.addMessageToSession(data.chatSessionId, data);
+            // Show notification and toast for incoming customer messages
+            const session = activeSessions[data.chatSessionId];
+            if (session && data.senderType === "CUSTOMER") {
+              // Show push notification
+              showMessageNotification(data, session).catch(console.error);
+              // Show toast notification
+              showMessageToast(data, session);
+            }
             break;
           case "newChatRequest":
             chatActions.addPendingRequest(data);
+            // Show notification and toast for new chat requests
+            showChatRequestNotification(data).catch(console.error);
+            showChatRequestToast(data);
             break;
           case "chatSessionUpdate":
             chatActions.updateActiveSessionStatus(
@@ -134,7 +150,7 @@ export function useSocketInitializer() {
         removeListener();
       };
     }
-  }, [accessToken, user, chatActions, authActions, visitorActions]);
+  }, [accessToken, user, chatActions, authActions, visitorActions, activeSessions, showMessageNotification, showChatRequestNotification, showMessageToast, showChatRequestToast]);
 
   return null;
 }
