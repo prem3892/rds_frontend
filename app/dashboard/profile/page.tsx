@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { NotificationSettings } from "@/components/ui/notification-settings";
 import { motion } from "framer-motion";
 
 export default function ProfilePage() {
@@ -20,6 +21,7 @@ export default function ProfilePage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="space-y-6"
     >
       <Card>
         <CardHeader>
@@ -48,6 +50,9 @@ export default function ProfilePage() {
           {/* Add forms for updating password, maxConcurrentChats (for agents) later */}
         </CardContent>
       </Card>
+
+      {/* Notification Settings */}
+      <NotificationSettings />
     </motion.div>
   );
 }
