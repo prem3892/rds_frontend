@@ -1,5 +1,5 @@
 "use client";
-import { useCurrentUser } from "@/stores/auth";
+import { useCurrentUser, useHasHydrated } from "@/stores/auth";
 import { 
   useGetMyAgentProfile, 
   useUpdateMyAgentProfileMutation,
@@ -61,6 +61,7 @@ const TIMEZONES = [
 
 export default function ProfilePage() {
   const currentUser = useCurrentUser();
+  const hasHydrated = useHasHydrated();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -144,7 +145,7 @@ export default function ProfilePage() {
         
         await updateProfileMutation.mutateAsync(updateData);
         
-        toast.success("Profile picture updated successfully!");
+        // toast.success("Profile picture updated successfully!");
         queryClient.invalidateQueries({ queryKey: ["agents", "me"] });
         
       } catch (error) {
@@ -161,7 +162,7 @@ export default function ProfilePage() {
     const updateData: UpdateMyAgentProfileDto = {
       firstName: personalForm.firstName,
       lastName: personalForm.lastName,
-      email: personalForm.email
+  
     };
     updateProfileMutation.mutate(updateData);
   };
@@ -215,7 +216,42 @@ export default function ProfilePage() {
     }
   }, [agentProfile]);
 
-  if (!currentUser) return <p>Loading...</p>;
+  // Show loading during hydration or when user is not available
+  if (!hasHydrated || !currentUser) {
+    return (
+      <div className="mx-auto p-2 md:p-4 lg:p-6 xl:p-8 space-y-3 sm:space-y-4 md:space-y-6 bg-[#f2f4f8] rounded-3xl min-h-full mobile-no-overflow">
+        <div className="bg-white rounded-3xl p-2 md:p-4 overflow-hidden">
+          <div className="flex justify-between items-center mx-1 sm:mx-2 md:mx-4 mt-2 sm:mt-4 mb-4 sm:mb-6">
+            <div className="flex items-center space-x-2">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold flex items-center">
+                <span className="p-1 sm:p-2 bg-blue-500 text-white mr-1 rounded-md">
+                  <User className="text-lg sm:text-xl md:text-2xl" />
+                </span>
+                <span className="truncate">My Profile</span>
+              </h1>
+            </div>
+          </div>
+          <div className="mx-1 sm:mx-2 md:mx-4 space-y-6">
+            <div className="space-y-4">
+              <div className="h-8 w-64 bg-gray-200 animate-pulse rounded" />
+              <div className="h-4 w-96 bg-gray-200 animate-pulse rounded" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="space-y-3">
+                  <div className="h-48 w-full bg-gray-200 animate-pulse rounded-lg" />
+                  <div className="space-y-2">
+                    <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded" />
+                    <div className="h-3 w-1/2 bg-gray-200 animate-pulse rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -638,19 +674,7 @@ export default function ProfilePage() {
                 placeholder="Enter last name"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={personalForm.email}
-                onChange={(e) => setPersonalForm({...personalForm, email: e.target.value})}
-                className="col-span-3"
-                placeholder="Enter email address"
-              />
-            </div>
+           
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditingPersonal(false)}>
