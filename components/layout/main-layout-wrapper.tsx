@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +38,7 @@ import {
   UserCheck,
   Users,
   UserX,
+  WifiOff,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -400,6 +402,18 @@ export function MainLayoutWrapper({
               </DropdownMenu>
             </div>
           </header>
+
+          {/* Offline Status Alert */}
+          {!isOnline && (
+            <div className="flex justify-center px-4 py-2 bg-white">
+              <Alert className="max-w-md bg-red-50 border-red-200 text-red-800">
+                <WifiOff className="h-4 w-4" />
+                <AlertDescription className="font-medium">
+                  You are currently offline. Switch to online mode to receive new chats and messages.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
 
           {/* Main Content Area */}
           <main className="flex-1 overflow-auto bg-white p-2 sm:p-3 md:p-4 lg:p-5 mobile-no-overflow">{children}</main>
