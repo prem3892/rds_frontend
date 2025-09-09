@@ -174,30 +174,30 @@ export const createAgentColumns = ({
       );
     },
   },
-  {
-    accessorKey: "status",
-    header: () => {
-      return (
-        <div className="flex items-center gap-2">
-          <Settings className="size-5 stroke-1" />
-          <span>Status</span>
-        </div>
-      )
-    },
-    cell: ({ row }) => {
-      const agent = row.original;
-      return (
-        <div className="flex items-center justify-start">
-          <Badge
-            variant={agent.isOnline ? "default" : "secondary"}
-            className="font-normal"
-          >
-            {agent.isOnline ? "Online" : "Offline"}
-          </Badge>
-        </div>
-      );
-    },
-  },
+  // {
+  //   accessorKey: "status",
+  //   header: () => {
+  //     return (
+  //       <div className="flex items-center gap-2">
+  //         <Settings className="size-5 stroke-1" />
+  //         <span>Status</span>
+  //       </div>
+  //     )
+  //   },
+  //   cell: ({ row }) => {
+  //     const agent = row.original;
+  //     return (
+  //       <div className="flex items-center justify-start">
+  //         <Badge
+  //           variant={agent.isOnline ? "default" : "secondary"}
+  //           className="font-normal"
+  //         >
+  //           {agent.isOnline ? "Online" : "Offline"}
+  //         </Badge>
+  //       </div>
+  //     );
+  //   },
+  // },
   {
     accessorKey: "maxConcurrentChats",
       header: () => {
