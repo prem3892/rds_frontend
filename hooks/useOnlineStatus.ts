@@ -2,6 +2,7 @@
 import { useCallback } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { socketService } from "@/services/socketService";
+import { toast } from "sonner";
 
 /**
  * Custom hook for managing online status with persistence and cross-device synchronization.
@@ -26,9 +27,17 @@ export function useOnlineStatus() {
     
     if (!success) {
       console.warn("Failed to send online status to server. Socket may not be connected.");
+      toast.error('Status update failed', {
+        description: 'Failed to send online status to server. Socket may not be connected.',
+      });
     }
     
     console.log(`Online status changed to: ${status ? "Online" : "Offline"}`);
+
+    toast.success('Status updated', {
+      description: 'Your status has been changed to ' + (status ? 'Online' : 'Offline'),
+    });
+
   }, [actions]);
 
   const toggleOnlineStatus = useCallback(() => {

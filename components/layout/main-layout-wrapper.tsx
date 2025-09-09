@@ -46,6 +46,8 @@ import { useEffect, useMemo, useState } from "react";
 import { HomeIcon } from "../icons";
 import { MobileStatusSwitch } from "../mobile-toggle-switch";
 import { Separator } from "../ui/separator";
+import { useSetAgentStatusMutation } from "@/lib/agent.api";
+import { toast } from "sonner";
 
 // Utility function to get screen name based on route
 const getScreenNameFromRoute = (pathname: string): string => {
@@ -94,6 +96,7 @@ export function MainLayoutWrapper({
 }: DashboardLayoutProps) {
   const { logout } = useAuthActions();
   const { isOnline, setOnlineStatus } = useOnlineStatus();
+  const setOnlineStatusMutation = useSetAgentStatusMutation();
   const currentUser = useCurrentUser();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -136,11 +139,39 @@ export function MainLayoutWrapper({
   };
 
   const handleStatusChange = (checked: boolean) => {
-    // Set loading state
-    setIsStatusLoading(true);
 
-    // Use the new hook which handles both local state and server sync
+   
+    try{
+      setIsStatusLoading(true);
+
+      // setOnlineStatusMutation.mutateAsync({
+      //   isOnline: checked,
+      // }).catch((error) => {
+      //   console.error('Status update failed:', error);
+      // });
+
+       // Use the new hook which handles both local state and server sync
     setOnlineStatus(checked);
+  
+    } catch (error) {
+      console.error('Status update failed:', error);
+      
+    }
+    finally{
+      setIsStatusLoading(false);
+    }
+    // Set loading state
+   
+
+   
+
+    // setOnlineStatusMutation.mutateAsync({
+    //   isOnline: checked,
+    // }).catch((error) => {
+    //   console.error('Status update failed:', error);
+    // });
+
+    // setIsStatusLoading(false);
   };
 
   const allMenuItems = [
