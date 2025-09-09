@@ -357,7 +357,7 @@ function WidgetPreview({ form }: { form: any }) {
                     placeholder="Enter your email"
                     className="text-sm bg-accent rounded-sm"
                   />
-                  <Mail className="size-8 bg-primary text-white rounded-sm p-1" />
+                  <Mail className="size-8 bg-primary text-white rounded-sm p-1" style={{ backgroundColor: primaryColor }} />
                 </div>
               </div>
 
