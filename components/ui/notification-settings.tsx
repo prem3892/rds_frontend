@@ -1,12 +1,14 @@
 // components/ui/notification-settings.tsx
 "use client";
 
-import React from "react";
-import { Bell, BellOff, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import React, { useState } from "react";
+import { Bell, BellOff, CheckCircle, XCircle, AlertCircle, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "./slider";
 import { useNotifications } from "@/hooks/useNotifications";
+import { notificationService } from "@/services/notificationService";
 
 interface NotificationSettingsProps {
   className?: string;
@@ -19,6 +21,9 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
     isPermissionGranted,
     requestPermission,
   } = useNotifications();
+  
+  const [soundVolume, setSoundVolume] = useState([70]); // Default 70%
+  const [isTestingSound, setIsTestingSound] = useState(false);
 
   const getPermissionStatus = () => {
     switch (permission) {
@@ -56,6 +61,23 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
       }
     } catch (error) {
       console.error("Failed to request notification permission:", error);
+    }
+  };
+
+  const handleVolumeChange = (value: number[]) => {
+    setSoundVolume(value);
+    const volume = value[0] / 100; // Convert percentage to 0-1 range
+    notificationService.setSoundVolume(volume);
+  };
+
+  const handleTestSound = async () => {
+    setIsTestingSound(true);
+    try {
+      await notificationService.playSound();
+    } catch (error) {
+      console.error("Failed to play test sound:", error);
+    } finally {
+      setIsTestingSound(false);
     }
   };
 
@@ -156,6 +178,62 @@ export function NotificationSettings({ className }: NotificationSettingsProps) {
               You&apos;ll receive push notifications for new messages and chat requests, 
               even when this tab is not active.
             </p>
+          </div>
+        )}
+
+        {/* Sound Settings */}
+        {(isPermissionGranted || permission === "default") && (
+          <div className="border-t pt-4">
+            <div className="flex items-center gap-2 mb-3">
+              {notificationService.isSoundAvailable ? (
+                <Volume2 className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <VolumeX className="h-4 w-4 text-muted-foreground" />
+              )}
+              <h4 className="text-sm font-medium">Notification Sound</h4>
+            </div>
+            
+            {notificationService.isSoundAvailable ? (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-muted-foreground">Volume</label>
+                    <span className="text-xs text-muted-foreground">{soundVolume[0]}%</span>
+                  </div>
+                  <Slider
+                    value={soundVolume}
+                    onValueChange={handleVolumeChange}
+                    min={0}
+                    max={100}
+                    step={5}
+                    className="w-full"
+                  />
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleTestSound}
+                  disabled={isTestingSound}
+                  className="w-full"
+                >
+                  <Volume2 className="h-4 w-4 mr-2" />
+                  {isTestingSound ? "Playing..." : "Test Sound"}
+                </Button>
+              </div>
+            ) : (
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <div className="flex items-center gap-2">
+                  <VolumeX className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
+                    Sound Unavailable
+                  </p>
+                </div>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                  Notification sound could not be loaded. Check that chatsound.mp3 exists in the public folder.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
