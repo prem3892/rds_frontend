@@ -167,6 +167,34 @@ export const useEmailVerificationMutation = (
   });
 };
 
+// API Hook for Forgot Password
+export const useForgotPasswordMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, { email: string }>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, { email: string }>({
+    mutationFn: (data: { email: string }) =>
+      customFetch<{ message: string }>("/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    ...options,
+  });
+};
+
+// API Hook for Reset Password
+export const useResetPasswordMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, { token: string; newPassword: string }>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, { token: string; newPassword: string }>({
+    mutationFn: (data: { token: string; newPassword: string }) =>
+      customFetch<{ message: string }>("/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    ...options,
+  });
+};
+
 export * from "./chat.api";
 export * from "./widget.api";
 export * from "./department.api";
