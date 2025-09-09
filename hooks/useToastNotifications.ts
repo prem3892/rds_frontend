@@ -76,10 +76,11 @@ export function useToastNotifications(): UseToastNotificationsReturn {
         `New message from ${customerName}`,
         {
           description: truncatedMessage,
-          icon: createElement(MessageCircle, { size: 18 }),
+          icon: createElement(MessageCircle, { size: 18 , className: "text-white" }),
           duration: 5000,
           action: {
             label: "View Chat",
+            
             onClick: () => handleToastClick(session._id),
           },
         }
@@ -104,7 +105,7 @@ export function useToastNotifications(): UseToastNotificationsReturn {
         `New chat request from ${customerName}`,
         {
           description: `New message from ${customerName}`,
-          icon: createElement(User, { size: 18 }),
+          icon: createElement(User, { size: 18 , className: "text-white" }),
           duration: 6000,
           action: {
             label: "Accept Chat",
