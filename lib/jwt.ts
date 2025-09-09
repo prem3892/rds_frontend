@@ -16,7 +16,7 @@ export interface JWTPayload {
 
 // Token expiration times
 export const TOKEN_EXPIRY = {
-  ACCESS_TOKEN: '15m', // 15 minutes
+  ACCESS_TOKEN: '1d', // 1 day (backend tokens should define actual expiration)
   REFRESH_TOKEN: '7d', // 7 days
 } as const;
 

@@ -15,23 +15,41 @@ let refreshPromise: Promise<boolean> | null = null;
  * Call the backend refresh token endpoint
  */
 async function callRefreshTokenEndpoint(refreshToken: string): Promise<RefreshTokenResponse> {
-  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ refreshToken } as RefreshTokenRequest),
-  });
+  console.log('Calling refresh token endpoint...');
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshToken } as RefreshTokenRequest),
+    });
 
-  if (!response.ok) {
-    const errorData: ApiErrorResponse = await response.json().catch(() => ({
-      statusCode: response.status,
-      message: 'Token refresh failed',
-    }));
-    throw errorData;
+    console.log('Refresh token response status:', response.status);
+
+    if (!response.ok) {
+      let errorData: ApiErrorResponse;
+      try {
+        errorData = await response.json();
+        console.error('Refresh token failed with error data:', errorData);
+      } catch (parseError) {
+        console.error('Failed to parse error response:', parseError);
+        errorData = {
+          statusCode: response.status,
+          message: `Token refresh failed with status ${response.status}`,
+        };
+      }
+      throw errorData;
+    }
+
+    const result = await response.json();
+    console.log('Refresh token successful, new tokens received');
+    return result;
+  } catch (error) {
+    console.error('Network error during token refresh:', error);
+    throw error;
   }
-
-  return response.json();
 }
 
 /**
@@ -205,29 +223,46 @@ export function isTokenExpired(token: string, bufferMinutes: number = 2): boolea
  * Proactively refresh token if it's about to expire
  */
 export async function proactiveTokenRefresh(): Promise<void> {
-  const token = useAuthStore.getState().accessToken;
+  const { accessToken, refreshToken } = useAuthStore.getState();
   
-  if (!token) {
+  if (!accessToken) {
+    console.log('No access token available for proactive refresh');
     return;
   }
 
-  // Check if token expires in the next 5 minutes
-  if (isTokenExpired(token, 5)) {
+  if (!refreshToken) {
+    console.log('No refresh token available for proactive refresh');
+    return;
+  }
+
+  // Check if token expires in the next 10 minutes (increased buffer for safety)
+  if (isTokenExpired(accessToken, 10)) {
     console.log('Token expires soon, refreshing proactively...');
-    await refreshAccessToken();
+    const success = await refreshAccessToken();
+    if (success) {
+      console.log('Proactive token refresh completed successfully');
+    } else {
+      console.error('Proactive token refresh failed');
+    }
+  } else {
+    console.log('Token is still valid, no refresh needed');
   }
 }
 
 /**
  * Initialize token refresh interval
- * Checks and refreshes tokens every 10 minutes
+ * Checks and refreshes tokens every 5 minutes for better reliability
  */
 export function initializeTokenRefresh(): () => void {
+  console.log('Initializing token refresh service...');
+  
   const interval = setInterval(async () => {
     await proactiveTokenRefresh();
-  }, 10 * 60 * 1000); // 10 minutes
+  }, 5 * 60 * 1000); // 5 minutes (increased frequency)
 
   // Return cleanup function
-  return () => clearInterval(interval);
-  
+  return () => {
+    console.log('Cleaning up token refresh service...');
+    clearInterval(interval);
+  };
 }
