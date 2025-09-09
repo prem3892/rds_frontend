@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +38,7 @@ import {
   UserCheck,
   Users,
   UserX,
+  WifiOff,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,6 +48,8 @@ import { useEffect, useMemo, useState } from "react";
 import { HomeIcon } from "../icons";
 import { MobileStatusSwitch } from "../mobile-toggle-switch";
 import { Separator } from "../ui/separator";
+import { useSetAgentStatusMutation } from "@/lib/agent.api";
+import { toast } from "sonner";
 
 // Utility function to get screen name based on route
 const getScreenNameFromRoute = (pathname: string): string => {
@@ -94,6 +98,7 @@ export function MainLayoutWrapper({
 }: DashboardLayoutProps) {
   const { logout } = useAuthActions();
   const { isOnline, setOnlineStatus } = useOnlineStatus();
+  const setOnlineStatusMutation = useSetAgentStatusMutation();
   const currentUser = useCurrentUser();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -136,11 +141,39 @@ export function MainLayoutWrapper({
   };
 
   const handleStatusChange = (checked: boolean) => {
-    // Set loading state
-    setIsStatusLoading(true);
 
-    // Use the new hook which handles both local state and server sync
+   
+    try{
+      setIsStatusLoading(true);
+
+      // setOnlineStatusMutation.mutateAsync({
+      //   isOnline: checked,
+      // }).catch((error) => {
+      //   console.error('Status update failed:', error);
+      // });
+
+       // Use the new hook which handles both local state and server sync
     setOnlineStatus(checked);
+  
+    } catch (error) {
+      console.error('Status update failed:', error);
+      
+    }
+    finally{
+      setIsStatusLoading(false);
+    }
+    // Set loading state
+   
+
+   
+
+    // setOnlineStatusMutation.mutateAsync({
+    //   isOnline: checked,
+    // }).catch((error) => {
+    //   console.error('Status update failed:', error);
+    // });
+
+    // setIsStatusLoading(false);
   };
 
   const allMenuItems = [
@@ -369,6 +402,18 @@ export function MainLayoutWrapper({
               </DropdownMenu>
             </div>
           </header>
+
+          {/* Offline Status Alert */}
+          {!isOnline && (
+            <div className="flex justify-center px-4 py-2 bg-white">
+              <Alert className="max-w-md bg-red-50 border-red-200 text-red-800">
+                <WifiOff className="h-4 w-4" />
+                <AlertDescription className="font-medium">
+                  You are currently offline. Switch to online mode to receive new chats and messages.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
 
           {/* Main Content Area */}
           <main className="flex-1 overflow-auto bg-white p-2 sm:p-3 md:p-4 lg:p-5 mobile-no-overflow">{children}</main>

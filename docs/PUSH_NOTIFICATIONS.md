@@ -61,15 +61,24 @@ Notifications include:
 - Automatically navigates to the chat page
 - Selects the specific chat session that triggered the notification
 
+### Audio Notifications
+- Plays custom sound when notifications are shown
+- Audio file: `chatsound.mp3` in public folder
+- Volume control with user preferences
+- Test sound functionality in settings
+- Graceful fallback when audio is unavailable
+
 ### Browser Compatibility
 - Gracefully handles browsers without notification support
 - Provides fallbacks for environments without service worker support
 - Uses modern Web APIs with proper error handling
+- Respects browser audio autoplay policies
 
 ### Permission Management
 - Clear UI for requesting notification permissions
 - Guidance for users when permissions are blocked
 - Real-time permission status updates
+- Sound settings integrated in notification preferences
 
 ## Usage
 
@@ -80,8 +89,14 @@ Notifications include:
    - Click "Enable Notifications" button
    - Allow browser permission when prompted
 
-2. **Receiving Notifications:**
+2. **Configure Sound:**
+   - Adjust volume slider in notification settings
+   - Click "Test Sound" to preview audio
+   - Sound file can be replaced by updating `chatsound.mp3`
+
+3. **Receiving Notifications:**
    - Notifications appear when new messages/chats arrive
+   - Audio plays along with visual notification
    - Click notification to open the specific chat
    - Notifications only show when you're not actively using the app
 
@@ -103,6 +118,22 @@ const { isPermissionGranted, requestPermission } = useNotifications();
 
 if (!isPermissionGranted) {
   await requestPermission();
+}
+```
+
+3. **Play Sound Manually:**
+```typescript
+import { notificationService } from '@/services/notificationService';
+
+// Play notification sound
+await notificationService.playSound();
+
+// Set volume (0.0 to 1.0)
+notificationService.setSoundVolume(0.8);
+
+// Check if sound is available
+if (notificationService.isSoundAvailable) {
+  await notificationService.playSound();
 }
 ```
 
@@ -163,6 +194,12 @@ Potential improvements:
    - User may have previously blocked notifications
    - Try incognito/private browsing mode for testing
 
+4. **Sound Not Playing:**
+   - Ensure `chatsound.mp3` exists in the `public/` folder
+   - Browser autoplay policies require user interaction first
+   - Check browser console for audio-related errors
+   - Test sound manually using the "Test Sound" button
+
 ### Debug Information
 
 Enable debug logging by opening browser dev tools and checking console output. The notification system logs all operations including:
@@ -170,3 +207,5 @@ Enable debug logging by opening browser dev tools and checking console output. T
 - Permission request results
 - Notification display attempts
 - Click handling events
+- Audio loading and playback status
+- Volume changes and sound availability

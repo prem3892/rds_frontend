@@ -22,6 +22,8 @@ class NotificationService {
   private permission: NotificationPermission = "default";
   private isSupported = false;
   private clickHandlers = new Map<string, (data: any) => void>();
+  private audioContext: AudioContext | null = null;
+  private notificationAudio: HTMLAudioElement | null = null;
 
   constructor() {
     // Only initialize if we're in the browser
@@ -29,6 +31,7 @@ class NotificationService {
       this.checkSupport();
       this.initializePermission();
       this.setupNotificationClickHandler();
+      this.initializeAudio();
     }
   }
 
@@ -91,6 +94,46 @@ class NotificationService {
     }
   }
 
+  private initializeAudio() {
+    try {
+      // Initialize audio element for notification sound
+      this.notificationAudio = new Audio('/chatsound.mp3');
+      this.notificationAudio.preload = 'auto';
+      this.notificationAudio.volume = 0.7; // Set volume to 70%
+      
+      // Handle audio loading errors
+      this.notificationAudio.onerror = () => {
+        console.warn('Failed to load notification sound');
+        this.notificationAudio = null;
+      };
+    } catch (error) {
+      console.warn('Failed to initialize notification audio:', error);
+      this.notificationAudio = null;
+    }
+  }
+
+  private async playNotificationSound() {
+    if (!this.notificationAudio) {
+      return;
+    }
+
+    try {
+      // Reset audio to beginning
+      this.notificationAudio.currentTime = 0;
+      
+      // Play the sound
+      const playPromise = this.notificationAudio.play();
+      
+      if (playPromise !== undefined) {
+        await playPromise;
+      }
+    } catch (error) {
+      // This is expected if user hasn't interacted with page yet
+      // Browsers block audio without user interaction
+      console.debug('Could not play notification sound:', error instanceof Error ? error.message : 'Unknown error');
+    }
+  }
+
   async requestPermission(): Promise<NotificationPermission> {
     // Early return if not in browser environment
     if (typeof window === "undefined") {
@@ -133,6 +176,9 @@ class NotificationService {
       if (!isPageHidden && !options.requireInteraction) {
         return; // Don't spam notifications when user is actively using the app
       }
+
+      // Play notification sound
+      await this.playNotificationSound();
 
       // Try to use service worker for better notification handling
       if ("serviceWorker" in navigator) {
@@ -199,6 +245,23 @@ class NotificationService {
 
   removeClickHandler(tag: string) {
     this.clickHandlers.delete(tag);
+  }
+
+  // Public method to play notification sound manually
+  async playSound() {
+    await this.playNotificationSound();
+  }
+
+  // Method to set sound volume (0.0 to 1.0)
+  setSoundVolume(volume: number) {
+    if (this.notificationAudio && volume >= 0 && volume <= 1) {
+      this.notificationAudio.volume = volume;
+    }
+  }
+
+  // Method to check if sound is available
+  get isSoundAvailable(): boolean {
+    return this.notificationAudio !== null;
   }
 
   // Chat-specific notification methods
@@ -296,6 +359,10 @@ export const notificationService = (() => {
       removeClickHandler: () => {},
       showMessageNotification: async () => {},
       showChatRequestNotification: async () => {},
+      playNotificationSound: async () => {},
+      playSound: async () => {},
+      setSoundVolume: () => {},
+      isSoundAvailable: false,
     };
   }
   
