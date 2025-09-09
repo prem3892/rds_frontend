@@ -316,7 +316,7 @@ function WidgetPreview({ form }: { form: any }) {
                   { name: "John", color: "from-green-400 to-blue-500" ,imgSrc:"/_static/avatars/avatar-2.png"},
                   { name: "Charlie", color: "from-purple-400 to-pink-500" ,imgSrc:"/_static/avatars/avatar-3.png"},
                 ].map((agent, i) => (
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center" key={i}>
                     <div key={i} className="relative">
                     <Avatar className="size-14 border-2 border-white shadow-sm">
                       <AvatarImage src={agent.imgSrc} />
