@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { socketService } from "@/services/socketService";
 import { toast } from "sonner";
+import { markLocalStatusChange } from "@/lib/status-change-tracker";
 
 /**
  * Custom hook for managing online status with persistence and cross-device synchronization.
@@ -22,6 +23,9 @@ export function useOnlineStatus() {
   const { isOnline, actions } = useAuthStore();
 
   const setOnlineStatus = useCallback((status: boolean) => {
+    // Mark this as a local change to prevent duplicate toast notifications
+    markLocalStatusChange();
+    
     // Update the local store first (this persists to localStorage)
     actions.setOnlineStatus(status);
     
@@ -31,14 +35,17 @@ export function useOnlineStatus() {
     
     if (!success) {
       console.warn("Failed to send online status to server. Socket may not be connected.");
-      toast.error('Status update failed', {
+      toast.warning('Status update failed', {
         description: 'Failed to send online status to server. Socket may not be connected.',
+      });
+    } else {
+      // Show immediate confirmation toast for successful status change
+      toast.success('Status updated', {
+        description: `Your status has been changed to ${status ? 'Online' : 'Offline'}`,
       });
     }
     
     console.log(`Online status changed to: ${status ? "Online" : "Offline"}`);
-
-
 
   }, [actions]);
 

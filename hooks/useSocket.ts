@@ -8,6 +8,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { ChatMessage, VisitorActivityEvent } from "@/types";
 import { toast } from "sonner";
+import { isLocalStatusChangeActive } from "@/lib/status-change-tracker";
 
 // Hook for initializing the socket only once
 export function useSocketInitializer() {
@@ -36,7 +37,7 @@ export function useSocketInitializer() {
             break;
           case "authenticated":
             // Authentication successful - no automatic status restoration
-            // The user's online status will remain as stored in Zustand
+            // The user's online Zstatus will remain as stored in ustand
             // They can manually change it if needed without triggering server notifications
             console.log("Socket authenticated successfully");
             break;
@@ -83,9 +84,14 @@ export function useSocketInitializer() {
             // This handles status changes from other devices
             authActions.setOnlineStatus(data.isOnline);
             console.log(`Online status synchronized from server: ${data.isOnline ? "Online" : "Offline"}`);
-            toast.success('Status updated', {
-              description: 'Your status has been changed to ' + (data.isOnline ? 'Online' : 'Offline'),
-            });
+            
+            // Only show toast notification if this was NOT a local change
+            // This prevents duplicate notifications on the device that initiated the change
+            if (!isLocalStatusChangeActive()) {
+              toast.info('Status updated', {
+                description: 'Your status has been changed to ' + (data.isOnline ? 'Online' : 'Offline') + ' from another device or by Admin',
+              });
+            }
             break;
           case "agentPoolStatusUpdate":
             // Handle agent pool status updates (this might include online status changes)
@@ -137,6 +143,9 @@ export function useSocketInitializer() {
             break;
           case "customerDisconnectedFromChat":
             // Handle customer disconnection - could show a notification or update UI
+           toast.info('Customer disconnected from chat', {
+            description: `Customer ${data.customerName} disconnected from chat ${data.chatSessionId}`,
+           });
             console.log(`Customer ${data.customerName} disconnected from chat ${data.chatSessionId}`);
             break;
           case "customerReconnectedToChat":
