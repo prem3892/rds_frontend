@@ -174,6 +174,12 @@ class SocketService {
       this.notifyListeners("customerReconnectedToChat", data);
     });
 
+    // Priority chat notification
+    this.socket.on("server:priority_chat_notification", (session: ChatSession) => {
+      console.log("Priority chat notification received:", session);
+      this.notifyListeners("server:priority_chat_notification", session);
+    });
+
     return this.socket;
   }
 

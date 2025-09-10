@@ -64,6 +64,7 @@ interface ChatState {
     ) => void;
 
     addPendingRequest: (session: ChatSession) => void;
+    updatePendingRequest: (sessionId: string, updates: Partial<ChatSession>) => void;
     removePendingRequest: (sessionId: string) => void;
 
     // TODO: Add more actions for sending messages, accepting chats via WebSocket
@@ -242,6 +243,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
           ...state.pendingRequests.filter((s) => s._id !== session._id),
           session,
         ],
+      })),
+    updatePendingRequest: (sessionId, updates) =>
+      set((state) => ({
+        pendingRequests: state.pendingRequests.map((session) =>
+          session._id === sessionId ? { ...session, ...updates } : session
+        ),
       })),
     removePendingRequest: (sessionId) =>
       set((state) => ({

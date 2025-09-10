@@ -152,6 +152,14 @@ export function useSocketInitializer() {
             // Handle customer reconnection - could show a notification or update UI
             console.log(`Customer ${data.customerName} reconnected to chat ${data.chatSessionId}`);
             break;
+          case "server:priority_chat_notification":
+            // Handle priority chat notification - update the pending request with priority status
+            console.log("Priority chat notification received:", data);
+            chatActions.updatePendingRequest(data._id, data);
+            // Show priority chat notification
+            showChatRequestNotification(data).catch(console.error);
+            showChatRequestToast(data);
+            break;
         }
       });
 

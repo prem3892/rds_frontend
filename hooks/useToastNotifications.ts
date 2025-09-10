@@ -101,16 +101,23 @@ export function useToastNotifications(): UseToastNotificationsReturn {
           ? session.customerId?.name || "Customer"
           : "Customer";
 
+      const isPriorityChat = session.priorityNotificationSentCount > 0;
+
       toast(
-        `New chat request from ${customerName}`,
+        isPriorityChat 
+          ? `PRIORITY chat request from ${customerName}` 
+          : `New chat request from ${customerName}`,
         {
-          description: `New message from ${customerName}`,
+          description: isPriorityChat 
+            ? `This chat has been waiting for a while and needs immediate attention!` 
+            : `New message from ${customerName}`,
           icon: createElement(User, { size: 18 , className: "text-white" }),
-          duration: 6000,
+          duration: isPriorityChat ? 10000 : 6000, // Longer duration for priority chats
           action: {
             label: "Accept Chat",
             onClick: () => handleToastClick(session._id),
           },
+          className: isPriorityChat ? "border-red-500 bg-red-50" : undefined,
         }
       );
     },
