@@ -392,7 +392,7 @@ export function GuestInfo({
                       <Link href={`https://${session.customerId.metadata?.initialDomain || "N/A"}`} className="flex items-center gap-2 text-sm">
                         <Globe className="w-4 h-4 text-gray-500" />
                         <span className="text-gray-600">Source:</span>
-                        <Badge className="font-medium truncate  ">{session.customerId.metadata?.initialDomain || "N/A"}</Badge>
+                        <Badge className="font-medium truncate text-[10px] " variant={"outline"}>{session.customerId.metadata?.initialDomain || "N/A"}</Badge>
                       </Link>
                     </CardContent>
                   </Card>
