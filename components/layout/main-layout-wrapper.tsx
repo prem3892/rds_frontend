@@ -229,7 +229,7 @@ export function MainLayoutWrapper({
       label: "Blocked Guests",
       href: "/dashboard/blocked-customers",
       active: pathname.includes("/blocked-customers"),
-      roles: ["ADMIN"], // Admin only
+      roles: ["ADMIN", "AGENT"], // Available to both roles
     },
   ];
 
