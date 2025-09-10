@@ -697,7 +697,7 @@ export default function ProfilePage() {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Click "Change Password" to update your account password
+                  Click   &quot;Change Password&quot; to update your account password
                 </p>
               </div>
             </CardContent>
