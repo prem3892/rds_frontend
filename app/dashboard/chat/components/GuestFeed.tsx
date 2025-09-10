@@ -9,8 +9,14 @@ import {
   cn,
   formatRelativeTime,
 } from "@/lib/utils";
-import { useOnlineVisitorsCount, useVisitorsArray } from "@/stores/visitor";
+import { 
+  useOnlineVisitorsCount, 
+  useVisitorsArray, 
+  useVisitorActions, 
+  useIsInitialSyncComplete
+} from "@/stores/visitor";
 import { VisitorStatus } from "@/types/visitor";
+import { useVisitorSyncMutation } from "@/lib/visitor.api";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Apple,
@@ -21,10 +27,12 @@ import {
   Users,
   Monitor,
   Smartphone,
-  Tablet
+  Tablet,
+  Loader2
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { rawTimeZones } from '@vvo/tzdb';
+import { toast } from "sonner";
 
 import { FaChrome, FaFirefox, FaSafari, FaEdge, FaTablet,FaOpera, FaQuestionCircle, FaWindows } from 'react-icons/fa';
 import {  SiApple, SiLinux, SiAndroid, SiMacos,  SiTableau } from 'react-icons/si'; // Simple Icons for brands
@@ -56,6 +64,33 @@ export function GuestFeed({
   const [activeTab, setActiveTab] = useState<"guests" | "chats">("guests");
   const visitors = useVisitorsArray(searchTerm);
   const onlineCount = useOnlineVisitorsCount();
+  
+  // Visitor sync hooks
+  const visitorActions = useVisitorActions();
+  const isInitialSyncComplete = useIsInitialSyncComplete();
+  
+  // Visitor sync mutation
+  const visitorSyncMutation = useVisitorSyncMutation({
+    onSuccess: (data) => {
+      visitorActions.syncVisitorsFromApi(data);
+      visitorActions.setInitialSyncComplete(true);
+      console.log("Visitor sync completed:", data);
+    },
+    onError: (error) => {
+      console.error("Failed to sync visitors:", error);
+      toast.error("Failed to load visitor data");
+    },
+  });
+
+  // Trigger initial visitor sync when component mounts
+  useEffect(() => {
+    if (!isInitialSyncComplete && !visitorSyncMutation.isPending) {
+      console.log("Triggering initial visitor sync...");
+      visitorSyncMutation.mutate({ 
+        forceFullSync: true 
+      });
+    }
+  }, [isInitialSyncComplete]);
 
   const getStatusBadge = (status: VisitorStatus) => {
     switch (status) {
@@ -223,7 +258,19 @@ export function GuestFeed({
       <CardContent className="p-0 ">
         <ScrollArea className={cn(maxHeight, "gap-4  px-2")}>
           <AnimatePresence mode="sync">
-            {visitors.length === 0 ? (
+            {!isInitialSyncComplete && visitorSyncMutation.isPending ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-8 text-muted-foreground"
+              >
+                <div>
+                  <Loader2 className="w-8 h-8 mx-auto mb-2 opacity-50 animate-spin" />
+                  <p>Loading visitors...</p>
+                </div>
+              </motion.div>
+            ) : visitors.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

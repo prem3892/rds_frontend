@@ -58,10 +58,91 @@ export interface VisitorInfo {
   lastActivity: Date;
   connectedAt: Date;
   metadata?: Record<string, any>;
+  socketId?: string; // Add socket ID for API sync compatibility
+  widgetId?: string; // Add widget ID for API sync compatibility
 }
 
 export enum VisitorStatus {
   ONLINE = "online",
   RECONNECTED = "reconnected",
   OFFLINE = "offline",
+}
+
+// Helper type for API sync data conversion
+export interface ApiVisitorData {
+  customerId: string;
+  name: string;
+  status: "connected" | "disconnected" | "reconnected";
+  lastActivity: string;
+  metadata?: {
+    source?: string;
+    referrer?: string;
+    [key: string]: any;
+  };
+  connectedAt: string;
+  socketId?: string;
+  widgetId: string;
+  domain: string;
+  email?: string;
+  phone?: string;
+  fingerprint?: string;
+  currentPageUrl: string;
+  browserInfo?: {
+    userAgent?: string;
+    platform?: string;
+    language?: string;
+    screenResolution?: string;
+    timezone?: string;
+    [key: string]: any;
+  };
+}
+
+// Utility function to convert API data to VisitorInfo
+export function convertApiDataToVisitorInfo(
+  apiData: ApiVisitorData,
+  defaultWidget?: VisitorInfo["widget"]
+): VisitorInfo {
+  // Map API status to VisitorStatus enum
+  let status: VisitorStatus;
+  switch (apiData.status) {
+    case "connected":
+      status = VisitorStatus.ONLINE;
+      break;
+    case "reconnected":
+      status = VisitorStatus.RECONNECTED;
+      break;
+    case "disconnected":
+      status = VisitorStatus.OFFLINE;
+      break;
+    default:
+      status = VisitorStatus.ONLINE;
+  }
+
+  return {
+    customerId: apiData.customerId,
+    name: apiData.name,
+    email: apiData.email,
+    phone: apiData.phone,
+    fingerprint: apiData.fingerprint,
+    currentPageUrl: apiData.currentPageUrl,
+    domain: apiData.domain,
+    widget: defaultWidget || {
+      id: apiData.widgetId,
+      name: "Default Widget",
+      departmentIds: [],
+    },
+    browserInfo: {
+      userAgent: apiData.browserInfo?.userAgent,
+      language: apiData.browserInfo?.language,
+      platform: apiData.browserInfo?.platform,
+      screenResolution: apiData.browserInfo?.screenResolution,
+      timezone: apiData.browserInfo?.timezone,
+    },
+    status,
+    lastActivity: new Date(apiData.lastActivity),
+    connectedAt: new Date(apiData.connectedAt),
+    metadata: apiData.metadata,
+    socketId: apiData.socketId,
+    widgetId: apiData.widgetId,
+  };
 }

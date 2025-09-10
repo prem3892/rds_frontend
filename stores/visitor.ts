@@ -6,19 +6,26 @@ import {
   VisitorActivityEvent,
   VisitorEventType,
   VisitorStatus,
+  ApiVisitorData,
+  convertApiDataToVisitorInfo,
 } from "@/types/visitor";
+import { VisitorSyncResponse } from "@/lib/visitor.api";
 
 interface VisitorState {
   visitors: Record<string, VisitorInfo>; // customerId -> VisitorInfo
+  isInitialSyncComplete: boolean; // Track if initial sync has been completed
   actions: {
     handleVisitorActivity: (event: VisitorActivityEvent) => void;
     removeVisitor: (customerId: string) => void;
     clearAllVisitors: () => void;
+    syncVisitorsFromApi: (syncResponse: VisitorSyncResponse) => void;
+    setInitialSyncComplete: (complete: boolean) => void;
   };
 }
 
 export const useVisitorStore = create<VisitorState>((set, get) => ({
   visitors: {},
+  isInitialSyncComplete: false,
   actions: {
     handleVisitorActivity: (event: VisitorActivityEvent) => {
       const {
@@ -112,6 +119,49 @@ export const useVisitorStore = create<VisitorState>((set, get) => ({
     clearAllVisitors: () => {
       set({ visitors: {} });
     },
+
+    syncVisitorsFromApi: (syncResponse: VisitorSyncResponse) => {
+      const { changes, fullSync } = syncResponse;
+      
+      set((state) => {
+        let updatedVisitors = { ...state.visitors };
+
+        // If it's a full sync, clear existing visitors first
+        if (fullSync) {
+          updatedVisitors = {};
+        }
+
+        // Process each change from the API
+        changes.forEach((change) => {
+          const { type, customerId, data } = change;
+
+          switch (type) {
+            case "update":
+            case "create":
+              // Convert API data to VisitorInfo format
+              const visitorInfo = convertApiDataToVisitorInfo(data);
+              updatedVisitors[customerId] = visitorInfo;
+              break;
+
+            case "delete":
+              // Remove the visitor
+              delete updatedVisitors[customerId];
+              break;
+
+            default:
+              console.warn(`Unknown visitor sync change type: ${type}`);
+          }
+        });
+
+        return {
+          visitors: updatedVisitors,
+        };
+      });
+    },
+
+    setInitialSyncComplete: (complete: boolean) => {
+      set({ isInitialSyncComplete: complete });
+    },
   },
 }));
 
@@ -119,6 +169,8 @@ export const useVisitorStore = create<VisitorState>((set, get) => ({
 export const useVisitors = () => useVisitorStore((state) => state.visitors);
 export const useVisitorActions = () =>
   useVisitorStore((state) => state.actions);
+export const useIsInitialSyncComplete = () =>
+  useVisitorStore((state) => state.isInitialSyncComplete);
 
 // Helper hook to get visitors as array with filtering and sorting
 export const useVisitorsArray = (searchTerm?: string) => {

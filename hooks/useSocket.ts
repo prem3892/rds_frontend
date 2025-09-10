@@ -7,6 +7,7 @@ import { useVisitorActions } from "@/stores/visitor";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { ChatMessage, VisitorActivityEvent } from "@/types";
+import { toast } from "sonner";
 
 // Hook for initializing the socket only once
 export function useSocketInitializer() {
@@ -34,12 +35,10 @@ export function useSocketInitializer() {
             chatActions.setConnected(data);
             break;
           case "authenticated":
-            // When authenticated, set the online status from the persisted state
-            const currentOnlineStatus = useAuthStore.getState().isOnline;
-            if (currentOnlineStatus) {
-              // If the user was online before, set them online again
-              socketService.setOnlineStatus(true);
-            }
+            // Authentication successful - no automatic status restoration
+            // The user's online status will remain as stored in Zustand
+            // They can manually change it if needed without triggering server notifications
+            console.log("Socket authenticated successfully");
             break;
           case "authFailed":
             // Handle auth failed (could show toast here)
@@ -84,6 +83,9 @@ export function useSocketInitializer() {
             // This handles status changes from other devices
             authActions.setOnlineStatus(data.isOnline);
             console.log(`Online status synchronized from server: ${data.isOnline ? "Online" : "Offline"}`);
+            toast.success('Status updated', {
+              description: 'Your status has been changed to ' + (data.isOnline ? 'Online' : 'Offline'),
+            });
             break;
           case "agentPoolStatusUpdate":
             // Handle agent pool status updates (this might include online status changes)
