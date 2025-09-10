@@ -17,6 +17,7 @@ import {
   ToggleLeft,
   User
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AgentColumnsProps {
   departments: Department[];
@@ -56,8 +57,9 @@ export const createAgentColumns = ({
     cell: ({ row }) => {
       const agent = row.original;
       return (
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-8 w-8">
+        <div className="flex items-center space-x-3  ">
+          <div className="relative">
+          <Avatar className="h-8 w-8 ">
             <AvatarImage 
               src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined} 
               alt={`${agent.user.firstName} ${agent.user.lastName}`} 
@@ -66,6 +68,11 @@ export const createAgentColumns = ({
               {agent.user.firstName[0]}{agent.user.lastName[0]}
             </AvatarFallback>
           </Avatar>
+          <div className="absolute bottom-0 -right-1  bg-white rounded-full p-0.5">
+          <div className={cn("w-2 h-2 rounded-full", agent.isOnline ? "bg-green-500" : "bg-red-500")} />
+        </div>
+          </div>
+        
           <span className="font-medium capitalize">
             {agent.user.firstName} {agent.user.lastName}
           </span>
@@ -167,30 +174,30 @@ export const createAgentColumns = ({
       );
     },
   },
-  {
-    accessorKey: "status",
-    header: () => {
-      return (
-        <div className="flex items-center gap-2">
-          <Settings className="size-5 stroke-1" />
-          <span>Status</span>
-        </div>
-      )
-    },
-    cell: ({ row }) => {
-      const agent = row.original;
-      return (
-        <div className="flex items-center justify-start">
-          <Badge
-            variant={agent.isOnline ? "default" : "secondary"}
-            className="font-normal"
-          >
-            {agent.isOnline ? "Online" : "Offline"}
-          </Badge>
-        </div>
-      );
-    },
-  },
+  // {
+  //   accessorKey: "status",
+  //   header: () => {
+  //     return (
+  //       <div className="flex items-center gap-2">
+  //         <Settings className="size-5 stroke-1" />
+  //         <span>Status</span>
+  //       </div>
+  //     )
+  //   },
+  //   cell: ({ row }) => {
+  //     const agent = row.original;
+  //     return (
+  //       <div className="flex items-center justify-start">
+  //         <Badge
+  //           variant={agent.isOnline ? "default" : "secondary"}
+  //           className="font-normal"
+  //         >
+  //           {agent.isOnline ? "Online" : "Offline"}
+  //         </Badge>
+  //       </div>
+  //     );
+  //   },
+  // },
   {
     accessorKey: "maxConcurrentChats",
       header: () => {
@@ -234,14 +241,14 @@ export const createAgentColumns = ({
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button
+          {/* <Button
             variant={agent.isOnline ? "destructive" : "default"}
             size="icon"
             onClick={() => onToggleStatus(agent)}
             className="h-8 w-8"
           >
             <ToggleLeft className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       );
     },

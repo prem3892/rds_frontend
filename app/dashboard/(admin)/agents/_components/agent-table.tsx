@@ -1,19 +1,14 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable } from "@/components/ui/data-table";
 import { ApiErrorResponse, Department } from "@/types";
 import { AgentProfile } from "@/lib/agent.api";
 import { Row } from "@tanstack/react-table";
-import {
-  Building,
-  Globe,
-  Mail,
-  MessageSquare,
-  User
-} from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { createAgentColumns } from "./agent-columns";
 import CellAction from "./cell-actions";
 
@@ -54,116 +49,105 @@ const AgentCard = ({
   onEdit: (agent: AgentProfile) => void;
   onToggleStatus: (agent: AgentProfile) => void;
 }) => {
+  // Process department names
+  const departmentNames = agent.departmentIds.length > 0 ? (
+    Array.isArray(agent.departmentIds) &&
+    typeof agent.departmentIds[0] === "object" ? (
+      // Handle case where departmentIds is an array of department objects
+      agent.departmentIds.map((dept: any) => dept.name)
+    ) : (
+      // Handle case where departmentIds is an array of IDs
+      departments
+        ?.filter((dept: Department) =>
+          agent.departmentIds.includes(dept._id)
+        )
+        .map((dept: Department) => dept.name) || []
+    )
+  ) : [];
+
   return (
-    <Card className="mb-4 shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start">
-          <div className="flex-1 space-y-3">
-            {/* Agent Name */}
-            <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8 flex-shrink-0">
-                <AvatarImage 
-                  src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined} 
-                  alt={`${agent.user.firstName} ${agent.user.lastName}`} 
+    <Card className="mb-3 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          {/* Left side - Agent info */}
+          <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+            {/* Avatar with online status */}
+            <div className="relative flex-shrink-0">
+              <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+                <AvatarImage
+                  src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined}
+                  alt={`${agent.user.firstName} ${agent.user.lastName}`}
                 />
-                <AvatarFallback className="bg-blue-100 text-blue-600 text-xs font-medium">
-                  {agent.user.firstName[0]}{agent.user.lastName[0]}
+                <AvatarFallback className="bg-blue-100 text-blue-600 text-sm font-medium">
+                  {agent.user.firstName?.[0] || ""}
+                  {agent.user.lastName?.[0] || ""}
                 </AvatarFallback>
               </Avatar>
-              <span className="font-semibold text-sm text-gray-900">
-                {agent.user.firstName} {agent.user.lastName}
-              </span>
-            </div>
-
-            {/* Email */}
-            <div className="flex items-center gap-2">
-              <Mail className="size-4 text-gray-500 flex-shrink-0" />
-              <span className="text-sm text-gray-700">{agent.user.email}</span>
-            </div>
-
-            {/* Departments */}
-            <div className="flex items-start gap-2">
-              <Building className="size-4 text-gray-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <span className="text-xs text-gray-500 uppercase tracking-wide">
-                  Departments
-                </span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {agent.departmentIds.length > 0 ? (
-                    Array.isArray(agent.departmentIds) &&
-                    typeof agent.departmentIds[0] === "object" ? (
-                      // Handle case where departmentIds is an array of department objects
-                      agent.departmentIds.map((dept: any) => (
-                        <Badge key={dept._id} variant="outline" className="text-xs">
-                          {dept.name}
-                        </Badge>
-                      ))
-                    ) : (
-                      // Handle case where departmentIds is an array of IDs
-                      departments
-                        ?.filter((dept: Department) =>
-                          agent.departmentIds.includes(dept._id)
-                        )
-                        .map((dept: Department) => (
-                          <Badge key={dept._id} variant="outline" className="text-xs">
-                            {dept.name}
-                          </Badge>
-                        ))
-                    )
-                  ) : (
-                    <span className="text-sm text-gray-500">None</span>
-                  )}
-                </div>
+              {/* Online Status Indicator */}
+              <div className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-0.5 shadow-sm">
+                <div
+                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${agent.isOnline ? "bg-green-500" : "bg-red-500"}`}
+                />
               </div>
             </div>
 
-            {/* Domain Access */}
-            <div className="flex items-start gap-2">
-              <Globe className="size-4 text-gray-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <span className="text-xs text-gray-500 uppercase tracking-wide">
-                  Domain Access
-                </span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {agent.domainAccess && agent.domainAccess.length > 0 ? (
-                    agent.domainAccess.map((domain, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs">
-                        {domain}
+            {/* Agent details */}
+            <div className="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
+              {/* Name */}
+              <h3 className="font-semibold text-gray-900 text-base sm:text-lg leading-tight">
+                {agent.user.firstName} {agent.user.lastName}
+              </h3>
+
+              {/* Email */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <span className="text-xs sm:text-sm text-gray-500 font-medium">Email:</span>
+                <span className="text-xs sm:text-sm text-gray-700 break-all">{agent.user.email}</span>
+              </div>
+
+              {/* Departments as badges */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <span className="text-xs sm:text-sm text-gray-500 font-medium flex-shrink-0">Departments:</span>
+                <div className="flex flex-wrap gap-1">
+                  {departmentNames.length > 0 ? (
+                    departmentNames.map((deptName, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100"
+                      >
+                        {deptName}
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-sm text-gray-500">All domains</span>
+                    <Badge variant="outline" className="text-xs text-gray-500">
+                      None
+                    </Badge>
                   )}
                 </div>
-              </div>
-            </div>
-
-            {/* Status and Max Chats */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant={agent.isOnline ? "default" : "secondary"}
-                  className="text-xs"
-                >
-                  {agent.isOnline ? "Online" : "Offline"}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <MessageSquare className="size-4 text-gray-500" />
-                <Badge variant="outline" className="text-xs">
-                  Max {agent.maxConcurrentChats} chats
-                </Badge>
               </div>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="ml-3 flex-shrink-0">
-            <CellAction 
-              row={{ original: agent } as Row<AgentProfile>} 
-              onEdit={onEdit}
-              onToggleStatus={onToggleStatus}
-            />
+          <div className="flex items-center gap-2 pt-3 mt-3 border-t border-gray-100">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(agent)}
+              className="flex-1 h-8 text-xs"
+            >
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onToggleStatus(agent)}
+              className="flex-1 h-8 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-3 w-3 mr-1" />
+              Delete
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -210,61 +194,46 @@ const AgentTable = (props: Props) => {
       {/* Mobile Card View */}
       <div className="block md:hidden">
         {isLoadingAgents ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[...Array(4)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1 space-y-3">
-                      {/* Agent Name */}
-                      <div className="flex items-center gap-2">
-                        <div className="size-4 bg-gray-200 rounded"></div>
-                        <div className="h-4 bg-gray-200 rounded w-32"></div>
+              <Card key={i} className="animate-pulse border border-gray-200">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                      {/* Avatar with status indicator */}
+                      <div className="relative flex-shrink-0">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gray-200 rounded-full"></div>
+                        <div className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-0.5 shadow-sm">
+                          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-gray-200 rounded-full" />
+                        </div>
                       </div>
 
-                      {/* Email */}
-                      <div className="flex items-center gap-2">
-                        <div className="size-4 bg-gray-200 rounded"></div>
-                        <div className="h-4 bg-gray-200 rounded w-40"></div>
-                      </div>
+                      {/* Agent details */}
+                      <div className="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
+                        {/* Name */}
+                        <div className="h-5 sm:h-6 bg-gray-200 rounded w-32 sm:w-40"></div>
+                        
+                        {/* Email */}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                          <div className="h-4 bg-gray-200 rounded w-12"></div>
+                          <div className="h-4 bg-gray-200 rounded w-40 sm:w-48"></div>
+                        </div>
 
-                      {/* Departments */}
-                      <div className="flex items-start gap-2">
-                        <div className="size-4 bg-gray-200 rounded mt-0.5"></div>
-                        <div className="flex-1 space-y-1">
-                          <div className="h-3 bg-gray-200 rounded w-20"></div>
-                          <div className="flex gap-1">
+                        {/* Departments */}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                          <div className="h-4 bg-gray-200 rounded w-20"></div>
+                          <div className="flex flex-wrap gap-1">
                             <div className="h-5 bg-gray-200 rounded-full w-16"></div>
                             <div className="h-5 bg-gray-200 rounded-full w-20"></div>
                           </div>
                         </div>
-                      </div>
-
-                      {/* Domain Access */}
-                      <div className="flex items-start gap-2">
-                        <div className="size-4 bg-gray-200 rounded mt-0.5"></div>
-                        <div className="flex-1 space-y-1">
-                          <div className="h-3 bg-gray-200 rounded w-24"></div>
-                          <div className="flex gap-1">
-                            <div className="h-5 bg-gray-200 rounded-full w-16"></div>
-                            <div className="h-5 bg-gray-200 rounded-full w-20"></div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Status and Max Chats */}
-                      <div className="flex items-center gap-4">
-                        <div className="h-5 bg-gray-200 rounded-full w-16"></div>
-                        <div className="h-5 bg-gray-200 rounded-full w-20"></div>
                       </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="ml-3">
-                      <div className="flex gap-2">
-                        <div className="size-8 bg-gray-200 rounded"></div>
-                        <div className="size-8 bg-gray-200 rounded"></div>
-                      </div>
+                    <div className="flex items-center gap-2 pt-3 mt-3 border-t border-gray-100">
+                      <div className="flex-1 h-8 bg-gray-200 rounded"></div>
+                      <div className="flex-1 h-8 bg-gray-200 rounded"></div>
                     </div>
                   </div>
                 </CardContent>
@@ -272,7 +241,7 @@ const AgentTable = (props: Props) => {
             ))}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {agents.map((agent) => (
               <AgentCard 
                 key={agent._id} 
