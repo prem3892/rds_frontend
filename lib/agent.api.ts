@@ -56,8 +56,8 @@ export interface UpdateAgentProfileDto {
   maxConcurrentChats?: number;
   firstName?: string;
   lastName?: string;
-  email?: string;
-  password?: string;
+  // email?: string;
+  // password?: string;
   phoneNo?: string;
   website?: string;
   shifts?: AgentShift[];

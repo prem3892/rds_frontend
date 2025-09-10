@@ -6,6 +6,7 @@ import {
   useUploadProfilePictureMutation,
   UpdateMyAgentProfileDto
 } from "@/lib/agent.api";
+import { useChangePasswordMutation, ChangePasswordDto } from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -69,16 +70,21 @@ export default function ProfilePage() {
   const [isEditingPersonal, setIsEditingPersonal] = useState(false);
   const [isEditingSettings, setIsEditingSettings] = useState(false);
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Form states
   const [personalForm, setPersonalForm] = useState({
     firstName: '',
-    lastName: '',
-    email: ''
+    lastName: ''
   });
   const [settingsForm, setSettingsForm] = useState({
     maxConcurrentChats: 0,
     timezone: 'UTC'
+  });
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
 
   const { 
@@ -108,6 +114,21 @@ export default function ProfilePage() {
         description: error.message
       });
       setIsUploadingPicture(false);
+    }
+  });
+
+  const changePasswordMutation = useChangePasswordMutation({
+    onSuccess: (data) => {
+      toast.success("Password changed successfully!", {
+        description: data.message
+      });
+      setIsChangingPassword(false);
+      setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    },
+    onError: (error) => {
+      toast.error("Failed to change password", {
+        description: error.message
+      });
     }
   });
 
@@ -176,6 +197,42 @@ export default function ProfilePage() {
     updateProfileMutation.mutate(updateData);
   };
 
+  // Handle password change
+  const handlePasswordChange = () => {
+    // Validation
+    if (!passwordForm.oldPassword) {
+      toast.error("Current password is required");
+      return;
+    }
+    
+    if (!passwordForm.newPassword) {
+      toast.error("New password is required");
+      return;
+    }
+    
+    if (passwordForm.newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters long");
+      return;
+    }
+    
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("New passwords don't match");
+      return;
+    }
+    
+    if (passwordForm.oldPassword === passwordForm.newPassword) {
+      toast.error("New password must be different from current password");
+      return;
+    }
+    
+    const changePasswordData: ChangePasswordDto = {
+      oldPassword: passwordForm.oldPassword,
+      newPassword: passwordForm.newPassword
+    };
+    
+    changePasswordMutation.mutate(changePasswordData);
+  };
+
   // Get initials for avatar fallback
   const getInitials = () => {
     if (agentProfile?.user) {
@@ -206,8 +263,7 @@ export default function ProfilePage() {
     if (agentProfile) {
       setPersonalForm({
         firstName: agentProfile.user.firstName,
-        lastName: agentProfile.user.lastName,
-        email: agentProfile.user.email
+        lastName: agentProfile.user.lastName
       });
       setSettingsForm({
         maxConcurrentChats: agentProfile.maxConcurrentChats,
@@ -602,13 +658,29 @@ export default function ProfilePage() {
           {/* Password & Security Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5" />
-                Password & Security
-              </CardTitle>
-              <CardDescription>
-                Manage your account password and security settings.
-              </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Key className="h-5 w-5" />
+                    Password & Security
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your account password and security settings.
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+                    setIsChangingPassword(true);
+                  }}
+                  disabled={isLoading}
+                >
+                  <Key className="h-4 w-4 mr-2" />
+                  Change Password
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-4 border rounded-lg bg-gray-50">
@@ -616,16 +688,16 @@ export default function ProfilePage() {
                   <div>
                     <p className="font-medium">Password</p>
                     <p className="text-sm text-muted-foreground">
-                      Change your account password for better security
+                      Last updated: Never shown for security
                     </p>
                   </div>
-                  <Button variant="outline" disabled>
-                    <Key className="h-4 w-4 mr-2" />
-                    Reset Password
-                  </Button>
+                  <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                    <Key className="h-3 w-3 mr-1" />
+                    Secured
+                  </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Password reset functionality will be available soon
+                  Click "Change Password" to update your account password
                 </p>
               </div>
             </CardContent>
@@ -646,7 +718,7 @@ export default function ProfilePage() {
           <DialogHeader>
             <DialogTitle>Edit Personal Information</DialogTitle>
             <DialogDescription>
-              Update your name and email address. Changes will be reflected across the system.
+              Update your name. Changes will be reflected across the system.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -758,6 +830,115 @@ export default function ProfilePage() {
                 </>
               ) : (
                 "Save Changes"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog open={isChangingPassword} onOpenChange={setIsChangingPassword}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Update your account password. Make sure to use a strong password for better security.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="currentPassword" className="text-right">
+                Current Password
+              </Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={passwordForm.oldPassword}
+                onChange={(e) => setPasswordForm({...passwordForm, oldPassword: e.target.value})}
+                className="col-span-3"
+                placeholder="Enter current password"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="newPassword" className="text-right">
+                New Password
+              </Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                className="col-span-3"
+                placeholder="Enter new password (min 6 characters)"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="confirmPassword" className="text-right">
+                Confirm Password
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                className="col-span-3"
+                placeholder="Confirm new password"
+              />
+            </div>
+          </div>
+          
+          {/* Password strength indicator - outside the grid */}
+          {passwordForm.newPassword && (
+            <div className="px-6 pb-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Password Strength:</span>
+                <span className={`font-medium ${
+                  passwordForm.newPassword.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(passwordForm.newPassword)
+                    ? 'text-green-600' 
+                    : passwordForm.newPassword.length >= 6
+                    ? 'text-yellow-600'
+                    : 'text-red-600'
+                }`}>
+                  {passwordForm.newPassword.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(passwordForm.newPassword)
+                    ? 'Strong' 
+                    : passwordForm.newPassword.length >= 6
+                    ? 'Medium'
+                    : 'Weak'
+                  }
+                </span>
+              </div>
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <div className={`flex items-center gap-1 ${passwordForm.newPassword.length >= 6 ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`w-1 h-1 rounded-full ${passwordForm.newPassword.length >= 6 ? 'bg-green-600' : 'bg-red-600'}`} />
+                  At least 6 characters
+                </div>
+                <div className={`flex items-center gap-1 ${/(?=.*[a-z])(?=.*[A-Z])/.test(passwordForm.newPassword) ? 'text-green-600' : 'text-gray-400'}`}>
+                  <div className={`w-1 h-1 rounded-full ${/(?=.*[a-z])(?=.*[A-Z])/.test(passwordForm.newPassword) ? 'bg-green-600' : 'bg-gray-400'}`} />
+                  Mixed case letters
+                </div>
+                <div className={`flex items-center gap-1 ${/(?=.*\d)/.test(passwordForm.newPassword) ? 'text-green-600' : 'text-gray-400'}`}>
+                  <div className={`w-1 h-1 rounded-full ${/(?=.*\d)/.test(passwordForm.newPassword) ? 'bg-green-600' : 'bg-gray-400'}`} />
+                  At least one number
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsChangingPassword(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handlePasswordChange} 
+              disabled={changePasswordMutation.isPending || !passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword}
+            >
+              {changePasswordMutation.isPending ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900 mr-2" />
+                  Changing...
+                </>
+              ) : (
+                "Change Password"
               )}
             </Button>
           </DialogFooter>
