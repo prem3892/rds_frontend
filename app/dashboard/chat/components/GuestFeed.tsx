@@ -141,7 +141,7 @@ export function GuestFeed({
           <Button
             variant="ghost"
             size="sm"
-            className="text-green-600 text-xs font-medium p-0 h-auto hover:bg-transparent"
+            className="text-green-600 text-xs font-medium p-0 h-auto hover:bg-transparent cursor-pointer"
             onClick={() => onInitiateChat?.(visitorId)}
           >
             Initiate Chat

@@ -45,7 +45,7 @@ export const ROUTES = {
     '/dashboard/agents',
     '/dashboard/departments',
     '/dashboard/widgets',
-    '/dashboard/blocked-customers',
+    // '/dashboard/blocked-customers',
     '/dashboard/sessions',
   ],
   

@@ -35,6 +35,52 @@ const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
     return groups;
   };
 
+  const groupConsecutiveMessages = (messages: ChatMessage[]) => {
+    if (messages.length === 0) return [];
+    
+    const groups: { messages: ChatMessage[], showAvatar: boolean, sender: { id: string, type: string } }[] = [];
+    let currentGroup: ChatMessage[] = [];
+    let currentSender = { id: '', type: '' };
+    
+    messages.forEach((message, index) => {
+      const messageSender = { id: message.senderId, type: message.senderType };
+      
+      // Start new group if sender changes or it's a system message
+      if (
+        message.senderType === 'SYSTEM' ||
+        messageSender.id !== currentSender.id ||
+        messageSender.type !== currentSender.type
+      ) {
+        // Push previous group if it exists
+        if (currentGroup.length > 0) {
+          groups.push({
+            messages: [...currentGroup],
+            showAvatar: true,
+            sender: currentSender
+          });
+        }
+        
+        // Start new group
+        currentGroup = [message];
+        currentSender = messageSender;
+      } else {
+        // Add to current group
+        currentGroup.push(message);
+      }
+    });
+    
+    // Don't forget the last group
+    if (currentGroup.length > 0) {
+      groups.push({
+        messages: [...currentGroup],
+        showAvatar: true,
+        sender: currentSender
+      });
+    }
+    
+    return groups;
+  };
+
   const getDateDisplay = (dateString: string) => {
     const date = parseISO(dateString);
     
@@ -68,17 +114,26 @@ const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
             </div>
             
             {/* Messages for this date */}
-            {dateMessages.map((msg) => (
-              <motion.div
-                key={msg._id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                <MessageBubble message={msg} />
-              </motion.div>
+            {groupConsecutiveMessages(dateMessages).map((group, groupIndex) => (
+              <div key={`group-${groupIndex}`} className="space-y-1">
+                {group.messages.map((msg, msgIndex) => (
+                  <motion.div
+                    key={msg._id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <MessageBubble 
+                      message={msg} 
+                      showAvatar={msgIndex === group.messages.length - 1} 
+                      isLastInGroup={msgIndex === group.messages.length - 1}
+                      isFirstInGroup={msgIndex === 0}
+                    />
+                  </motion.div>
+                ))}
+              </div>
             ))}
           </div>
         ))}
