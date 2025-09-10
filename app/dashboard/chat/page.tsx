@@ -318,6 +318,9 @@ export default function MyChatsPage() {
             onAcceptChat={handleAcceptChat}
             isLoading={isLoadingInitialSessions}
           />
+
+{/* <GuestFeed maxHeight="h-full" /> */}
+          
         </motion.div>
       );
     }
@@ -342,6 +345,7 @@ export default function MyChatsPage() {
         onAcceptChat={handleAcceptChat}
         isLoading={isLoadingInitialSessions}
       />
+      
 
       {/* Main Chat View Area */}
       <main className="flex-1  bg-[#f2f4f8] p-4">

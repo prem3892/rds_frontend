@@ -167,6 +167,25 @@ export const useEmailVerificationMutation = (
   });
 };
 
+// API Hook for Change Password
+export interface ChangePasswordDto {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export const useChangePasswordMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, ChangePasswordDto>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, ChangePasswordDto>({
+    mutationFn: (data: ChangePasswordDto) =>
+      customFetch<{ message: string }>("/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    ...options,
+  });
+};
+
 export * from "./chat.api";
 export * from "./widget.api";
 export * from "./department.api";
