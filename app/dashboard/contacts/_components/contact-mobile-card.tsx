@@ -78,8 +78,8 @@ export default function ContactMobileCard({ contact }: ContactMobileCardProps) {
             <div className="flex-1">
               <span className="text-xs text-gray-500 uppercase tracking-wide">Customer</span>
               <div className="mt-1">
-                <div className="text-sm text-gray-700">{contact.customer.name}</div>
-                <div className="text-xs text-gray-500">{contact.customer.email}</div>
+                <div className="text-sm text-gray-700">{contact.customer?.name}</div>
+                <div className="text-xs text-gray-500">{contact.customer?.email}</div>
               </div>
             </div>
           </div>
