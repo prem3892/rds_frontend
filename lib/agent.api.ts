@@ -28,7 +28,8 @@ export interface RegisterAgentDto {
 export interface AgentProfile {
   _id: string;
   userId: string;
-  departmentIds: string[];
+  adminId: string;
+  departmentIds: any[]; // Can be string IDs or department objects with details
   domainAccess: string[];
   isOnline: boolean;
   maxConcurrentChats: number;
@@ -37,8 +38,10 @@ export interface AgentProfile {
   shifts?: AgentShift[];
   timezone?: string;
   profilePicture?: string;
+  lastSeen?: string;
   createdAt: string;
   updatedAt: string;
+  __v: number;
   user: {
     email: string;
     firstName: string;
@@ -53,8 +56,8 @@ export interface UpdateAgentProfileDto {
   maxConcurrentChats?: number;
   firstName?: string;
   lastName?: string;
-  email?: string;
-  password?: string;
+  // email?: string;
+  // password?: string;
   phoneNo?: string;
   website?: string;
   shifts?: AgentShift[];
@@ -63,8 +66,19 @@ export interface UpdateAgentProfileDto {
 }
 
 export interface UpdateMyAgentProfileDto {
+  departmentIds?: string[];
+  domainAccess?: string[];
+  isOnline?: boolean;
   maxConcurrentChats?: number;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
   password?: string;
+  phoneNo?: string;
+  website?: string;
+  shifts?: AgentShift[];
+  timezone?: string;
+  profilePicture?: string;
 }
 
 export interface SetOnlineStatusDto {

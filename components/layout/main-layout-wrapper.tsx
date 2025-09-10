@@ -377,16 +377,16 @@ export function MainLayoutWrapper({
                 <Button variant="ghost" className="flex items-center gap-2 p-4">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={agentProfile?.profilePicture || "/placeholder.svg"}
+                      src={`${process.env.NEXT_PUBLIC_API_URL}${agentProfile?.profilePicture}`}
                       alt={currentUser?.firstName ? `${currentUser.firstName} ${currentUser.lastName}` : "User"}
                     />
                     <AvatarFallback>
-                      {currentUser?.firstName ? `${currentUser.firstName[0]}${currentUser.lastName?.[0] || ""}` : "U"}
+                      {agentProfile?.user.firstName ? `${agentProfile?.user.firstName[0]}${agentProfile?.user.lastName?.[0] || ""}` : "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden sm:flex flex-col items-start justify-center text-sm min-w-0">
                     <span className="font-medium truncate capitalize">
-                      {currentUser?.firstName ? `${currentUser.firstName} ${currentUser.lastName}` : "User"}
+                      {agentProfile?.user.firstName ? `${agentProfile?.user.firstName} ${agentProfile?.user.lastName}` : "User"}
                     </span>
                   </div>
                   <Badge variant={"outline"} className="rounded-full text-xs text-primary">
@@ -396,7 +396,7 @@ export function MainLayoutWrapper({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => router.push("/profile")}>Profile Settings</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>Profile Settings</DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>Sign Out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
