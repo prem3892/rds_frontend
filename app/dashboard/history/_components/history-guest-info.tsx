@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn, getColorFromString } from "@/lib/utils";
+import { useGetContactsByCustomer } from "@/lib/contact.api";
 import { ChatSession } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -14,7 +15,11 @@ import {
   MapPin,
   User as UserIcon,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Loader2,
+  Mail,
+  Phone,
+  User
 } from "lucide-react";
 import { useState } from "react";
 import { HistoryGuestInfoSkeleton } from "./history-guest-info-skeleton";
@@ -26,6 +31,18 @@ interface HistoryGuestInfoProps {
 
 export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInfoProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Fetch contact information for this customer
+  const {
+    data: existingContacts,
+    isLoading: isLoadingContact,
+    error: contactError,
+  } = useGetContactsByCustomer(session?.customerId?._id || null, {
+    retry: false, // Don't retry if contact doesn't exist
+  });
+
+  // Get the first contact if any exist
+  const existingContact = existingContacts && existingContacts.length > 0 ? existingContacts[0] : null;
 
   if (isLoading) {
     return <HistoryGuestInfoSkeleton />;
@@ -104,14 +121,14 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
         </div>
         
         <div className="flex items-center gap-2">
-          <div className={`px-2 py-1  flex flex-wrap text-wrap truncate rounded-full text-xs border ${getStatusColor(session.status)}`}>
+          <div className={`px-2 py-1 flex flex-wrap text-wrap truncate rounded-full text-xs border ${getStatusColor(session.status)}`}>
             {session.status.replace(/_/g, " ")}
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 flex items-center justify-center"
           >
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
@@ -135,41 +152,68 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
                   <CardTitle className="text-sm font-semibold">Contact Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-xs font-medium">Email:</Label>
-                    <Input
-                      id="email"
-                      placeholder="Enter email"
-                      className="text-xs h-8"
-                      defaultValue={typeof session.customerId === "object" ? session.customerId.email : ""}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-xs font-medium">First Name:</Label>
-                    <Input
-                      id="firstName"
-                      placeholder="Enter first name"
-                      className="text-xs h-8"
-                      defaultValue={typeof session.customerId === "object" ? session.customerId.name?.split(' ')[0] : ""}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <Label htmlFor="lastName" className="text-xs font-medium">Last Name:</Label>
-                    <Input
-                      id="lastName"
-                      placeholder="Enter last name"
-                      className="text-xs h-8"
-                      defaultValue={typeof session.customerId === "object" ? session.customerId.name?.split(' ').slice(1).join(' ') : ""}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-xs font-medium">Phone:</Label>
-                    <Input
-                      id="phone"
-                      placeholder="Enter phone number"
-                      className="text-xs h-8"
-                    />
-                  </div>
+                  {isLoadingContact ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="ml-2 text-xs text-gray-500">Loading contact...</span>
+                    </div>
+                  ) : existingContact ? (
+                    // Show existing contact details
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-xs">
+                        <User className="w-3 h-3 text-gray-500" />
+                        <span className="text-gray-600">Name:</span>
+                        <span className="font-medium">
+                          {existingContact.firstName} {existingContact.lastName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <Mail className="w-3 h-3 text-gray-500" />
+                        <span className="text-gray-600">Email:</span>
+                        <span className="font-medium">{existingContact.email}</span>
+                      </div>
+                      {existingContact.phone && (
+                        <div className="flex items-center gap-2 text-xs">
+                          <Phone className="w-3 h-3 text-gray-500" />
+                          <span className="text-gray-600">Phone:</span>
+                          <span className="font-medium">{existingContact.phone}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 text-xs">
+                        <Clock className="w-3 h-3 text-gray-500" />
+                        <span className="text-gray-600">Saved:</span>
+                        <span className="font-medium">
+                          {new Date(existingContact.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    // Show placeholder when no contact exists
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-xs">
+                        <User className="w-3 h-3 text-gray-500" />
+                        <span className="text-gray-600">Name:</span>
+                        <span className="font-medium">
+                          {typeof session.customerId === "object" ? session.customerId.name || "Not available" : "Not available"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <Mail className="w-3 h-3 text-gray-500" />
+                        <span className="text-gray-600">Email:</span>
+                        <span className="font-medium">
+                          {typeof session.customerId === "object" ? session.customerId.email || "Not available" : "Not available"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <Phone className="w-3 h-3 text-gray-500" />
+                        <span className="text-gray-600">Phone:</span>
+                        <span className="font-medium text-gray-400">Not available</span>
+                      </div>
+                      <div className="text-xs text-gray-500 italic">
+                        No saved contact information for this customer.
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -193,16 +237,10 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
                   
                   <div className="flex items-center gap-2 text-xs">
                     <Globe className="w-3 h-3 text-gray-500" />
-                    <span className="text-gray-600">Last Visited Pages:</span>
-                    <span className="font-medium truncate">
-                      &gt;&gt; At: {session.initialMessage || "testing-chat-app-theta.vercel.app/"}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-xs">
-                    <Globe className="w-3 h-3 text-gray-500" />
                     <span className="text-gray-600">Source:</span>
-                    <span className="font-medium">No Referrer</span>
+                    <span className="font-medium">
+                      {session.customerId.metadata?.initialDomain || "No Referrer"}
+                    </span>
                   </div>
 
                   {session.agentId && (

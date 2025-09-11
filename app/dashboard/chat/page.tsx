@@ -4,7 +4,11 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useGetMyActiveChatSessions, useGetChatMessages, useGetPendingChatSessions } from "@/lib/api";
+import {
+  useGetMyActiveChatSessions,
+  useGetChatMessages,
+  useGetPendingChatSessions,
+} from "@/lib/api";
 import { useBlockCustomerMutation } from "@/lib/blocked-customer.api";
 import {
   useChatActions,
@@ -25,17 +29,18 @@ import {
 } from "./components";
 import ChatStatusBanner from "./components/ChatStatusBanner";
 import { useSocketOperations } from "@/hooks/useSocket";
+import { toast } from "sonner";
 
 // --- Main Page Component ---
 export default function MyChatsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const {
     data: initialActiveSessionsData,
     isLoading: isLoadingInitialSessions,
   } = useGetMyActiveChatSessions();
-  
+
   const {
     data: initialPendingSessionsData,
     isLoading: isLoadingInitialPendingSessions,
@@ -53,11 +58,11 @@ export default function MyChatsPage() {
   // Block customer mutation
   const blockCustomerMutation = useBlockCustomerMutation({
     onSuccess: () => {
-      console.log('Customer blocked successfully');
+      console.log("Customer blocked successfully");
       // You might want to show a toast notification here
     },
     onError: (error) => {
-      console.error('Failed to block customer:', error);
+      console.error("Failed to block customer:", error);
     },
   });
 
@@ -67,18 +72,22 @@ export default function MyChatsPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [isGuestInfoOpen, setIsGuestInfoOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
-  const [isBlockCustomerDialogOpen, setIsBlockCustomerDialogOpen] = useState(false);
-  const [customerToBlock, setCustomerToBlock] = useState<{ sessionId: string; name: string } | null>(null);
+  const [isBlockCustomerDialogOpen, setIsBlockCustomerDialogOpen] =
+    useState(false);
+  const [customerToBlock, setCustomerToBlock] = useState<{
+    sessionId: string;
+    name: string;
+  } | null>(null);
 
   // Check for mobile view
   useEffect(() => {
     const checkMobileView = () => {
       setIsMobileView(window.innerWidth < 768);
     };
-    
+
     checkMobileView();
-    window.addEventListener('resize', checkMobileView);
-    return () => window.removeEventListener('resize', checkMobileView);
+    window.addEventListener("resize", checkMobileView);
+    return () => window.removeEventListener("resize", checkMobileView);
   }, []);
 
   // Load initial active sessions from API into Zustand store
@@ -97,7 +106,7 @@ export default function MyChatsPage() {
 
   // Check for sessionId in URL parameters immediately on page load
   useEffect(() => {
-    const sessionId = searchParams.get('sessionId');
+    const sessionId = searchParams.get("sessionId");
     if (!sessionId && selectedSessionId) {
       // If there's no sessionId in URL but we have a selected session, clear it immediately
       chatStoreActions.setSelectedSessionId(null);
@@ -106,16 +115,23 @@ export default function MyChatsPage() {
 
   // Check for sessionId in URL parameters when active sessions are loaded
   useEffect(() => {
-    const sessionId = searchParams.get('sessionId');
-    
+    const sessionId = searchParams.get("sessionId");
+
     if (sessionId && initialActiveSessionsData) {
       // Check if the sessionId exists in active sessions
-      const sessionExists = initialActiveSessionsData.some(session => session._id === sessionId);
+      const sessionExists = initialActiveSessionsData.some(
+        (session) => session._id === sessionId
+      );
       if (sessionExists && selectedSessionId !== sessionId) {
         chatStoreActions.setSelectedSessionId(sessionId);
       }
     }
-  }, [searchParams, initialActiveSessionsData, selectedSessionId, chatStoreActions]);
+  }, [
+    searchParams,
+    initialActiveSessionsData,
+    selectedSessionId,
+    chatStoreActions,
+  ]);
 
   const selectedSessionDetails = selectedSessionId
     ? activeSessionsMap[selectedSessionId]
@@ -151,7 +167,7 @@ export default function MyChatsPage() {
       acceptChat(sessionId);
       // Update URL with sessionId parameter
       const params = new URLSearchParams(searchParams.toString());
-      params.set('sessionId', sessionId);
+      params.set("sessionId", sessionId);
       router.push(`/dashboard/chat?${params.toString()}`);
     },
     [acceptChat, router, searchParams]
@@ -162,7 +178,7 @@ export default function MyChatsPage() {
       chatStoreActions.setSelectedSessionId(sessionId);
       // Update URL with sessionId parameter
       const params = new URLSearchParams(searchParams.toString());
-      params.set('sessionId', sessionId);
+      params.set("sessionId", sessionId);
       router.push(`/dashboard/chat?${params.toString()}`);
     },
     [chatStoreActions, router, searchParams]
@@ -218,9 +234,9 @@ export default function MyChatsPage() {
     chatStoreActions.setSelectedSessionId(null);
     // Clear sessionId from URL when going back to chats
     const params = new URLSearchParams(searchParams.toString());
-    params.delete('sessionId');
+    params.delete("sessionId");
     const queryString = params.toString();
-    router.push(`/dashboard/chat${queryString ? `?${queryString}` : ''}`);
+    router.push(`/dashboard/chat${queryString ? `?${queryString}` : ""}`);
   }, [chatStoreActions, router, searchParams]);
 
   const handleShowGuestInfo = useCallback(() => {
@@ -236,75 +252,106 @@ export default function MyChatsPage() {
     setCustomerToBlock(null);
   }, []);
 
-  const handleBlockCustomer = useCallback((sessionId: string) => {
-    const session = activeSessionsMap[sessionId];
-    if (!session || !session.customerId) {
-      console.error('No customer found for session:', sessionId);
-      return;
-    }
+  const handleBlockCustomer = useCallback(
+    (sessionId: string) => {
+      const session = activeSessionsMap[sessionId];
+      if (!session || !session.customerId) {
+        console.error("No customer found for session:", sessionId);
+        return;
+      }
 
-    // Get customer name for display
-    const customerName = typeof session.customerId === 'object' 
-      ? session.customerId.name || session.customerId.email || 'Customer'
-      : 'Customer';
+      // Get customer name for display
+      const customerName =
+        typeof session.customerId === "object"
+          ? session.customerId.name || session.customerId.email || "Customer"
+          : "Customer";
 
-    // Open the confirmation dialog
-    setCustomerToBlock({ sessionId, name: customerName });
-    setIsBlockCustomerDialogOpen(true);
-  }, [activeSessionsMap]);
+      // Open the confirmation dialog
+      setCustomerToBlock({ sessionId, name: customerName });
+      setIsBlockCustomerDialogOpen(true);
+    },
+    [activeSessionsMap]
+  );
 
   const handleConfirmBlockCustomer = useCallback(() => {
     if (!customerToBlock) return;
 
     const session = activeSessionsMap[customerToBlock.sessionId];
     if (!session || !session.customerId) {
-      console.error('No customer found for session:', customerToBlock.sessionId);
+      console.error(
+        "No customer found for session:",
+        customerToBlock.sessionId
+      );
       return;
     }
 
     // Extract customer fingerprint
-    const customerId = typeof session.customerId === 'object' ? session.customerId._id : session.customerId;
-    
-    // Use the block customer mutation
-    blockCustomerMutation.mutate({ customerId }, {
-      onSuccess: () => {
-        // Close the dialog
-        setIsBlockCustomerDialogOpen(false);
-        setCustomerToBlock(null);
-        // Optionally end the chat after blocking
-        handleEndChat(customerToBlock.sessionId);
-      }
-    });
-  }, [customerToBlock, activeSessionsMap, blockCustomerMutation, handleEndChat]);
-
-  const handleInitiateChat = useCallback((visitorId: string) => {
-    // Look for an existing active session with this customer
-    const existingSession = Object.values(activeSessionsMap).find((session) => {
-      const customerId = typeof session.customerId === 'object' 
-        ? session.customerId._id 
+    const customerId =
+      typeof session.customerId === "object"
+        ? session.customerId._id
         : session.customerId;
-      return customerId === visitorId;
-    });
 
-    if (existingSession) {
-      // If we found an existing session, select it to open the chat container
-      chatStoreActions.setSelectedSessionId(existingSession._id);
-      console.log(`Found existing session for visitor ${visitorId}:`, existingSession._id);
-    } else {
-      // If no existing session is found, we could:
-      // 1. Create a new chat session (requires backend API)
-      // 2. Show a message to the user
-      // 3. For now, log that no session was found
-      console.log(`No existing session found for visitor ${visitorId}`);
+    // Use the block customer mutation
+    blockCustomerMutation.mutate(
+      { customerId },
+      {
+        onSuccess: () => {
+          // Close the dialog
+          setIsBlockCustomerDialogOpen(false);
+          setCustomerToBlock(null);
+          // Optionally end the chat after blocking
+          handleEndChat(customerToBlock.sessionId);
+        },
+      }
+    );
+  }, [
+    customerToBlock,
+    activeSessionsMap,
+    blockCustomerMutation,
+    handleEndChat,
+  ]);
+
+  const handleInitiateChat = useCallback(
+    (visitorId: string) => {
+      // Look for an existing active session with this customer
+      const existingSession = Object.values(activeSessionsMap).find(
+        (session) => {
+          const customerId =
+            typeof session.customerId === "object"
+              ? session.customerId._id
+              : session.customerId;
+          return customerId === visitorId;
+        }
+      );
+
+      if (existingSession) {
+        // If we found an existing session, select it to open the chat container
+        chatStoreActions.setSelectedSessionId(existingSession._id);
+        console.log(
+          `Found existing session for visitor ${visitorId}:`,
+          existingSession._id
+        );
+      } else {
+        // If no existing session is found, we could:
+        // 1. Create a new chat session (requires backend API)
+        // 2. Show a message to the user
+        // 3. For now, log that no session was found
+        console.log(`No existing session found for visitor ${visitorId}`);
+
+        // TODO: Implement logic to create new chat session with this visitor
+        // This would require a backend endpoint like POST /chat/sessions/initiate
+        // For now, show a simple alert to the user
+//         alert(`No existing chat session found for this visitor. 
       
-      // TODO: Implement logic to create new chat session with this visitor
-      // This would require a backend endpoint like POST /chat/sessions/initiate
-      // For now, show a simple alert to the user
-      alert(`No existing chat session found for this visitor. 
-      
-To send messages to this visitor, they would need to initiate a chat first, or we would need to implement a "create new chat session" API endpoint.`);
-    }
-  }, [activeSessionsMap, chatStoreActions]);
+// To send messages to this visitor, they would need to initiate a chat first, or we would need to implement a "create new chat session" API endpoint.`);
+
+        toast.warning(
+          'No existing chat session found for this visitor. To send messages to this visitor, they would need to initiate a chat first.'
+        );
+      }
+    },
+    [activeSessionsMap, chatStoreActions]
+  );
 
   const activeSessionsArray = Object.values(activeSessionsMap).sort(
     (a, b) =>
@@ -349,7 +396,8 @@ To send messages to this visitor, they would need to initiate a chat first, or w
               <ChatMessages
                 messages={selectedSessionDetails.messages || []}
                 isLoading={
-                  isLoadingMessagesApi || selectedSessionDetails.isLoadingMessages
+                  isLoadingMessagesApi ||
+                  selectedSessionDetails.isLoadingMessages
                 }
               />
 
@@ -381,7 +429,7 @@ To send messages to this visitor, they would need to initiate a chat first, or w
             open={isBlockCustomerDialogOpen}
             onOpenChange={handleCloseBlockCustomerDialog}
             onConfirm={handleConfirmBlockCustomer}
-            customerName={customerToBlock?.name || 'Customer'}
+            customerName={customerToBlock?.name || "Customer"}
             isLoading={blockCustomerMutation.isPending}
           />
         </motion.div>
@@ -404,8 +452,7 @@ To send messages to this visitor, they would need to initiate a chat first, or w
             isLoading={isLoadingInitialSessions}
           />
 
-{/* <GuestFeed maxHeight="h-full" /> */}
-          
+          {/* <GuestFeed maxHeight="h-full" /> */}
         </motion.div>
       );
     }
@@ -428,7 +475,6 @@ To send messages to this visitor, they would need to initiate a chat first, or w
         onAcceptChat={handleAcceptChat}
         isLoading={isLoadingInitialSessions}
       />
-      
 
       {/* Main Chat View Area */}
       <main className="flex-1  bg-[#f2f4f8] p-4">
@@ -444,7 +490,7 @@ To send messages to this visitor, they would need to initiate a chat first, or w
             />
 
             {/* Real-time Status Banner */}
-            <ChatStatusBanner 
+            <ChatStatusBanner
               status={selectedSessionDetails.status}
               customerName={getCustomerName()}
             />
@@ -475,7 +521,7 @@ To send messages to this visitor, they would need to initiate a chat first, or w
         )}
       </main>
 
-            {/* Guest Info Drawer */}
+      {/* Guest Info Drawer */}
       <GuestInfo
         session={selectedSessionDetails}
         isOpen={isGuestInfoOpen}
@@ -488,7 +534,7 @@ To send messages to this visitor, they would need to initiate a chat first, or w
         open={isBlockCustomerDialogOpen}
         onOpenChange={handleCloseBlockCustomerDialog}
         onConfirm={handleConfirmBlockCustomer}
-        customerName={customerToBlock?.name || 'Customer'}
+        customerName={customerToBlock?.name || "Customer"}
         isLoading={blockCustomerMutation.isPending}
       />
     </motion.div>
