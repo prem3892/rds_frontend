@@ -27,6 +27,8 @@ import {
   GuestInfo,
   BlockCustomerDialog,
 } from "./components";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MessageSquare, Users } from "lucide-react";
 import ChatStatusBanner from "./components/ChatStatusBanner";
 import { useSocketOperations } from "@/hooks/useSocket";
 import { toast } from "sonner";
@@ -72,6 +74,7 @@ export default function MyChatsPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [isGuestInfoOpen, setIsGuestInfoOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
+  const [mobileActiveTab, setMobileActiveTab] = useState("chats");
   const [isBlockCustomerDialogOpen, setIsBlockCustomerDialogOpen] =
     useState(false);
   const [customerToBlock, setCustomerToBlock] = useState<{
@@ -440,19 +443,54 @@ export default function MyChatsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="flex h-full overflow-hidden bg-[#f2f4f8]  rounded-3xl"
+          className="flex h-full overflow-hidden bg-[#f2f4f8] rounded-3xl p-2 sm:p-5"
         >
-          {/* Mobile Sidebar */}
-          <ChatSidebar
-            activeSessions={activeSessionsArray}
-            pendingSessions={pendingRequestsSorted}
-            selectedSessionId={selectedSessionId}
-            onSelectSession={handleSelectSession}
-            onAcceptChat={handleAcceptChat}
-            isLoading={isLoadingInitialSessions}
-          />
+          <div className="bg-white rounded-3xl h-full flex flex-col shadow-sm w-full">
+            <Tabs value={mobileActiveTab} onValueChange={setMobileActiveTab} className="w-full h-full flex flex-col">
+              <div className="p-4 pb-0">
+                <div className="bg-gray-200 rounded-lg p-1 shadow-inner">
+                  <TabsList className="grid w-full grid-cols-2 bg-transparent h-auto p-0 gap-1">
+                    <TabsTrigger 
+                      value="chats" 
+                      className="text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=inactive]:bg-gray-200 data-[state=inactive]:text-gray-600 hover:bg-white/50 transition-all duration-200 rounded-md px-3 py-2 border-0 data-[state=active]:shadow-sm"
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full mr-2">
+                        {activeSessionsArray.length + pendingRequestsSorted.length}
+                      </span>
+                      Recent Chats
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="guests" 
+                      className="text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=inactive]:bg-gray-200 data-[state=inactive]:text-gray-600 hover:bg-white/50 transition-all duration-200 rounded-md px-3 py-2 border-0 data-[state=active]:shadow-sm"
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      Guest Feed
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
 
-          {/* <GuestFeed maxHeight="h-full" /> */}
+              <div className="flex-1 overflow-hidden">
+                <TabsContent value="chats" className="mt-0 h-full">
+                  <ChatSidebar
+                    activeSessions={activeSessionsArray}
+                    pendingSessions={pendingRequestsSorted}
+                    selectedSessionId={selectedSessionId}
+                    onSelectSession={handleSelectSession}
+                    onAcceptChat={handleAcceptChat}
+                    isLoading={isLoadingInitialSessions}
+                  />
+                </TabsContent>
+
+                <TabsContent value="guests" className="mt-0 h-full">
+                  <div className="h-full flex flex-col">
+                    <GuestFeed maxHeight="flex-1" onInitiateChat={handleInitiateChat} onSelectChat={handleSelectSession} className="h-full flex flex-col" />
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
         </motion.div>
       );
     }
@@ -517,7 +555,7 @@ export default function MyChatsPage() {
           </div>
         ) : (
           // Show GuestFeed when no chat is selected
-          <GuestFeed maxHeight="h-full" onInitiateChat={handleInitiateChat} />
+          <GuestFeed maxHeight="h-full" onInitiateChat={handleInitiateChat} onSelectChat={handleSelectSession} />
         )}
       </main>
 

@@ -46,6 +46,7 @@ interface GuestFeedProps {
   className?: string;
   maxHeight?: string;
   onInitiateChat?: (visitorId: string) => void;
+  onSelectChat?: (sessionId: string) => void;
 }
 
 
@@ -63,6 +64,7 @@ export function GuestFeed({
   className,
   maxHeight = "h-full",
   onInitiateChat,
+  onSelectChat,
 }: GuestFeedProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const visitors = useVisitorsArray(searchTerm);
@@ -85,7 +87,11 @@ export function GuestFeed({
   
   // Handler for selecting a chat session
   const handleSelectChatSession = (sessionId: string) => {
-    chatStoreActions.setSelectedSessionId(sessionId);
+    if (onSelectChat) {
+      onSelectChat(sessionId);
+    } else {
+      chatStoreActions.setSelectedSessionId(sessionId);
+    }
   };
   
   // Visitor sync hooks
@@ -275,7 +281,7 @@ export function GuestFeed({
 
         <CardContent className="p-0 flex-1">
           <TabsContent value="guests" className="mt-0 h-full">
-            <ScrollArea className={cn(maxHeight, "gap-4 px-2")}>
+            <ScrollArea className={cn(maxHeight)}>
               <AnimatePresence mode="sync">
                 {!isInitialSyncComplete && visitorSyncMutation.isPending ? (
                   <motion.div
@@ -309,7 +315,7 @@ export function GuestFeed({
                     )}
                   </motion.div>
                 ) : (
-                  <div className="space-y-4 px-4">
+                  <div className="space-y-3 px-3 pb-4">
                     {visitors.map((visitor) => (
                       <motion.div
                         key={visitor.customerId}
@@ -317,54 +323,50 @@ export function GuestFeed({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.2 }}
-                        className="relative"
+                        className="relative flex items-center gap-3"
                       >
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                          {/* Time */}
-                          <div className="flex relative items-center justify-start">
-                            <div className="text-xs text-gray-500 mt-2 p-2 sm:p-3 py-2 flex-shrink-0 rounded-full border-dashed border-2 border-gray-200">
+                        {/* Activity indicator */}
+                        <div className="flex-shrink-0 relative">
+                          <div className="w-6 h-6 rounded-full border-2 border-dashed border-gray-300 bg-white flex items-center justify-center">
+                            <span className="w-2.5 h-2.5 bg-blue-600 rounded-full block" />
+                          </div>
+                        </div>
+                        
+                        {/* Mobile-optimized layout */}
+                        <div className="bg-gray-50 rounded-lg p-3 space-y-3 flex-1">
+                          {/* Header with name and time */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <span className="font-medium text-sm truncate">
+                                {visitor.name}
+                              </span>
+                              <span className="text-lg flex-shrink-0">
+                                {getCountryFlag(visitor.browserInfo.timezone || "")}
+                              </span>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                {getBrowserIcon(visitor.browserInfo.userAgent)}
+                                {getPlatformIcon(visitor.browserInfo.platform)}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-500 flex-shrink-0 bg-white px-2 py-1 rounded-full border border-gray-200">
                               {formatRelativeTime(visitor.lastActivity)}
                             </div>
-
-                            <div className="hidden sm:block border-1 border-dashed border-gray-200 bg-gray-200 rounded-full w-10" />
-
-                            <div className="absolute -right-4 top-3 text-xs text-gray-500 p-1 flex-shrink-0 bg-white rounded-full border-dashed border-2 border-gray-200">
-                              <span className="size-3 bg-blue-600 rounded-full block" />
-                            </div>
                           </div>
-                          
-                          {/* Visitor Info */}
-                          <div className="flex-1 bg-gray-50 rounded-lg p-3 w-full">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                  <span className="font-medium text-sm truncate">
-                                    {visitor.name}
-                                  </span>
-                                  <span className="text-lg flex-shrink-0">
-                                    {getCountryFlag(visitor.browserInfo.timezone || "")}
-                                  </span>
-                                  <div className="flex items-center gap-1 flex-shrink-0">
-                                    {getBrowserIcon(visitor.browserInfo.userAgent)}
-                                    {getPlatformIcon(visitor.browserInfo.platform)}
-                                  </div>
-                                </div>
-                                
-                                <a 
-                                  href={visitor.currentPageUrl} 
-                                  target="_blank" 
-                                  className="text-xs text-gray-600 mb-2 block truncate"
-                                  title={visitor.currentPageUrl}
-                                >
-                                  At: {visitor.currentPageUrl}
-                                </a>
-                              </div>
-                              
-                              <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                                {getStatusBadge(visitor.status)}
-                                {getActionButton(visitor.status, visitor.customerId)}
-                              </div>
-                            </div>
+
+                          {/* URL */}
+                          <a 
+                            href={visitor.currentPageUrl} 
+                            target="_blank" 
+                            className="text-xs text-gray-600 block truncate hover:text-blue-600 transition-colors"
+                            title={visitor.currentPageUrl}
+                          >
+                            At: {visitor.currentPageUrl}
+                          </a>
+
+                          {/* Status and action */}
+                          <div className="flex items-center justify-between gap-2">
+                            {getStatusBadge(visitor.status)}
+                            {getActionButton(visitor.status, visitor.customerId)}
                           </div>
                         </div>
                       </motion.div>
