@@ -63,6 +63,7 @@ interface ChatState {
       inProgress: boolean
     ) => void;
 
+    loadPendingRequests: (sessions: ChatSession[]) => void;
     addPendingRequest: (session: ChatSession) => void;
     updatePendingRequest: (sessionId: string, updates: Partial<ChatSession>) => void;
     removePendingRequest: (sessionId: string) => void;
@@ -237,6 +238,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           },
         };
       }),
+    loadPendingRequests: (sessions) => set({ pendingRequests: sessions }),
     addPendingRequest: (session) =>
       set((state) => ({
         pendingRequests: [

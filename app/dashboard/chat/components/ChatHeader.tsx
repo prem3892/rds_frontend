@@ -71,7 +71,7 @@ const ChatHeader = ({
   return (
     <>
       <header className="bg-white rounded-t-3xl p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-2 flex-col md:flex-row md:justify-between md:items-center">
           {/* Left side - Back button and guest info */}
           <div className="flex items-center gap-4">
             {onBack && (
@@ -100,13 +100,13 @@ const ChatHeader = ({
           </div>
 
           {/* Right side - Action buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center  justify-end   gap-2  w-full">
             {onShowGuestInfo && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onShowGuestInfo}
-                className="text-xs hidden sm:flex"
+                className="text-xs  sm:flex"
               >
                 <User className="h-4 w-4 mr-1" />
                 <span className="hidden md:inline">Guest Info</span>
@@ -160,7 +160,7 @@ const ChatHeader = ({
               className="text-2xs"
             >
               <XCircle className="h-4 w-4 mr-1.5" />
-              <span className="hidden sm:inline">End Chat</span>
+              <span className="hidden sm:inline text-xs">End Chat</span>
             </Button>
           </div>
         </div>

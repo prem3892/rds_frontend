@@ -105,7 +105,23 @@ export const useGetMyActiveChatSessions = (
   });
 };
 
-// 3. Get Messages for a Chat Session - Now fetches all
+// 3. Get Pending Chat Sessions
+export const PENDING_CHAT_SESSIONS_QUERY_KEY = "pendingChatSessions";
+
+export const useGetPendingChatSessions = (
+  options?: Omit<
+    UseQueryOptions<ChatSession[], ApiErrorResponse, ChatSession[], [string]>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<ChatSession[], ApiErrorResponse, ChatSession[], [string]>({
+    queryKey: [PENDING_CHAT_SESSIONS_QUERY_KEY],
+    queryFn: () => customFetch<ChatSession[]>("/chat/sessions/pending"),
+    ...options,
+  });
+};
+
+// 4. Get Messages for a Chat Session - Now fetches all
 export const CHAT_MESSAGES_QUERY_KEY_PREFIX = "chatMessages";
 
 export const useGetChatMessages = (
@@ -141,7 +157,7 @@ export const useGetChatMessages = (
   });
 };
 
-// 4. Infinite Query for Chat Sessions (for infinite scroll)
+// 5. Infinite Query for Chat Sessions (for infinite scroll)
 export const CHAT_SESSIONS_INFINITE_QUERY_KEY_PREFIX = "chatSessionsInfinite";
 
 export const useGetAllChatSessionsInfinite = (

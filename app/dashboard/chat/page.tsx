@@ -3,7 +3,7 @@
 
 import React, { useEffect, useCallback, useState } from "react";
 import { motion } from "framer-motion";
-import { useGetMyActiveChatSessions, useGetChatMessages } from "@/lib/api";
+import { useGetMyActiveChatSessions, useGetChatMessages, useGetPendingChatSessions } from "@/lib/api";
 import { useBlockCustomerMutation } from "@/lib/blocked-customer.api";
 import {
   useChatActions,
@@ -31,6 +31,11 @@ export default function MyChatsPage() {
     data: initialActiveSessionsData,
     isLoading: isLoadingInitialSessions,
   } = useGetMyActiveChatSessions();
+  
+  const {
+    data: initialPendingSessionsData,
+    isLoading: isLoadingInitialPendingSessions,
+  } = useGetPendingChatSessions();
   const chatStoreActions = useChatActions();
   const {
     sendMessage,
@@ -78,6 +83,13 @@ export default function MyChatsPage() {
       chatStoreActions.loadActiveSessions(initialActiveSessionsData);
     }
   }, [initialActiveSessionsData, chatStoreActions]);
+
+  // Load initial pending sessions from API into Zustand store
+  useEffect(() => {
+    if (initialPendingSessionsData) {
+      chatStoreActions.loadPendingRequests(initialPendingSessionsData);
+    }
+  }, [initialPendingSessionsData, chatStoreActions]);
 
   const selectedSessionDetails = selectedSessionId
     ? activeSessionsMap[selectedSessionId]
