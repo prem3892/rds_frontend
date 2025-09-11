@@ -3,6 +3,7 @@
 
 import React, { useEffect, useCallback, useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useGetMyActiveChatSessions, useGetChatMessages, useGetPendingChatSessions } from "@/lib/api";
 import { useBlockCustomerMutation } from "@/lib/blocked-customer.api";
 import {
@@ -27,6 +28,9 @@ import { useSocketOperations } from "@/hooks/useSocket";
 
 // --- Main Page Component ---
 export default function MyChatsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const {
     data: initialActiveSessionsData,
     isLoading: isLoadingInitialSessions,
@@ -91,6 +95,28 @@ export default function MyChatsPage() {
     }
   }, [initialPendingSessionsData, chatStoreActions]);
 
+  // Check for sessionId in URL parameters immediately on page load
+  useEffect(() => {
+    const sessionId = searchParams.get('sessionId');
+    if (!sessionId && selectedSessionId) {
+      // If there's no sessionId in URL but we have a selected session, clear it immediately
+      chatStoreActions.setSelectedSessionId(null);
+    }
+  }, [searchParams, selectedSessionId, chatStoreActions]);
+
+  // Check for sessionId in URL parameters when active sessions are loaded
+  useEffect(() => {
+    const sessionId = searchParams.get('sessionId');
+    
+    if (sessionId && initialActiveSessionsData) {
+      // Check if the sessionId exists in active sessions
+      const sessionExists = initialActiveSessionsData.some(session => session._id === sessionId);
+      if (sessionExists && selectedSessionId !== sessionId) {
+        chatStoreActions.setSelectedSessionId(sessionId);
+      }
+    }
+  }, [searchParams, initialActiveSessionsData, selectedSessionId, chatStoreActions]);
+
   const selectedSessionDetails = selectedSessionId
     ? activeSessionsMap[selectedSessionId]
     : null;
@@ -123,8 +149,23 @@ export default function MyChatsPage() {
   const handleAcceptChat = useCallback(
     (sessionId: string) => {
       acceptChat(sessionId);
+      // Update URL with sessionId parameter
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('sessionId', sessionId);
+      router.push(`/dashboard/chat?${params.toString()}`);
     },
-    [acceptChat]
+    [acceptChat, router, searchParams]
+  );
+
+  const handleSelectSession = useCallback(
+    (sessionId: string) => {
+      chatStoreActions.setSelectedSessionId(sessionId);
+      // Update URL with sessionId parameter
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('sessionId', sessionId);
+      router.push(`/dashboard/chat?${params.toString()}`);
+    },
+    [chatStoreActions, router, searchParams]
   );
 
   const handleSendMessage = useCallback(
@@ -175,7 +216,12 @@ export default function MyChatsPage() {
 
   const handleBackToChats = useCallback(() => {
     chatStoreActions.setSelectedSessionId(null);
-  }, [chatStoreActions]);
+    // Clear sessionId from URL when going back to chats
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('sessionId');
+    const queryString = params.toString();
+    router.push(`/dashboard/chat${queryString ? `?${queryString}` : ''}`);
+  }, [chatStoreActions, router, searchParams]);
 
   const handleShowGuestInfo = useCallback(() => {
     setIsGuestInfoOpen(true);
@@ -353,9 +399,7 @@ To send messages to this visitor, they would need to initiate a chat first, or w
             activeSessions={activeSessionsArray}
             pendingSessions={pendingRequestsSorted}
             selectedSessionId={selectedSessionId}
-            onSelectSession={(sessionId) =>
-              chatStoreActions.setSelectedSessionId(sessionId)
-            }
+            onSelectSession={handleSelectSession}
             onAcceptChat={handleAcceptChat}
             isLoading={isLoadingInitialSessions}
           />
@@ -380,9 +424,7 @@ To send messages to this visitor, they would need to initiate a chat first, or w
         activeSessions={activeSessionsArray}
         pendingSessions={pendingRequestsSorted}
         selectedSessionId={selectedSessionId}
-        onSelectSession={(sessionId) =>
-          chatStoreActions.setSelectedSessionId(sessionId)
-        }
+        onSelectSession={handleSelectSession}
         onAcceptChat={handleAcceptChat}
         isLoading={isLoadingInitialSessions}
       />

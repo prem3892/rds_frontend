@@ -168,7 +168,7 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
                     <Check className="w-3 h-3 text-blue-200" />
                   )}
                   <span className="text-xs text-blue-200">
-                    {message.readByCustomer ? "Read" : "Sent"}
+                    {message.readByCustomer ? "Seen" : "Sent"}
                   </span>
                 </div>
               )}

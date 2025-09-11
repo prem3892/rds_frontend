@@ -63,7 +63,7 @@ export function useNotifications(): UseNotificationsReturn {
       // Navigate to the chat page if not already there
       const currentPath = window.location.pathname;
       if (!currentPath.includes("/dashboard/chat")) {
-        router.push("/dashboard/chat");
+        router.push("/dashboard/chat?sessionId=" + sessionId);
       }
     },
     [router, chatActions]

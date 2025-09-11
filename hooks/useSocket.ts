@@ -160,6 +160,16 @@ export function useSocketInitializer() {
             showChatRequestNotification(data).catch(console.error);
             showChatRequestToast(data);
             break;
+          case "server:message_seen_by_agent":
+            // Handle message seen by agent acknowledgment from server
+            console.log("Messages seen by agent:", data);
+            chatActions.markMessagesAsSeenByAgent(data.chatSessionId, data.timestamp);
+            break;
+          case "server:messages_read_ack":
+            // Handle read acknowledgment for the agent who triggered the read
+            console.log("Messages read acknowledgment:", data);
+            chatActions.markMessagesAsSeenByAgent(data.chatSessionId, data.timestamp);
+            break;
         }
       });
 
@@ -233,6 +243,13 @@ export function useSocketOperations() {
     []
   );
 
+  const markMessagesAsRead = useCallback(
+    (payload: { chatSessionId: string; messageId: string }) => {
+      return socketService.markMessagesAsRead(payload);
+    },
+    []
+  );
+
   return {
     sendMessage,
     acceptChat,
@@ -241,6 +258,7 @@ export function useSocketOperations() {
     sendTypingStop,
     endChat,
     bookCustomer,
+    markMessagesAsRead,
     isConnected: socketService.isConnected,
     socket: socketService.instance,
   };

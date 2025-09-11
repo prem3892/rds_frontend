@@ -180,6 +180,17 @@ class SocketService {
       this.notifyListeners("server:priority_chat_notification", session);
     });
 
+    // Message seen by agent events
+    this.socket.on("server:message_seen_by_agent", (data: { chatSessionId: string; messageId: string; timestamp: string; agentId: string }) => {
+      console.log("Message seen by agent:", data);
+      this.notifyListeners("server:message_seen_by_agent", data);
+    });
+
+    this.socket.on("server:messages_read_ack", (data: { chatSessionId: string; messageId: string; timestamp: string; triggeredBySocket: string; totalAgentSockets: number }) => {
+      console.log("Messages read acknowledgment:", data);
+      this.notifyListeners("server:messages_read_ack", data);
+    });
+
     return this.socket;
   }
 
@@ -253,6 +264,16 @@ class SocketService {
     }
     console.debug("Booking appointment for chat session:", payload);
     this.socket.emit("agent:book_appointment", payload);
+    return true;
+  }
+
+  markMessagesAsRead(payload: { chatSessionId: string; messageId: string }) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot mark messages as read.");
+      return false;
+    }
+    console.debug("Marking messages as read for chat session:", payload);
+    this.socket.emit("agent:mark_messages_read", payload);
     return true;
   }
 

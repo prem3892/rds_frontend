@@ -68,6 +68,9 @@ interface ChatState {
     updatePendingRequest: (sessionId: string, updates: Partial<ChatSession>) => void;
     removePendingRequest: (sessionId: string) => void;
 
+    // Message read status
+    markMessagesAsSeenByAgent: (sessionId: string, timestamp: string) => void;
+
     // TODO: Add more actions for sending messages, accepting chats via WebSocket
     // clearChatState: () => void; // For logout or re-initialization
   };
@@ -289,6 +292,33 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
         return state; // No change needed
       }),
+    
+    markMessagesAsSeenByAgent: (sessionId, timestamp) =>
+      set((state) => {
+        if (!state.activeSessions[sessionId]) return state;
+        
+        const timestampMs = new Date(timestamp).getTime();
+        
+        // Mark all messages before the timestamp as read by agent
+        const updatedMessages = state.activeSessions[sessionId].messages.map(message => {
+          const messageTimestampMs = new Date(message.timestamp).getTime();
+          if (messageTimestampMs <= timestampMs) {
+            return { ...message, readByAgent: true };
+          }
+          return message;
+        });
+
+        return {
+          activeSessions: {
+            ...state.activeSessions,
+            [sessionId]: {
+              ...state.activeSessions[sessionId],
+              messages: updatedMessages,
+            },
+          },
+        };
+      }),
+    
     // clearChatState: () => set(initialState),
   },
 }));

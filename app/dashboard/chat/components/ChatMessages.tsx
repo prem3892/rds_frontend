@@ -5,6 +5,8 @@ import { ChatMessage } from "@/types";
 import MessageBubble from "./MessageBubble";
 import ChatSkeleton from "./ChatSkeleton";
 import { format, parseISO, isToday, isYesterday } from "date-fns";
+import { useSocketOperations } from "@/hooks/useSocket";
+import { useSelectedChatSessionId } from "@/stores/chat";
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
@@ -13,11 +15,35 @@ interface ChatMessagesProps {
 
 const ChatMessages = ({ messages, isLoading }: ChatMessagesProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastMarkedMessageRef = useRef<string | null>(null);
+  const { markMessagesAsRead } = useSocketOperations();
+  const selectedSessionId = useSelectedChatSessionId();
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Mark messages as read when agent views them
+  useEffect(() => {
+    if (selectedSessionId && messages.length > 0 && !isLoading) {
+      // Get the most recent message to mark all messages up to that point as read
+      const latestMessage = messages[messages.length - 1];
+      if (latestMessage && latestMessage._id !== lastMarkedMessageRef.current) {
+        console.log('Marking messages as read for session:', selectedSessionId, 'latest message:', latestMessage._id);
+        lastMarkedMessageRef.current = latestMessage._id;
+        markMessagesAsRead({
+          chatSessionId: selectedSessionId,
+          messageId: latestMessage._id,
+        });
+      }
+    }
+  }, [selectedSessionId, messages, isLoading, markMessagesAsRead]);
+
+  // Reset the ref when session changes
+  useEffect(() => {
+    lastMarkedMessageRef.current = null;
+  }, [selectedSessionId]);
 
   const groupMessagesByDate = (messages: ChatMessage[]) => {
     const groups: { [key: string]: ChatMessage[] } = {};

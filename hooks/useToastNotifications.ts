@@ -42,7 +42,7 @@ export function useToastNotifications(): UseToastNotificationsReturn {
       
       // Navigate to the chat page if not already there
       if (!pathname.includes("/dashboard/chat")) {
-        router.push("/dashboard/chat");
+        router.push("/dashboard/chat?sessionId=" + sessionId);
       }
     },
     [router, pathname, chatActions]
