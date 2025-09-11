@@ -27,7 +27,7 @@ import {
   AdminSignupSuccessResponse,
   ApiErrorResponse,
 } from "@/types"; // Updated types
-import { Globe, Lock, Mail, Phone, User } from "lucide-react";
+import { Globe, Lock, Loader2, Mail, Phone, User } from "lucide-react";
 
 // Zod schema for form validation, matches AdminRegisterDto
 const signupFormSchema = z
@@ -77,14 +77,9 @@ export default function InitialAdminSignupPage() {
 
     initialAdminSignupMutation.mutate(adminRegisterData, {
       onSuccess: (response: AdminSignupSuccessResponse) => {
-        toast("Admin Account Created!", {
-          description:
-            response.firstName +
-            " (" +
-            response.email +
-            ") created." +
-            "\n\nPlease log in.",
-          duration: 5000,
+        toast.success(response.message, {
+          description: `User with email (${response.user.email}) created successfully.`,
+          duration: 8000,
         });
         router.push("/login");
       },
@@ -282,10 +277,16 @@ export default function InitialAdminSignupPage() {
             />
 
             <Button
+              disabled={initialAdminSignupMutation.isPending}
+
               type="submit"
               className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
             >
-              Sign up
+{
+  initialAdminSignupMutation.isPending ? (
+    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+  ) : "Sign up"
+}
             </Button>
 
         

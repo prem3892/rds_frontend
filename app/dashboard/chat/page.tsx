@@ -219,6 +219,35 @@ export default function MyChatsPage() {
     });
   }, [customerToBlock, activeSessionsMap, blockCustomerMutation, handleEndChat]);
 
+  const handleInitiateChat = useCallback((visitorId: string) => {
+    // Look for an existing active session with this customer
+    const existingSession = Object.values(activeSessionsMap).find((session) => {
+      const customerId = typeof session.customerId === 'object' 
+        ? session.customerId._id 
+        : session.customerId;
+      return customerId === visitorId;
+    });
+
+    if (existingSession) {
+      // If we found an existing session, select it to open the chat container
+      chatStoreActions.setSelectedSessionId(existingSession._id);
+      console.log(`Found existing session for visitor ${visitorId}:`, existingSession._id);
+    } else {
+      // If no existing session is found, we could:
+      // 1. Create a new chat session (requires backend API)
+      // 2. Show a message to the user
+      // 3. For now, log that no session was found
+      console.log(`No existing session found for visitor ${visitorId}`);
+      
+      // TODO: Implement logic to create new chat session with this visitor
+      // This would require a backend endpoint like POST /chat/sessions/initiate
+      // For now, show a simple alert to the user
+      alert(`No existing chat session found for this visitor. 
+      
+To send messages to this visitor, they would need to initiate a chat first, or we would need to implement a "create new chat session" API endpoint.`);
+    }
+  }, [activeSessionsMap, chatStoreActions]);
+
   const activeSessionsArray = Object.values(activeSessionsMap).sort(
     (a, b) =>
       new Date(b.lastMessageAt || b.updatedAt).getTime() -
@@ -318,6 +347,9 @@ export default function MyChatsPage() {
             onAcceptChat={handleAcceptChat}
             isLoading={isLoadingInitialSessions}
           />
+
+{/* <GuestFeed maxHeight="h-full" /> */}
+          
         </motion.div>
       );
     }
@@ -342,6 +374,7 @@ export default function MyChatsPage() {
         onAcceptChat={handleAcceptChat}
         isLoading={isLoadingInitialSessions}
       />
+      
 
       {/* Main Chat View Area */}
       <main className="flex-1  bg-[#f2f4f8] p-4">
@@ -384,7 +417,7 @@ export default function MyChatsPage() {
           </div>
         ) : (
           // Show GuestFeed when no chat is selected
-          <GuestFeed maxHeight="h-full" />
+          <GuestFeed maxHeight="h-full" onInitiateChat={handleInitiateChat} />
         )}
       </main>
 

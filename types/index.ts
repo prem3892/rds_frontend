@@ -54,16 +54,25 @@ export interface AdminRegisterDto {
   password: string;
   firstName: string;
   lastName: string;
+  phoneNo?: string;
+  website: string;
 }
 
 // Response type for successful Admin Signup
 export interface AdminSignupSuccessResponse {
-  _id: string; // Note: Admin signup returns '_id'
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: "ADMIN";
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  message: string;
+  user: {
+    _id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: "ADMIN";
+    phoneNo?: string;
+    website: string;
+    isEmailVerified: boolean;
+    tokenVersion: number;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
 }

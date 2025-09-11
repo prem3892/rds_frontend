@@ -75,10 +75,10 @@ export const createColumns = (): ColumnDef<Contact>[] => [
       return (
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2 font-normal ml-1">
-            {contact.firstName} {contact.lastName}
+            {contact?.firstName} {contact?.lastName}
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline">{contact.email}</Badge>
+            <Badge variant="outline">{contact?.email}</Badge>
           </div>
         </div>
       );
@@ -95,7 +95,7 @@ export const createColumns = (): ColumnDef<Contact>[] => [
       )
     },
     cell: ({ row }) => {
-      const phone = row.getValue("phone") as string;
+      const phone = row.getValue("phone") as string | undefined;
       return (
         <div className="flex items-center gap-2">
           <Phone className="h-4 w-4 text-gray-500" />
@@ -120,8 +120,8 @@ export const createColumns = (): ColumnDef<Contact>[] => [
         <div className="flex items-center gap-2">
           <Building className="h-4 w-4 text-gray-500" />
           <div>
-            <div className="text-sm font-medium">{customer.name}</div>
-            <div className="text-xs text-gray-500">{customer.email}</div>
+            <div className="text-sm font-medium">{customer?.name}</div>
+            <div className="text-xs text-gray-500">{customer?.email}</div>
           </div>
         </div>
       );

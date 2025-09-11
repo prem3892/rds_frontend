@@ -105,8 +105,8 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
     defaultValues: {
       firstName: "",
       lastName: "",
-      email: "",
-      password: "",
+      // email: "",
+      // password: "",
       phoneNo: "",
       website: "",
       departmentIds: [],
@@ -170,7 +170,7 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
       const processedValues: UpdateAgentProfileDto = {
         firstName: values.firstName,
         lastName: values.lastName,
-        email: values.email,
+        // email: values.email,
         departmentIds: values.departmentIds,
         domainAccess: values.domainAccess
           .filter((domain) => domain.trim() !== "")
@@ -187,9 +187,9 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
       };
 
       // Only include password if it was provided and not empty
-      if (values.password && values.password.trim() !== "") {
-        processedValues.password = values.password;
-      }
+      // if (values.password && values.password.trim() !== "") {
+      //   processedValues.password = values.password;
+      // }
 
       updateAgentMutation.mutate({
         agentId: agent._id,
@@ -243,7 +243,7 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
         shifts: agent.shifts || [],
         timezone: agent.timezone || "America/New_York",
         profilePicture: agent.profilePicture || "",
-        password: "", // Always reset password field
+        // password: "", // Always reset password field
       });
 
       // Set the profile picture URL for display
@@ -327,8 +327,11 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input
+                      disabled
+                      // value={agent?.user.email || ""}
                         type="email"
                         placeholder="agent@example.com"
+
                         {...field}
                       />
                     </FormControl>
@@ -337,7 +340,7 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
                 )}
               />
 
-              <FormField
+              {/* <FormField
                 name="password"
                 control={form.control}
                 render={({ field }) => (
@@ -357,7 +360,7 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <FormField
                 name="phoneNo"

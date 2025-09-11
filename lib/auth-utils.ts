@@ -5,24 +5,59 @@
 import { COOKIE_NAMES } from '@/config/middleware';
 
 /**
+ * Get token expiration from JWT payload
+ * @param token - The JWT token
+ * @returns Expiration timestamp in seconds or null if invalid
+ */
+function getTokenExpirationTime(token: string): number | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Set authentication cookies
  * @param accessToken - The access token
  * @param refreshToken - The refresh token (optional)
- * @param maxAge - Cookie max age in seconds (default: 15 minutes for access token)
+ * @param customMaxAge - Custom max age in seconds (optional)
  */
 export function setAuthCookies(
   accessToken: string,
   refreshToken?: string,
-  maxAge: number = 15 * 60 // 15 minutes
+  customMaxAge?: number
 ): void {
   if (typeof document === 'undefined') return; // Skip on server side
 
-  // Set access token cookie
-  document.cookie = `${COOKIE_NAMES.AUTH_TOKEN}=${accessToken}; path=/; max-age=${maxAge}; secure; samesite=strict`;
+  // Calculate access token cookie max age
+  let accessMaxAge = customMaxAge;
+  if (!accessMaxAge) {
+    const tokenExp = getTokenExpirationTime(accessToken);
+    if (tokenExp) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      accessMaxAge = Math.max(0, tokenExp - currentTime);
+    } else {
+      // Fallback to 1 day if we can't parse the token
+      accessMaxAge = 24 * 60 * 60; // 1 day
+    }
+  }
+
+  // Set access token cookie with proper expiration
+  document.cookie = `${COOKIE_NAMES.AUTH_TOKEN}=${accessToken}; path=/; max-age=${accessMaxAge}; secure; samesite=strict`;
   
   // Set refresh token cookie if provided
   if (refreshToken) {
-    const refreshMaxAge = 7 * 24 * 60 * 60; // 7 days
+    let refreshMaxAge = 7 * 24 * 60 * 60; // Default 7 days
+    
+    // Try to get actual refresh token expiration
+    const refreshExp = getTokenExpirationTime(refreshToken);
+    if (refreshExp) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      refreshMaxAge = Math.max(0, refreshExp - currentTime);
+    }
+    
     document.cookie = `${COOKIE_NAMES.REFRESH_TOKEN}=${refreshToken}; path=/; max-age=${refreshMaxAge}; secure; samesite=strict`;
   }
 }
@@ -122,15 +157,92 @@ export function syncAuthState(): void {
         
         if (!cookieToken || !cookieRefreshToken || 
             cookieToken !== accessToken || cookieRefreshToken !== refreshToken) {
+          console.log('Syncing auth state: updating cookies to match localStorage');
           setAuthCookies(accessToken, refreshToken);
         }
       }
     } catch {
       // Invalid JSON, clear everything
+      console.warn('Invalid auth storage data, clearing cookies');
       clearAuthCookies();
     }
   } else {
     // No localStorage token, clear cookies
+    console.log('No localStorage auth data, clearing cookies');
     clearAuthCookies();
   }
+}
+
+/**
+ * Debug function to log current authentication state
+ * Useful for troubleshooting token issues
+ */
+export function debugAuthState(): void {
+  if (typeof window === 'undefined') {
+    console.log('Auth Debug: Running on server side');
+    return;
+  }
+
+  console.log('=== AUTH STATE DEBUG ===');
+  
+  // Check localStorage
+  const storedData = localStorage.getItem('auth-storage');
+  if (storedData) {
+    try {
+      const parsed = JSON.parse(storedData);
+      const accessToken = parsed.state?.accessToken;
+      const refreshToken = parsed.state?.refreshToken;
+      
+      console.log('LocalStorage tokens:', {
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!refreshToken,
+        accessTokenPreview: accessToken ? `${accessToken.slice(0, 20)}...` : 'none',
+        refreshTokenPreview: refreshToken ? `${refreshToken.slice(0, 20)}...` : 'none',
+      });
+
+      // Check token expiration
+      if (accessToken) {
+        const exp = getTokenExpirationTime(accessToken);
+        if (exp) {
+          const now = Math.floor(Date.now() / 1000);
+          const timeLeft = exp - now;
+          console.log('Access token expiration:', {
+            expiresAt: new Date(exp * 1000).toISOString(),
+            timeLeftMinutes: Math.floor(timeLeft / 60),
+            isExpired: timeLeft <= 0,
+          });
+        }
+      }
+      
+      if (refreshToken) {
+        const exp = getTokenExpirationTime(refreshToken);
+        if (exp) {
+          const now = Math.floor(Date.now() / 1000);
+          const timeLeft = exp - now;
+          console.log('Refresh token expiration:', {
+            expiresAt: new Date(exp * 1000).toISOString(),
+            timeLeftMinutes: Math.floor(timeLeft / 60),
+            isExpired: timeLeft <= 0,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing localStorage auth data:', error);
+    }
+  } else {
+    console.log('No localStorage auth data');
+  }
+
+  // Check cookies
+  const cookieToken = getAuthTokenFromCookies();
+  const cookieRefreshToken = getRefreshTokenFromCookies();
+  
+  console.log('Cookie tokens:', {
+    hasAccessToken: !!cookieToken,
+    hasRefreshToken: !!cookieRefreshToken,
+    accessTokenPreview: cookieToken ? `${cookieToken.slice(0, 20)}...` : 'none',
+    refreshTokenPreview: cookieRefreshToken ? `${cookieRefreshToken.slice(0, 20)}...` : 'none',
+  });
+
+  console.log('=== END AUTH DEBUG ===');
 }
