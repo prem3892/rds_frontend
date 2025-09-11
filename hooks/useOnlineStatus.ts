@@ -4,6 +4,7 @@ import { useAuthStore } from "@/stores/auth";
 import { socketService } from "@/services/socketService";
 import { toast } from "sonner";
 import { markLocalStatusChange } from "@/lib/status-change-tracker";
+import { AGENTS_QUERY_KEY, queryClient } from "@/lib/api";
 
 /**
  * Custom hook for managing online status with persistence and cross-device synchronization.
@@ -43,6 +44,7 @@ export function useOnlineStatus() {
       toast.success('Status updated', {
         description: `Your status has been changed to ${status ? 'Online' : 'Offline'}`,
       });
+      // Note: Query invalidation will happen when server confirms via "onlineStatusUpdated" event
     }
     
     console.log(`Online status changed to: ${status ? "Online" : "Offline"}`);

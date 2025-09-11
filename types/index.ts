@@ -15,6 +15,10 @@ export interface User {
   firstName: string;
   lastName: string;
   role: "ADMIN" | "AGENT";
+  phoneNo?: string; // User's phone number
+  website?: string; // User's website
+  isEmailVerified?: boolean; // Email verification status
+  isOnline?: boolean; // Online status from login API
   isActive?: boolean; // Adding isActive based on AdminSignupResponse
   createdAt?: string;
   updatedAt?: string;

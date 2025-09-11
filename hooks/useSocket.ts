@@ -9,6 +9,7 @@ import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { ChatMessage, VisitorActivityEvent } from "@/types";
 import { toast } from "sonner";
 import { isLocalStatusChangeActive } from "@/lib/status-change-tracker";
+import { AGENTS_QUERY_KEY, queryClient } from "@/lib/api";
 
 // Hook for initializing the socket only once
 export function useSocketInitializer() {
@@ -84,6 +85,9 @@ export function useSocketInitializer() {
             // This handles status changes from other devices
             authActions.setOnlineStatus(data.isOnline);
             console.log(`Online status synchronized from server: ${data.isOnline ? "Online" : "Offline"}`);
+            
+            // Invalidate agent profile query now that server has confirmed the status change
+            queryClient.invalidateQueries({ queryKey: [AGENTS_QUERY_KEY, "me"] });
             
             // Only show toast notification if this was NOT a local change
             // This prevents duplicate notifications on the device that initiated the change

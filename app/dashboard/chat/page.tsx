@@ -328,8 +328,8 @@ export default function MyChatsPage() {
       );
 
       if (existingSession) {
-        // If we found an existing session, select it to open the chat container
-        chatStoreActions.setSelectedSessionId(existingSession._id);
+        // If we found an existing session, select it and navigate properly
+        handleSelectSession(existingSession._id);
         console.log(
           `Found existing session for visitor ${visitorId}:`,
           existingSession._id
@@ -353,7 +353,7 @@ export default function MyChatsPage() {
         );
       }
     },
-    [activeSessionsMap, chatStoreActions]
+    [activeSessionsMap, handleSelectSession]
   );
 
   const activeSessionsArray = Object.values(activeSessionsMap).sort(
