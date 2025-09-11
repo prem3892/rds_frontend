@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import { useForgotPasswordMutation } from "@/lib/api"
+import { ApiErrorResponse } from "@/types"
+import { AlertCircle, Loader2 } from "lucide-react"
 
 const forgotPasswordFormSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -21,6 +24,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordFormSchema>
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
+  const forgotPasswordMutation = useForgotPasswordMutation()
 
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordFormSchema),
@@ -31,10 +35,22 @@ export default function ForgotPasswordPage() {
   })
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
-    toast("Reset Link Sent!", {
-      description: `Password reset link has been sent to ${data.email}`,
+    forgotPasswordMutation.mutate(data, {
+      onSuccess: (response) => {
+        toast("Reset Link Sent!", {
+          description: response.message || `Password reset link has been sent to ${data.email}`,
+        })
+        router.push("/login")
+      },
+      onError: (error: ApiErrorResponse) => {
+        toast.error("Failed to send reset email!", {
+          description: error.message || "An unexpected error occurred. Please try again.",
+          dismissible: true,
+          duration: 5000,
+          icon: <AlertCircle className="w-4 h-4" />,
+        })
+      },
     })
-    router.push("/login")
   }
 
   return (
@@ -89,9 +105,17 @@ export default function ForgotPasswordPage() {
             <div className="space-y-3">
               <Button
                 type="submit"
+                disabled={forgotPasswordMutation.isPending}
                 className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
               >
-                Send
+                {forgotPasswordMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send"
+                )}
               </Button>
 
               <Button
