@@ -45,8 +45,8 @@ const ChatHeader = ({
     typeof session.customerId === "object"
       ? session.customerId?.name?.charAt(0)?.toUpperCase() ||
         session.customerId?.email?.charAt(0)?.toUpperCase() ||
-        "C"
-      : "C";
+        "G"
+      : "G";
 
   const handleBookClick = useCallback(() => {
     setIsBookingFormOpen(true);
