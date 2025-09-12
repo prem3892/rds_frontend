@@ -157,14 +157,14 @@ export function GuestFeed({
   };
 
   const getActionButton = (status: VisitorStatus, visitorId: string) => {
-    if (status === VisitorStatus.ONLINE || status === VisitorStatus.RECONNECTED) {
-      return (
-        <div className="flex flex-col items-end gap-1">
-          <span className="text-green-600 text-xs font-medium">Chat Initiated</span>
-          <ChevronDown className="w-3 h-3 text-gray-400" />
-        </div>
-      );
-    } else {
+    // if (status === VisitorStatus.ONLINE || status === VisitorStatus.RECONNECTED) {
+    //   return (
+    //     <div className="flex flex-col items-end gap-1">
+    //       <span className="text-green-600 text-xs font-medium">Chat Initiated</span>
+    //       <ChevronDown className="w-3 h-3 text-gray-400" />
+    //     </div>
+    //   );
+    // } else {
       return (
         <div className="flex flex-col items-end gap-1">
           <Button
@@ -178,7 +178,7 @@ export function GuestFeed({
           <ChevronDown className="w-3 h-3 text-gray-400" />
         </div>
       );
-    }
+    // }
   };
 
     const getCountryFlag = (timezone: string) => {

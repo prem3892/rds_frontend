@@ -41,7 +41,7 @@ const getFullImageUrl = (imagePath: string) => {
 
 export const createAgentColumns = ({ 
   departments, 
-  onEdit, 
+  onEdit,
   onToggleStatus 
 }: AgentColumnsProps): ColumnDef<AgentProfile>[] => [
   {
@@ -232,7 +232,7 @@ export const createAgentColumns = ({
     cell: ({ row }) => {
       const agent = row.original;
       return (
-        <div className="flex items-center justify-start  space-x-2">
+        <div className="flex items-center justify-start space-x-2">
           <Button
             variant="outline"
             size="icon"
@@ -241,14 +241,6 @@ export const createAgentColumns = ({
           >
             <Edit className="h-4 w-4" />
           </Button>
-          {/* <Button
-            variant={agent.isOnline ? "destructive" : "default"}
-            size="icon"
-            onClick={() => onToggleStatus(agent)}
-            className="h-8 w-8"
-          >
-            <ToggleLeft className="h-4 w-4" />
-          </Button> */}
         </div>
       );
     },

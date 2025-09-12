@@ -41,7 +41,7 @@ type Props = {
 const AgentCard = ({ 
   agent, 
   departments, 
-  onEdit, 
+  onEdit,
   onToggleStatus 
 }: { 
   agent: AgentProfile; 

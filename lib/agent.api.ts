@@ -102,6 +102,22 @@ export const useGetAllAgents = (
   });
 };
 
+// Get agent by ID (admin only)
+export const useGetAgentById = (
+  agentId: string,
+  options?: Omit<
+    UseQueryOptions<AgentProfile, ApiErrorResponse>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<AgentProfile, ApiErrorResponse>({
+    queryKey: [AGENTS_QUERY_KEY, agentId],
+    queryFn: () => customFetch<AgentProfile>(`/agents/${agentId}`),
+    enabled: !!agentId,
+    ...options,
+  });
+};
+
 // Get current agent profile
 export const useGetMyAgentProfile = (
   options?: UseQueryOptions<AgentProfile, ApiErrorResponse>

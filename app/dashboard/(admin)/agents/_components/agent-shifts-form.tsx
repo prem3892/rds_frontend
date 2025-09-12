@@ -3,6 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   FormControl,
   FormField,
   FormItem,
@@ -10,6 +18,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -19,8 +32,9 @@ import {
 } from "@/components/ui/select";
 import { AgentShift, TimeSlot } from "@/types/agent";
 import { getTimeZones } from "@vvo/tzdb";
-import { Minus, Plus, X } from "lucide-react";
+import { Check, ChevronsUpDown, Minus, Plus, X } from "lucide-react";
 import { Control, useFieldArray, useWatch, useFormContext } from "react-hook-form";
+import { cn } from "@/lib/utils";
 
 const WEEKDAYS = [
   { value: "monday", label: "Monday" },
@@ -302,7 +316,7 @@ export function AgentShiftsForm({ control, name }: AgentShiftsFormProps) {
                           <FormItem>
                             <FormLabel>Start Time</FormLabel>
                             <Select
-                              value={`${timeSlotField.value?.startHour || 9}:${timeSlotField.value?.startMinute || 0}`}
+                              value={`${timeSlotField.value?.startHour ?? 9}:${timeSlotField.value?.startMinute ?? 0}`}
                               onValueChange={(value) => {
                                 const { hour, minute } = parseTime(
                                   timeOptions.find(opt => opt.value === value)?.label || "9:00 AM"
@@ -339,7 +353,7 @@ export function AgentShiftsForm({ control, name }: AgentShiftsFormProps) {
                           <FormItem>
                             <FormLabel>End Time</FormLabel>
                             <Select
-                              value={`${timeSlotField.value?.endHour || 17}:${timeSlotField.value?.endMinute || 0}`}
+                              value={`${timeSlotField.value?.endHour ?? 17}:${timeSlotField.value?.endMinute ?? 0}`}
                               onValueChange={(value) => {
                                 const { hour, minute } = parseTime(
                                   timeOptions.find(opt => opt.value === value)?.label || "5:00 PM"
@@ -405,22 +419,66 @@ export function AgentShiftsForm({ control, name }: AgentShiftsFormProps) {
             control={control}
             name="timezone"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col">
                 <FormLabel>Agent Timezone</FormLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select timezone" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="max-h-60">
-                    {timezones.map((tz) => (
-                      <SelectItem key={tz.name} value={tz.name}>
-                        {tz.name} ({tz.alternativeName})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          "w-full justify-between",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value
+                          ? (() => {
+                              const selectedTimezone = timezones.find(
+                                (timezone) => timezone.name === field.value
+                              );
+                              return selectedTimezone
+                                ? `${selectedTimezone.name} (${selectedTimezone.alternativeName})`
+                                : "Select timezone";
+                            })()
+                          : "Select timezone"}
+                        <ChevronsUpDown className="opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0">
+                    <Command>
+                      <CommandInput
+                        placeholder="Search timezones..."
+                        className="h-9"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No timezone found.</CommandEmpty>
+                        <CommandGroup>
+                          {timezones.map((timezone) => (
+                            <CommandItem
+                              value={timezone.name}
+                              key={timezone.name}
+                              onSelect={() => {
+                                field.onChange(timezone.name);
+                              }}
+                            >
+                              {timezone.name} ({timezone.alternativeName})
+                              <Check
+                                className={cn(
+                                  "ml-auto",
+                                  timezone.name === field.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <FormMessage />
               </FormItem>
             )}

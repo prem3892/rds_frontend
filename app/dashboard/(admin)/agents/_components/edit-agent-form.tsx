@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Form,
   FormControl,
@@ -25,6 +26,7 @@ import {
   AgentProfile,
   AGENTS_QUERY_KEY,
   UpdateAgentProfileDto,
+  useGetAgentById,
   useUpdateAgentProfileMutation,
   useUploadProfilePictureMutation
 } from "@/lib/agent.api";
@@ -88,25 +90,174 @@ const agentFormSchema = z.object({
 
 type AgentFormValues = z.infer<typeof agentFormSchema>;
 
+// Loading skeleton component for the form
+const EditAgentFormSkeleton = () => (
+  <div className="space-y-6 py-4">
+    {/* Profile Picture Section */}
+    <div className="flex items-center space-x-4">
+      <Skeleton className="h-20 w-20 rounded-full" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-10 w-40" />
+      </div>
+    </div>
+
+    {/* User Details Section */}
+    <div className="space-y-4">
+      <Skeleton className="h-6 w-32" />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-12" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </div>
+
+    {/* Agent Settings Section */}
+    <div className="space-y-4">
+      <Skeleton className="h-6 w-32" />
+      
+      {/* Departments */}
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-24" />
+        <div className="space-y-2 border p-3 rounded-md">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center space-x-3">
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Domain Access */}
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-3 w-48" />
+      </div>
+
+      {/* Max Concurrent Chats */}
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-36" />
+        <Skeleton className="h-10 w-32" />
+        <Skeleton className="h-3 w-64" />
+      </div>
+
+      {/* Online Status */}
+      <div className="flex items-center justify-between border p-3 rounded-lg">
+        <div className="space-y-1">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-40" />
+        </div>
+        <Skeleton className="h-6 w-11 rounded-full" />
+      </div>
+    </div>
+
+    {/* Agent Shifts Section */}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="h-10 w-24" />
+      </div>
+
+      {/* Shift Cards */}
+      {[1, 2].map((i) => (
+        <div key={i} className="border border-dashed p-4 rounded-lg space-y-3">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-8 w-8" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+      ))}
+
+      {/* Timezone */}
+      <div className="border p-4 rounded-lg space-y-3">
+        <Skeleton className="h-5 w-20" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </div>
+    </div>
+
+    {/* Action Buttons */}
+    <div className="flex justify-end">
+      <Skeleton className="h-10 w-32" />
+    </div>
+  </div>
+);
+
 interface EditAgentFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  agent: AgentProfile | null;
+  agentId: string | null;
   departments: Department[];
 }
 
-const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentFormProps) => {
+const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFormProps) => {
   const queryClient = useQueryClient();
   const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
+
+  // Fetch agent data using the API
+  const {
+    data: agent,
+    isLoading: isLoadingAgent,
+    error: agentError,
+  } = useGetAgentById(agentId!, {
+    enabled: !!agentId && open, // Only fetch when we have an agentId and modal is open
+  });
 
   const form = useForm<AgentFormValues>({
     resolver: zodResolver(agentFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
-      // email: "",
-      // password: "",
+      email: "",
       phoneNo: "",
       website: "",
       departmentIds: [],
@@ -146,7 +297,7 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
   });
 
   const handleSubmit = async (values: AgentFormValues) => {
-    if (!agent) {
+    if (!agent || !agentId) {
       toast.error("No agent selected for editing.");
       return;
     }
@@ -204,7 +355,21 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
   const handleOpenChange = (open: boolean) => {
     onOpenChange(open);
     if (!open) {
-      form.reset();
+      // Reset form to default values when closing
+      form.reset({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phoneNo: "",
+        website: "",
+        departmentIds: [],
+        domainAccess: [],
+        isOnline: false,
+        maxConcurrentChats: 3,
+        shifts: [],
+        timezone: "America/New_York",
+        profilePicture: "",
+      });
       setProfilePictureFile(null);
       setProfilePictureUrl(null);
     }
@@ -225,10 +390,6 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
         deptIds = deptIds.map((dept: any) => dept._id);
       }
 
-      // Debug: Log the agent data to see what fields are available
-      console.log("Agent data:", agent);
-      console.log("Phone number:", agent.phoneNo);
-      console.log("Website:", agent.website);
 
       form.reset({
         firstName: agent.user.firstName || "",
@@ -248,20 +409,6 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
 
       // Set the profile picture URL for display
       setProfilePictureUrl(agent.profilePicture || null);
-
-      // Explicitly set the optional fields using setValue to ensure they're set
-      if (agent.phoneNo) {
-        form.setValue("phoneNo", agent.phoneNo);
-      }
-      if (agent.website) {
-        form.setValue("website", agent.website);
-      }
-      if (agent.shifts) {
-        form.setValue("shifts", agent.shifts);
-      }
-      if (agent.timezone) {
-        form.setValue("timezone", agent.timezone);
-      }
     }
   }, [agent, open, form]);
 
@@ -274,7 +421,24 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
             Update the configuration for this agent.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
+
+        {/* Loading State */}
+        {isLoadingAgent && <EditAgentFormSkeleton />}
+
+        {/* Error State */}
+        {agentError && (
+          <div className="py-4">
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <div className="text-red-800">
+                <strong>Error:</strong> {agentError.message || "Failed to load agent data"}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Form - only show when we have agent data */}
+        {agent && !isLoadingAgent && !agentError && (
+          <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6 py-4"
@@ -470,7 +634,7 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
                     <FormControl>
                       <Input
                         placeholder="example.com, *.sub.example.com (comma-separated)"
-                        value={field.value?.join(", ")}
+                        value={field.value?.join(", ") || ""}
                         onChange={(e) =>
                           field.onChange(
                             e.target.value
@@ -552,6 +716,7 @@ const EditAgentForm = ({ open, onOpenChange, agent, departments }: EditAgentForm
             </DialogFooter>
           </form>
         </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
