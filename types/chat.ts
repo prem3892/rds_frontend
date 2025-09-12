@@ -90,6 +90,7 @@ export interface PaginatedResponse<T> {
 // From GET /chat/sessions/:sessionId/messages
 export interface ChatMessageContent {
   text?: string;
+  type?: string; // For customer messages
   url?: string; // For images/files
   filename?: string;
   mimetype?: string;
@@ -97,17 +98,26 @@ export interface ChatMessageContent {
   [key: string]: any; // Allow other properties for different message types
 }
 
+export interface AgentInfo {
+  fullName: string;
+  profilePicture: string;
+}
+
 export interface ChatMessage {
   _id: string;
+  id?: string; // Some responses include this field
   readByCustomer: boolean;
   readByAgent: boolean;
   chatSessionId: string;
   senderId: string; // Customer ID, Agent ID, or "SYSTEM"
   senderType: "CUSTOMER" | "AGENT" | "SYSTEM";
+  messageType: "TEXT" | "IMAGE" | "FILE"; // New field from API response
   content: ChatMessageContent;
   timestamp: string; // ISO 8601 Date string
-  createdAt: string; // ISO 8601 Date string
+  createdAt?: string; // ISO 8601 Date string
   updatedAt: string; // ISO 8601 Date string
+  __v?: number; // MongoDB version field
+  agentInfo?: AgentInfo; // New field for agent messages
 }
 
 // For GET /chat/sessions/:sessionId/messages query parameters

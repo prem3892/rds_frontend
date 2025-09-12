@@ -7,6 +7,7 @@ import { ChatSession } from "@/types";
 import { useIsBookingInProgress, useChatActions } from "@/stores/chat";
 import BookingForm from "./BookingForm";
 import ChatStatusIndicator from "./ChatStatusIndicator";
+import { cn, getColorFromString } from "@/lib/utils";
 
 interface ChatHeaderProps {
   session: ChatSession;
@@ -88,7 +89,12 @@ const ChatHeader = ({
             <div className="flex items-center gap-3 min-w-0">
               <Avatar className="h-9 w-9 flex-shrink-0">
                 <AvatarImage src={undefined} />
-                <AvatarFallback className="text-sm">{customerInitial}</AvatarFallback>
+                <AvatarFallback className={cn(
+                  "text-sm text-white font-medium",
+                  getColorFromString(customerName)
+                )}>
+                  {customerInitial}
+                </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <h3 className="font-semibold text-md leading-tight truncate">

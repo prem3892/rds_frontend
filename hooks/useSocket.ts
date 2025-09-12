@@ -171,7 +171,7 @@ export function useSocketInitializer() {
             break;
           case "server:messages_read_ack":
             // Handle read acknowledgment for the agent who triggered the read
-            console.log("Messages read acknowledgment:", data);
+            // console.log("Messages read acknowledgment:", data);
             chatActions.markMessagesAsSeenByAgent(data.chatSessionId, data.timestamp);
             break;
         }
