@@ -97,7 +97,7 @@ export interface ApiVisitorData {
   };
 }
 
-// Utility function to convert API data to VisitorInfo
+// Utility function to convert legacy API data to VisitorInfo
 export function convertApiDataToVisitorInfo(
   apiData: ApiVisitorData,
   defaultWidget?: VisitorInfo["widget"]
@@ -143,6 +143,101 @@ export function convertApiDataToVisitorInfo(
     connectedAt: new Date(apiData.connectedAt),
     metadata: apiData.metadata,
     socketId: apiData.socketId,
+    widgetId: apiData.widgetId,
+  };
+}
+
+// New type for the current visitors API
+export interface CurrentVisitorData {
+  customerId: string;
+  widgetId: string;
+  domain: string;
+  name: string;
+  status: "connected" | "disconnected" | "reconnected";
+  lastActivity: string;
+  connectedAt: string;
+  metadata?: {
+    browserInfo?: {
+      userAgent?: string;
+      language?: string;
+      platform?: string;
+      cookieEnabled?: boolean;
+      screenResolution?: string;
+      timezone?: string;
+      timestamp?: string;
+    };
+    currentPageUrl?: string;
+    initialDomain?: string;
+    clientFingerprint?: string;
+    ipInfo?: {
+      clientIp?: string;
+      isCloudflare?: boolean;
+      proxyChain?: any[];
+      timestamp?: string;
+      isPrivate?: boolean;
+    };
+    [key: string]: any;
+  };
+  fingerprint?: string;
+  currentPageUrl: string;
+  browserInfo?: {
+    userAgent?: string;
+    language?: string;
+    platform?: string;
+    cookieEnabled?: boolean;
+    screenResolution?: string;
+    timezone?: string;
+    timestamp?: string;
+  };
+  email?: string;
+  phone?: string;
+}
+
+// Utility function to convert new current visitors API data to VisitorInfo
+export function convertCurrentVisitorDataToVisitorInfo(
+  apiData: CurrentVisitorData,
+  defaultWidget?: VisitorInfo["widget"]
+): VisitorInfo {
+  // Map API status to VisitorStatus enum
+  let status: VisitorStatus;
+  switch (apiData.status) {
+    case "connected":
+      status = VisitorStatus.ONLINE;
+      break;
+    case "reconnected":
+      status = VisitorStatus.RECONNECTED;
+      break;
+    case "disconnected":
+      status = VisitorStatus.OFFLINE;
+      break;
+    default:
+      status = VisitorStatus.ONLINE;
+  }
+
+  return {
+    customerId: apiData.customerId,
+    name: apiData.name,
+    email: apiData.email,
+    phone: apiData.phone,
+    fingerprint: apiData.fingerprint,
+    currentPageUrl: apiData.currentPageUrl,
+    domain: apiData.domain,
+    widget: defaultWidget || {
+      id: apiData.widgetId,
+      name: "Default Widget",
+      departmentIds: [],
+    },
+    browserInfo: {
+      userAgent: apiData.browserInfo?.userAgent || apiData.metadata?.browserInfo?.userAgent,
+      language: apiData.browserInfo?.language || apiData.metadata?.browserInfo?.language,
+      platform: apiData.browserInfo?.platform || apiData.metadata?.browserInfo?.platform,
+      screenResolution: apiData.browserInfo?.screenResolution || apiData.metadata?.browserInfo?.screenResolution,
+      timezone: apiData.browserInfo?.timezone || apiData.metadata?.browserInfo?.timezone,
+    },
+    status,
+    lastActivity: new Date(apiData.lastActivity),
+    connectedAt: new Date(apiData.connectedAt),
+    metadata: apiData.metadata,
     widgetId: apiData.widgetId,
   };
 }
