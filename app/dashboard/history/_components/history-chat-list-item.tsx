@@ -3,18 +3,18 @@ import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
 import { parseISO } from "date-fns";
 import { 
-  Apple, 
-  Chrome, 
   Clock, 
   Globe, 
   User, 
   Monitor, 
   Smartphone, 
-  Tablet,
-  MonitorIcon
+  Tablet
 } from "lucide-react";
 import { rawTimeZones } from '@vvo/tzdb';
 import React from "react";
+
+import { FaChrome, FaFirefox, FaSafari, FaEdge, FaOpera, FaQuestionCircle, FaWindows, FaTablet } from 'react-icons/fa';
+import { SiApple, SiLinux, SiAndroid, SiMacos } from 'react-icons/si';
 
 interface HistoryChatListItemProps {
   session: ChatSession;
@@ -62,27 +62,27 @@ const HistoryChatListItem = React.memo(
     };
     const getBrowserIcon = (userAgent?: string) => {
       if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
-
+      
       const ua = userAgent.toLowerCase();
-      if (ua.includes("chrome") && !ua.includes("edg")) return <Chrome className="w-3 h-3 text-blue-600" />;
-      if (ua.includes("firefox")) return <Globe className="w-3 h-3 text-orange-500" />;
-      if (ua.includes("safari") && !ua.includes("chrome")) return <Globe className="w-3 h-3 text-blue-500" />;
-      if (ua.includes("edge")) return <Globe className="w-3 h-3 text-blue-700" />;
-      if (ua.includes("opera")) return <Globe className="w-3 h-3 text-red-500" />;
-      return <Globe className="w-3 h-3 text-gray-500" />;
+      if (ua.includes("chrome") && !ua.includes("edg")) return <FaChrome className="w-3 h-3 text-blue-600" />;
+      if (ua.includes("firefox")) return <FaFirefox className="w-3 h-3 text-orange-500" />;
+      if (ua.includes("safari") && !ua.includes("chrome")) return <FaSafari className="w-3 h-3 text-blue-500" />;
+      if (ua.includes("edge")) return <FaEdge className="w-3 h-3 text-blue-700" />;
+      if (ua.includes("opera")) return <FaOpera className="w-3 h-3 text-red-500" />;
+      return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
     };
 
     const getPlatformIcon = (platform?: string) => {
       if (!platform) return <Monitor className="w-3 h-3 text-gray-500" />;
 
       const platformLower = platform.toLowerCase();
-      if (platformLower.includes("mac")) return <Apple className="w-3 h-3 text-gray-800" />;
-      if (platformLower.includes("win")) return <MonitorIcon className="w-3 h-3 text-blue-600" />;
-      if (platformLower.includes("linux")) return <Monitor className="w-3 h-3 text-green-600" />;
-      if (platformLower.includes("ios")) return <Smartphone className="w-3 h-3 text-blue-500" />;
-      if (platformLower.includes("android")) return <Smartphone className="w-3 h-3 text-green-500" />;
-      if (platformLower.includes("mobile")) return <Smartphone className="w-3 h-3 text-gray-600" />;
-      if (platformLower.includes("tablet")) return <Tablet className="w-3 h-3 text-gray-600" />;
+      if (platformLower.includes("mac")) return <SiMacos className="w-3 h-3 text-gray-800" />;
+      if (platformLower.includes("win")) return <FaWindows className="w-3 h-3 text-blue-600" />;
+      if (platformLower.includes("linux")) return <SiLinux className="w-3 h-3 text-green-600" />;
+      if (platformLower.includes("ios")) return <SiApple className="w-3 h-3 text-blue-500" />;
+      if (platformLower.includes("android")) return <SiAndroid className="w-3 h-3 text-green-500" />;
+      if (platformLower.includes("mobile")) return <SiAndroid className="w-3 h-3 text-gray-600" />;
+      if (platformLower.includes("tablet")) return <FaTablet className="w-3 h-3 text-gray-600" />;
       return <Monitor className="w-3 h-3 text-gray-500" />;
     };
 
