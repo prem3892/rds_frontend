@@ -29,6 +29,7 @@ import { logoutUser } from "@/lib/token-refresh";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ChevronDown,
+  User,
   Globe,
   Loader2,
   LogOut,
@@ -39,6 +40,7 @@ import {
   Users,
   UserX,
   WifiOff,
+  MailCheck,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -374,7 +376,7 @@ export function MainLayoutWrapper({
             {/* Profile Section */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 p-4">
+                <Button variant="ghost" className="flex items-center gap-2 p-6">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
                       src={`${process.env.NEXT_PUBLIC_API_URL}${agentProfile?.profilePicture}`}
@@ -396,6 +398,16 @@ export function MainLayoutWrapper({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="flex flex-col gap-2 items-start">
+                  <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  {currentUser?.firstName} {currentUser?.lastName}
+                  </div>
+                  <Badge variant={"outline"} className="rounded-full text-xs text-primary">
+                    {currentUser?.email}
+                  </Badge>
+                  </DropdownMenuItem>
+                  <Separator />
                 <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>Profile Settings</DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>Sign Out</DropdownMenuItem>
               </DropdownMenuContent>
