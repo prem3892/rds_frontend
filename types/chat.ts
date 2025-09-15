@@ -21,6 +21,16 @@ export interface ChatSession {
         timezone?: string;
         timestamp?: string;
       };
+      // ipInfo: {
+      //   clientIp: string,        // Actual client IP
+      //   country?: string,        // Country code (US, GB, etc.)
+      //   city?: string,          // City name
+      //   cfRay?: string,         // Cloudflare Ray ID
+      //   isCloudflare: boolean,  // Whether request came through Cloudflare
+      //   proxyChain?: string[],  // Full proxy chain if available
+      //   timestamp: Date,        // When IP was captured
+      //   isPrivate: boolean      // Whether IP is from private network
+      // },      
       currentPageUrl?: string;
       initialDomain?: string;
     };
@@ -130,4 +140,25 @@ export interface GetMessagesQueryDto {
 export interface SendMessageDto {
   chatSessionId: string;
   messageContent: ChatMessageContent;
+}
+
+// --- Chat Initiate API Types ---
+export interface InitiateChatRequest {
+  customerId: string;
+}
+
+export interface InitiateChatResponse {
+  chatSessionId: string;
+  status: "ACTIVE";
+  customer: {
+    id: string;
+    name: string;
+  };
+  widget: {
+    id: string;
+    name: string;
+    welcomeMessage: string;
+  };
+  createdAt: string;
+  message: string;
 }

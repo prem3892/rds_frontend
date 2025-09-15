@@ -47,6 +47,7 @@ interface GuestFeedProps {
   maxHeight?: string;
   onInitiateChat?: (visitorId: string) => void;
   onSelectChat?: (sessionId: string) => void;
+  initiatingChatForCustomer?: string | null;
 }
 
 
@@ -65,6 +66,7 @@ export function GuestFeed({
   maxHeight = "h-full",
   onInitiateChat,
   onSelectChat,
+  initiatingChatForCustomer,
 }: GuestFeedProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const visitors = useVisitorsArray(searchTerm);
@@ -209,28 +211,23 @@ export function GuestFeed({
   };
 
   const getActionButton = (status: VisitorStatus, visitorId: string) => {
-    // if (status === VisitorStatus.ONLINE || status === VisitorStatus.RECONNECTED) {
-    //   return (
-    //     <div className="flex flex-col items-end gap-1">
-    //       <span className="text-green-600 text-xs font-medium">Chat Initiated</span>
-    //       <ChevronDown className="w-3 h-3 text-gray-400" />
-    //     </div>
-    //   );
-    // } else {
-      return (
-        <div className="flex flex-col items-end gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-green-600 text-xs font-medium p-0 h-auto hover:bg-transparent cursor-pointer"
-            onClick={() => onInitiateChat?.(visitorId)}
-          >
-            Initiate Chat
-          </Button>
-          <ChevronDown className="w-3 h-3 text-gray-400" />
-        </div>
-      );
-    // }
+    const isInitiating = initiatingChatForCustomer === visitorId;
+    
+    return (
+      <div className="flex flex-col items-end gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-green-600 text-xs font-medium p-0 h-auto hover:bg-transparent cursor-pointer flex items-center gap-1"
+          onClick={() => onInitiateChat?.(visitorId)}
+          disabled={isInitiating}
+        >
+          {isInitiating && <Loader2 className="w-3 h-3 animate-spin" />}
+          {isInitiating ? "Initiating..." : "Initiate Chat"}
+        </Button>
+        <ChevronDown className="w-3 h-3 text-gray-400" />
+      </div>
+    );
   };
 
     const getCountryFlag = (timezone: string) => {

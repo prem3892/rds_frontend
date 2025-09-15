@@ -191,6 +191,12 @@ class SocketService {
       this.notifyListeners("server:messages_read_ack", data);
     });
 
+    // Message seen by customer events
+    this.socket.on("server:message_seen_by_customer", (data: { chatSessionId: string; messageId: string; timestamp: string }) => {
+      console.log("Message seen by customer:", data);
+      this.notifyListeners("server:message_seen_by_customer", data);
+    });
+
     return this.socket;
   }
 

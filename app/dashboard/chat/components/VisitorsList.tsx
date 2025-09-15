@@ -99,6 +99,11 @@ export function VisitorsList({
     return "Other";
   };
 
+  console.log("VISITORS INFO",visitors);
+
+
+
+
   return (
     <Card className={cn("w-full h-full bg-white rounded-3xl border-none", className)}>
       <CardHeader className="pb-3">

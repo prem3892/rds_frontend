@@ -7,8 +7,10 @@ import {
   ChatMessage,
   ChatSession,
   GetChatSessionsQueryDto,
+  InitiateChatRequest,
+  InitiateChatResponse,
 } from "@/types";
-import { useQuery, useInfiniteQuery, UseQueryOptions, UseInfiniteQueryOptions } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, UseQueryOptions, UseInfiniteQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 import { customFetch } from "./api";
 
 // 1. Get All Chat Sessions (Admin / Filtered for Agent History) - Now fetches all
@@ -222,3 +224,22 @@ export const useGetAllChatSessionsInfinite = (
     ...options,
   });
 };
+
+// 6. Initiate Chat Mutation
+export const useInitiateChatMutation = (
+  options?: UseMutationOptions<InitiateChatResponse, ApiErrorResponse, InitiateChatRequest>
+) => {
+  return useMutation<InitiateChatResponse, ApiErrorResponse, InitiateChatRequest>({
+    mutationFn: async (data: InitiateChatRequest) => {
+      return customFetch<InitiateChatResponse>("/chat/initiate", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    },
+    ...options,
+  });
+};
+

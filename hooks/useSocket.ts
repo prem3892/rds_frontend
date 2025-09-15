@@ -174,6 +174,11 @@ export function useSocketInitializer() {
             // console.log("Messages read acknowledgment:", data);
             chatActions.markMessagesAsSeenByAgent(data.chatSessionId, data.timestamp);
             break;
+          case "server:message_seen_by_customer":
+            // Handle message seen by customer acknowledgment from server
+            console.log("Message seen by customer:", data);
+            chatActions.markMessagesAsSeenByCustomer(data.chatSessionId, data.timestamp);
+            break;
         }
       });
 

@@ -170,11 +170,19 @@ export interface CurrentVisitorData {
     initialDomain?: string;
     clientFingerprint?: string;
     ipInfo?: {
-      clientIp?: string;
-      isCloudflare?: boolean;
-      proxyChain?: any[];
-      timestamp?: string;
-      isPrivate?: boolean;
+      // clientIp?: string;
+      // isCloudflare?: boolean;
+      // proxyChain?: any[];
+      // timestamp?: string;
+      // isPrivate?: boolean;
+      clientIp: string,        // Actual client IP
+      country?: string,        // Country code (US, GB, etc.)
+      city?: string,          // City name
+      cfRay?: string,         // Cloudflare Ray ID
+      isCloudflare: boolean,  // Whether request came through Cloudflare
+      proxyChain?: string[],  // Full proxy chain if available
+      timestamp: Date,        // When IP was captured
+      isPrivate: boolean 
     };
     [key: string]: any;
   };
