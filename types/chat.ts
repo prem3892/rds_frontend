@@ -21,16 +21,16 @@ export interface ChatSession {
         timezone?: string;
         timestamp?: string;
       };
-      // ipInfo: {
-      //   clientIp: string,        // Actual client IP
-      //   country?: string,        // Country code (US, GB, etc.)
-      //   city?: string,          // City name
-      //   cfRay?: string,         // Cloudflare Ray ID
-      //   isCloudflare: boolean,  // Whether request came through Cloudflare
-      //   proxyChain?: string[],  // Full proxy chain if available
-      //   timestamp: Date,        // When IP was captured
-      //   isPrivate: boolean      // Whether IP is from private network
-      // },      
+      ipInfo: {
+        clientIp: string,        // Actual client IP
+        country?: string,        // Country code (US, GB, etc.)
+        city?: string,          // City name
+        cfRay?: string,         // Cloudflare Ray ID
+        isCloudflare: boolean,  // Whether request came through Cloudflare
+        proxyChain?: string[],  // Full proxy chain if available
+        timestamp: Date,        // When IP was captured
+        isPrivate: boolean      // Whether IP is from private network
+      },      
       currentPageUrl?: string;
       initialDomain?: string;
     };

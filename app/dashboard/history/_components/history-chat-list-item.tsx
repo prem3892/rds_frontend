@@ -130,13 +130,27 @@ const HistoryChatListItem = React.memo(
       return session.customerId?.metadata?.browserInfo?.language || "N/A";
     };
 
+
+    const getIpInfo = () => {
+      return session.customerId?.metadata?.ipInfo.clientIp || "N/A";
+    }
+
+
+    const getCountry = () => {
+      return session.customerId?.metadata?.ipInfo.country || "N/A";
+    }
+
+    const getCity = () => {
+      return session.customerId?.metadata?.ipInfo.city || "N/A";
+    }
+
     const getStatusColor = (status: string) => {
       switch (status) {
         case "RESOLVED":
           return "bg-green-100 text-green-800";
         case "CLOSED_BY_AGENT":
         case "CLOSED_BY_CUSTOMER":
-          return "bg-blue-100 text-blue-800";
+          return "bg-orange-100 text-orange-800";
         case "ABANDONED_BY_CUSTOMER":
         case "ABANDONED_BY_AGENT":
           return "bg-red-100 text-red-800";
@@ -145,7 +159,7 @@ const HistoryChatListItem = React.memo(
         case "OFFLINE_MESSAGE":
           return "bg-gray-100 text-gray-800";
         default:
-          return "bg-gray-100 text-gray-800";
+          return "bg-primary/20 text-blue-800";
       }
     };
 
@@ -155,7 +169,7 @@ const HistoryChatListItem = React.memo(
         className={`w-full justify-start p-2 sm:p-3 h-auto mb-1 flex items-start text-left rounded-lg transition-all duration-200 ${
           isSelected
             ? "bg-blue-100 text-blue-900 border-blue-200"
-            : "hover:bg-gray-50 bg-gray-50"
+            : "hover:bg-gray-50 bg-white"
         }`}
         onClick={onSelect}
       >
@@ -188,11 +202,16 @@ const HistoryChatListItem = React.memo(
               <span>Screen: {getScreenResolution()}</span>
               <span>Lang: {getLanguage()}</span>
             </div>
-            {session.customerId?.metadata?.browserInfo?.timezone && (
+            {/* {session.customerId?.metadata?.browserInfo?.timezone && (
               <div className="text-xs text-gray-500">
                 TZ: {session.customerId.metadata.browserInfo.timezone}
               </div>
-            )}
+            )} */}
+            <div className="flex items-center gap-2">
+              <Badge  className="rounded-full">IP: {getIpInfo()}</Badge>
+              <Badge  className="rounded-full">Country: {getCountry()}</Badge>
+              <Badge  className="rounded-full">City: {getCity()}</Badge>
+            </div>
           </div>
 
           {/* Status Badge and Agent Info */}
