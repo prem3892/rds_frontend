@@ -8,8 +8,10 @@ import {
   VisitorStatus,
   ApiVisitorData,
   convertApiDataToVisitorInfo,
+  CurrentVisitorData,
+  convertCurrentVisitorDataToVisitorInfo,
 } from "@/types/visitor";
-import { VisitorSyncResponse } from "@/lib/visitor.api";
+import { VisitorSyncResponse, CurrentVisitorsResponse } from "@/lib/visitor.api";
 
 interface VisitorState {
   visitors: Record<string, VisitorInfo>; // customerId -> VisitorInfo
@@ -19,6 +21,7 @@ interface VisitorState {
     removeVisitor: (customerId: string) => void;
     clearAllVisitors: () => void;
     syncVisitorsFromApi: (syncResponse: VisitorSyncResponse) => void;
+    syncCurrentVisitorsFromApi: (visitorsResponse: CurrentVisitorsResponse, replaceAll?: boolean) => void;
     setInitialSyncComplete: (complete: boolean) => void;
   };
 }
@@ -151,6 +154,23 @@ export const useVisitorStore = create<VisitorState>((set, get) => ({
             default:
               console.warn(`Unknown visitor sync change type: ${type}`);
           }
+        });
+
+        return {
+          visitors: updatedVisitors,
+        };
+      });
+    },
+
+    syncCurrentVisitorsFromApi: (visitorsResponse: CurrentVisitorsResponse, replaceAll: boolean = false) => {
+      set((state) => {
+        let updatedVisitors = replaceAll ? {} : { ...state.visitors };
+
+        // Process each visitor from the current visitors API
+        visitorsResponse.visitors.forEach((visitorData) => {
+          // Convert API data to VisitorInfo format
+          const visitorInfo = convertCurrentVisitorDataToVisitorInfo(visitorData);
+          updatedVisitors[visitorData.customerId] = visitorInfo;
         });
 
         return {

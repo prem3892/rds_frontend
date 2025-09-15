@@ -17,7 +17,7 @@ import {
   useIsInitialSyncComplete
 } from "@/stores/visitor";
 import { VisitorStatus } from "@/types/visitor";
-import { useVisitorSyncMutation } from "@/lib/visitor.api";
+import { useVisitorSyncMutation, useCurrentVisitorsInfinite } from "@/lib/visitor.api";
 import { useGetMyActiveChatSessions } from "@/lib/chat.api";
 import { useActiveChatSessions, useChatActions } from "@/stores/chat";
 import ChatListItem from "./ChatListItem";
@@ -34,7 +34,7 @@ import {
   Tablet,
   Loader2
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { rawTimeZones } from '@vvo/tzdb';
 import { toast } from "sonner";
 
@@ -94,32 +94,84 @@ export function GuestFeed({
     }
   };
   
-  // Visitor sync hooks
+  // Visitor store actions
   const visitorActions = useVisitorActions();
   const isInitialSyncComplete = useIsInitialSyncComplete();
   
-  // Visitor sync mutation
-  const visitorSyncMutation = useVisitorSyncMutation({
-    onSuccess: (data) => {
-      visitorActions.syncVisitorsFromApi(data);
-      visitorActions.setInitialSyncComplete(true);
-      console.log("Visitor sync completed:", data);
-    },
-    onError: (error) => {
-      console.error("Failed to sync visitors:", error);
-      toast.error("Failed to load visitor data");
-    },
-  });
-
-  // Trigger initial visitor sync when component mounts
-  useEffect(() => {
-    if (!isInitialSyncComplete && !visitorSyncMutation.isPending) {
-      console.log("Triggering initial visitor sync...");
-      visitorSyncMutation.mutate({ 
-        forceFullSync: true 
-      });
+  // Infinite scroll reference
+  const observerRef = useRef<HTMLDivElement>(null);
+  
+  // Current visitors infinite query
+  const {
+    data: visitorsData,
+    isLoading: isLoadingVisitors,
+    isError: isErrorVisitors,
+    error: visitorsError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useCurrentVisitorsInfinite(
+    { limit: 10 }, // Start with 10 visitors per page
+    {
+      enabled: true,
+      staleTime: 30000, // Data is fresh for 30 seconds
+      refetchInterval: 60000, // Refetch every minute
     }
-  }, [isInitialSyncComplete]);
+  );
+
+  // Handle success/error states with useEffect
+  useEffect(() => {
+    const infiniteData = visitorsData as any;
+    if (infiniteData?.pages && infiniteData.pages.length > 0) {
+      // Sync visitors to store on first page load
+      if (infiniteData.pages.length === 1 && !isInitialSyncComplete) {
+        visitorActions.syncCurrentVisitorsFromApi(infiniteData.pages[0], true); // Replace all on first load
+        visitorActions.setInitialSyncComplete(true);
+        console.log("Initial visitor sync completed:", infiniteData.pages[0]);
+      } else {
+        // Append new pages to existing data
+        const latestPage = infiniteData.pages[infiniteData.pages.length - 1];
+        visitorActions.syncCurrentVisitorsFromApi(latestPage, false); // Don't replace all
+        console.log("Visitors page loaded:", latestPage);
+      }
+    }
+  }, [visitorsData, isInitialSyncComplete, visitorActions]);
+
+  useEffect(() => {
+    if (isErrorVisitors && visitorsError) {
+      console.error("Failed to load visitors:", visitorsError);
+      toast.error("Failed to load visitor data");
+    }
+  }, [isErrorVisitors, visitorsError]);
+
+  // Infinite scroll callback
+  const handleIntersection = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        console.log("Loading more visitors...");
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  );
+
+  // Setup infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleIntersection, {
+      threshold: 0.1,
+    });
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [handleIntersection]);
 
   const getStatusBadge = (status: VisitorStatus) => {
     switch (status) {
@@ -283,7 +335,7 @@ export function GuestFeed({
           <TabsContent value="guests" className="mt-0 h-full">
             <ScrollArea className={cn(maxHeight)}>
               <AnimatePresence mode="sync">
-                {!isInitialSyncComplete && visitorSyncMutation.isPending ? (
+                {isLoadingVisitors && visitors.length === 0 ? (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -371,6 +423,16 @@ export function GuestFeed({
                         </div>
                       </motion.div>
                     ))}
+                    
+                    {/* Infinite scroll loading indicator */}
+                    {isFetchingNextPage && (
+                      <div className="flex justify-center py-4">
+                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
+                    
+                    {/* Infinite scroll observer */}
+                    <div ref={observerRef} className="h-4" />
                   </div>
                 )}
               </AnimatePresence>
