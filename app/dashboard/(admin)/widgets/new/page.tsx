@@ -132,13 +132,13 @@ function WidgetPreview({ form }: { form: any }) {
         <TabsList className="grid gap-x-2 w-full grid-cols-2  bg-white rounded-t-lg p-2 pt-4 rounded-b-none">
           <TabsTrigger
             value="online"
-            className="text-sm  bg-gray-200 data-[state=active]:shadow-md data-[state=active]:p-2  data-[state=active]:mb-0 data-[state=active]:bg-white data-[state=active]:text-primary rounded-md"
+            className="text-xs md:text-sm truncate  bg-gray-200 data-[state=active]:shadow-md data-[state=active]:p-2  data-[state=active]:mb-0 data-[state=active]:bg-white data-[state=active]:text-primary rounded-md"
           >
             Show Online widget
           </TabsTrigger>
           <TabsTrigger
             value="offline"
-            className="text-sm  bg-gray-200 data-[state=active]:shadow-md data-[state=active]:p-2  data-[state=active]:mb-0 data-[state=active]:bg-white data-[state=active]:text-primary rounded-md"
+            className="text-xs md:text-sm truncate  bg-gray-200 data-[state=active]:shadow-md data-[state=active]:p-2  data-[state=active]:mb-0 data-[state=active]:bg-white data-[state=active]:text-primary rounded-md"
           >
             Show Offline widget
           </TabsTrigger>
@@ -1337,7 +1337,7 @@ export default function NewWidgetPage() {
           <CardHeader>
             <CardTitle>Widget Preview</CardTitle>
           </CardHeader>
-          <CardContent className="flex items-center justify-center  ">
+          <CardContent className="flex items-center justify-center p-0 md:p-6 ">
             <WidgetPreview form={form} />
           </CardContent>
         </Card>

@@ -23,11 +23,13 @@ function getTokenExpirationTime(token: string): number | null {
  * @param accessToken - The access token
  * @param refreshToken - The refresh token (optional)
  * @param customMaxAge - Custom max age in seconds (optional)
+ * @param isOnline - Online status (optional)
  */
 export function setAuthCookies(
   accessToken: string,
   refreshToken?: string,
-  customMaxAge?: number
+  customMaxAge?: number,
+  isOnline?: boolean
 ): void {
   if (typeof document === 'undefined') return; // Skip on server side
 
@@ -60,6 +62,11 @@ export function setAuthCookies(
     
     document.cookie = `${COOKIE_NAMES.REFRESH_TOKEN}=${refreshToken}; path=/; max-age=${refreshMaxAge}; secure; samesite=strict`;
   }
+  
+  // Set online status cookie if provided
+  if (typeof isOnline === 'boolean') {
+    document.cookie = `${COOKIE_NAMES.ONLINE_STATUS}=${isOnline ? 'true' : 'false'}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`;
+  }
 }
 
 /**
@@ -70,6 +77,7 @@ export function clearAuthCookies(): void {
 
   document.cookie = `${COOKIE_NAMES.AUTH_TOKEN}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
   document.cookie = `${COOKIE_NAMES.REFRESH_TOKEN}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  document.cookie = `${COOKIE_NAMES.ONLINE_STATUS}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
 }
 
 /**
@@ -105,6 +113,26 @@ export function getRefreshTokenFromCookies(): string | null {
   
   if (refreshCookie) {
     return refreshCookie.split('=')[1];
+  }
+  
+  return null;
+}
+
+/**
+ * Get online status from cookies
+ * @returns The online status or null
+ */
+export function getOnlineStatusFromCookies(): boolean | null {
+  if (typeof document === 'undefined') return null; // Skip on server side
+
+  const cookies = document.cookie.split(';');
+  const onlineStatusCookie = cookies.find(cookie => 
+    cookie.trim().startsWith(`${COOKIE_NAMES.ONLINE_STATUS}=`)
+  );
+  
+  if (onlineStatusCookie) {
+    const value = onlineStatusCookie.split('=')[1];
+    return value === 'true';
   }
   
   return null;
@@ -149,16 +177,19 @@ export function syncAuthState(): void {
       const parsed = JSON.parse(storedToken);
       const accessToken = parsed.state?.accessToken;
       const refreshToken = parsed.state?.refreshToken;
+      const isOnline = parsed.state?.isOnline;
       
       if (accessToken && refreshToken) {
         // Ensure cookies are set if localStorage has tokens
         const cookieToken = getAuthTokenFromCookies();
         const cookieRefreshToken = getRefreshTokenFromCookies();
+        const cookieOnlineStatus = getOnlineStatusFromCookies();
         
         if (!cookieToken || !cookieRefreshToken || 
-            cookieToken !== accessToken || cookieRefreshToken !== refreshToken) {
+            cookieToken !== accessToken || cookieRefreshToken !== refreshToken ||
+            cookieOnlineStatus !== isOnline) {
           console.log('Syncing auth state: updating cookies to match localStorage');
-          setAuthCookies(accessToken, refreshToken);
+          setAuthCookies(accessToken, refreshToken, undefined, isOnline);
         }
       }
     } catch {

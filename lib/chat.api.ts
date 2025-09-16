@@ -7,8 +7,10 @@ import {
   ChatMessage,
   ChatSession,
   GetChatSessionsQueryDto,
+  InitiateChatRequest,
+  InitiateChatResponse,
 } from "@/types";
-import { useQuery, useInfiniteQuery, UseQueryOptions, UseInfiniteQueryOptions } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, UseQueryOptions, UseInfiniteQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 import { customFetch } from "./api";
 
 // 1. Get All Chat Sessions (Admin / Filtered for Agent History) - Now fetches all
@@ -105,7 +107,23 @@ export const useGetMyActiveChatSessions = (
   });
 };
 
-// 3. Get Messages for a Chat Session - Now fetches all
+// 3. Get Pending Chat Sessions
+export const PENDING_CHAT_SESSIONS_QUERY_KEY = "pendingChatSessions";
+
+export const useGetPendingChatSessions = (
+  options?: Omit<
+    UseQueryOptions<ChatSession[], ApiErrorResponse, ChatSession[], [string]>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<ChatSession[], ApiErrorResponse, ChatSession[], [string]>({
+    queryKey: [PENDING_CHAT_SESSIONS_QUERY_KEY],
+    queryFn: () => customFetch<ChatSession[]>("/chat/sessions/pending"),
+    ...options,
+  });
+};
+
+// 4. Get Messages for a Chat Session - Now fetches all
 export const CHAT_MESSAGES_QUERY_KEY_PREFIX = "chatMessages";
 
 export const useGetChatMessages = (
@@ -141,7 +159,7 @@ export const useGetChatMessages = (
   });
 };
 
-// 4. Infinite Query for Chat Sessions (for infinite scroll)
+// 5. Infinite Query for Chat Sessions (for infinite scroll)
 export const CHAT_SESSIONS_INFINITE_QUERY_KEY_PREFIX = "chatSessionsInfinite";
 
 export const useGetAllChatSessionsInfinite = (
@@ -206,3 +224,22 @@ export const useGetAllChatSessionsInfinite = (
     ...options,
   });
 };
+
+// 6. Initiate Chat Mutation
+export const useInitiateChatMutation = (
+  options?: UseMutationOptions<InitiateChatResponse, ApiErrorResponse, InitiateChatRequest>
+) => {
+  return useMutation<InitiateChatResponse, ApiErrorResponse, InitiateChatRequest>({
+    mutationFn: async (data: InitiateChatRequest) => {
+      return customFetch<InitiateChatResponse>("/chat/initiate", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    },
+    ...options,
+  });
+};
+

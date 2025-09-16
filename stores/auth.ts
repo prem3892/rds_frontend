@@ -31,9 +31,11 @@ export const useAuthStore = create<AuthState>()(
       _hasHydrated: false,
       actions: {
         login: (user, accessToken, refreshToken) => {
-          set({ user, accessToken, refreshToken });
+          // Extract isOnline status from user data or default to false
+          const isOnline = user.isOnline || false;
+          set({ user, accessToken, refreshToken, isOnline });
           // Set cookies for middleware compatibility
-          setAuthCookies(accessToken, refreshToken);
+          setAuthCookies(accessToken, refreshToken, undefined, isOnline);
         },
         logout: () => {
           set({ user: null, accessToken: null, refreshToken: null, isOnline: false });
@@ -42,9 +44,10 @@ export const useAuthStore = create<AuthState>()(
           // queryClient.clear() will be called from where logout action is dispatched
         },
         updateTokens: (accessToken, refreshToken) => {
+          const currentState = get();
           set({ accessToken, refreshToken });
           // Update cookies for middleware compatibility
-          setAuthCookies(accessToken, refreshToken);
+          setAuthCookies(accessToken, refreshToken, undefined, currentState.isOnline);
         },
         updateUser: (updatedUserDetails) => {
           if (get().user) {
@@ -53,7 +56,14 @@ export const useAuthStore = create<AuthState>()(
             }));
           }
         },
-        setOnlineStatus: (isOnline) => set({ isOnline }),
+        setOnlineStatus: (isOnline) => {
+          const currentState = get();
+          set({ isOnline });
+          // Update cookies to keep online status in sync
+          if (currentState.accessToken && currentState.refreshToken) {
+            setAuthCookies(currentState.accessToken, currentState.refreshToken, undefined, isOnline);
+          }
+        },
         setHasHydrated: (hasHydrated) => set({ _hasHydrated: hasHydrated }),
       },
     }),

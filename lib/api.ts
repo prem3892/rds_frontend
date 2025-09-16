@@ -219,3 +219,4 @@ export * from "./widget.api";
 export * from "./department.api";
 export * from "./agent.api";
 export * from "./contact.api";
+export * from "./visitor.api";

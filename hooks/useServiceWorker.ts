@@ -37,30 +37,8 @@ export function useServiceWorker() {
           console.error('Service Worker registration failed:', error);
         });
 
-      // Listen for messages from service worker
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        console.log('Received message from service worker:', event.data);
-        
-        if (event.data?.type === 'NOTIFICATION_CLICKED') {
-          const { sessionId } = event.data;
-          
-          if (sessionId) {
-            // Focus window
-            if (window) {
-              window.focus();
-            }
-            
-            // Navigate to chat and select session
-            chatActions.setSelectedSessionId(sessionId);
-            
-            // Navigate to chat page if not already there
-            const currentPath = window.location.pathname;
-            if (!currentPath.includes('/dashboard/chat')) {
-              router.push('/dashboard/chat');
-            }
-          }
-        }
-      });
+      // Note: Notification click handling is now managed by the notification service
+      // to avoid duplicate handlers and ensure proper message structure
     }
   }, [chatActions, router]);
 }

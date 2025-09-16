@@ -51,7 +51,7 @@ export default function AgentsPage() {
   // Agent states
   const [isCreateAgentDialogOpen, setIsCreateAgentDialogOpen] = useState(false);
   const [isEditAgentDialogOpen, setIsEditAgentDialogOpen] = useState(false);
-  const [editingAgent, setEditingAgent] = useState<AgentProfile | null>(null);
+  const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
   const [agentFilters, setAgentFilters] = useState<AgentFilters>({
     search: "",
     department: "all",
@@ -152,7 +152,7 @@ export default function AgentsPage() {
   );
 
   const handleEditAgent = (agent: AgentProfile) => {
-    setEditingAgent(agent);
+    setEditingAgentId(agent._id);
     setIsEditAgentDialogOpen(true);
   };
 
@@ -388,7 +388,7 @@ export default function AgentsPage() {
       <EditAgentForm
         open={isEditAgentDialogOpen}
         onOpenChange={setIsEditAgentDialogOpen}
-        agent={editingAgent}
+        agentId={editingAgentId}
         departments={departments || []}
       />
 

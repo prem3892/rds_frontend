@@ -46,7 +46,7 @@ const HistoryChatSidebar = ({
   }, [hasNextPage, isFetchingNextPage, onLoadMore]);
 
   return (
-    <aside className="w-full h-full flex rounded-3xl flex-col border bg-white shadow-sm overflow-hidden">
+    <aside className="w-full h-full flex rounded-3xl flex-col border bg-slate-100 shadow-sm overflow-hidden">
       <div className="p-2 sm:p-3 h-full flex flex-col">
         {/* Chat Sessions List */}
         <div className="flex-1 min-h-0 overflow-hidden">

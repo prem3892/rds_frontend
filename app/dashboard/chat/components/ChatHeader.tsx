@@ -7,6 +7,7 @@ import { ChatSession } from "@/types";
 import { useIsBookingInProgress, useChatActions } from "@/stores/chat";
 import BookingForm from "./BookingForm";
 import ChatStatusIndicator from "./ChatStatusIndicator";
+import { cn, getColorFromString } from "@/lib/utils";
 
 interface ChatHeaderProps {
   session: ChatSession;
@@ -44,8 +45,8 @@ const ChatHeader = ({
     typeof session.customerId === "object"
       ? session.customerId?.name?.charAt(0)?.toUpperCase() ||
         session.customerId?.email?.charAt(0)?.toUpperCase() ||
-        "C"
-      : "C";
+        "G"
+      : "G";
 
   const handleBookClick = useCallback(() => {
     setIsBookingFormOpen(true);
@@ -71,7 +72,7 @@ const ChatHeader = ({
   return (
     <>
       <header className="bg-white rounded-t-3xl p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-2 flex-col md:flex-row md:justify-between md:items-center">
           {/* Left side - Back button and guest info */}
           <div className="flex items-center gap-4">
             {onBack && (
@@ -88,7 +89,12 @@ const ChatHeader = ({
             <div className="flex items-center gap-3 min-w-0">
               <Avatar className="h-9 w-9 flex-shrink-0">
                 <AvatarImage src={undefined} />
-                <AvatarFallback className="text-sm">{customerInitial}</AvatarFallback>
+                <AvatarFallback className={cn(
+                  "text-sm text-white font-medium",
+                  getColorFromString(customerName)
+                )}>
+                  {customerInitial}
+                </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <h3 className="font-semibold text-md leading-tight truncate">
@@ -100,13 +106,13 @@ const ChatHeader = ({
           </div>
 
           {/* Right side - Action buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center  justify-end   gap-2  w-full">
             {onShowGuestInfo && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onShowGuestInfo}
-                className="text-xs hidden sm:flex"
+                className="text-xs  sm:flex"
               >
                 <User className="h-4 w-4 mr-1" />
                 <span className="hidden md:inline">Guest Info</span>
@@ -160,7 +166,7 @@ const ChatHeader = ({
               className="text-2xs"
             >
               <XCircle className="h-4 w-4 mr-1.5" />
-              <span className="hidden sm:inline">End Chat</span>
+              <span className="hidden sm:inline text-xs">End Chat</span>
             </Button>
           </div>
         </div>

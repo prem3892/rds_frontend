@@ -46,18 +46,18 @@ const ChatListItem = React.memo(
       try {
         // Get the timezone from the session data
         // const timezone = session.customerId?.metadata?.browserInfo?.timezone;
-        console.log(timezone, "timezone");
+        // console.log(timezone, "timezone");
         if (!timezone) return "🏳️"; // Return a neutral flag if no timezone
 
         // Find the timezone in the database
         const tz = rawTimeZones.find(t =>  t.group.includes(timezone));
         const countryCode = tz?.countryCode;
-        console.log(tz, "tz");
-        console.log(countryCode, "countryCode");
+        // console.log(tz, "tz");
+        // console.log(countryCode, "countryCode");
         
         // If we found a country code, convert it to an emoji
         if (countryCode && countryCode.length === 2) {
-          console.log(countryCode, "countryCode");
+          // console.log(countryCode, "countryCode");
           return countryCodeToEmoji(countryCode);
         }
         

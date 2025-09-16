@@ -63,8 +63,14 @@ interface ChatState {
       inProgress: boolean
     ) => void;
 
+    loadPendingRequests: (sessions: ChatSession[]) => void;
     addPendingRequest: (session: ChatSession) => void;
+    updatePendingRequest: (sessionId: string, updates: Partial<ChatSession>) => void;
     removePendingRequest: (sessionId: string) => void;
+
+    // Message read status
+    markMessagesAsSeenByAgent: (sessionId: string, timestamp: string) => void;
+    markMessagesAsSeenByCustomer: (sessionId: string, timestamp: string) => void;
 
     // TODO: Add more actions for sending messages, accepting chats via WebSocket
     // clearChatState: () => void; // For logout or re-initialization
@@ -236,12 +242,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
           },
         };
       }),
+    loadPendingRequests: (sessions) => set({ pendingRequests: sessions }),
     addPendingRequest: (session) =>
       set((state) => ({
         pendingRequests: [
           ...state.pendingRequests.filter((s) => s._id !== session._id),
           session,
         ],
+      })),
+    updatePendingRequest: (sessionId, updates) =>
+      set((state) => ({
+        pendingRequests: state.pendingRequests.map((session) =>
+          session._id === sessionId ? { ...session, ...updates } : session
+        ),
       })),
     removePendingRequest: (sessionId) =>
       set((state) => ({
@@ -280,6 +293,59 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
         return state; // No change needed
       }),
+    
+    markMessagesAsSeenByAgent: (sessionId, timestamp) =>
+      set((state) => {
+        if (!state.activeSessions[sessionId]) return state;
+        
+        const timestampMs = new Date(timestamp).getTime();
+        
+        // Mark all messages before the timestamp as read by agent
+        const updatedMessages = state.activeSessions[sessionId].messages.map(message => {
+          const messageTimestampMs = new Date(message.timestamp).getTime();
+          if (messageTimestampMs <= timestampMs) {
+            return { ...message, readByAgent: true };
+          }
+          return message;
+        });
+
+        return {
+          activeSessions: {
+            ...state.activeSessions,
+            [sessionId]: {
+              ...state.activeSessions[sessionId],
+              messages: updatedMessages,
+            },
+          },
+        };
+      }),
+
+    markMessagesAsSeenByCustomer: (sessionId, timestamp) =>
+      set((state) => {
+        if (!state.activeSessions[sessionId]) return state;
+        
+        const timestampMs = new Date(timestamp).getTime();
+        
+        // Mark all messages before the timestamp as read by customer
+        const updatedMessages = state.activeSessions[sessionId].messages.map(message => {
+          const messageTimestampMs = new Date(message.timestamp).getTime();
+          if (messageTimestampMs <= timestampMs) {
+            return { ...message, readByCustomer: true };
+          }
+          return message;
+        });
+
+        return {
+          activeSessions: {
+            ...state.activeSessions,
+            [sessionId]: {
+              ...state.activeSessions[sessionId],
+              messages: updatedMessages,
+            },
+          },
+        };
+      }),
+    
     // clearChatState: () => set(initialState),
   },
 }));
@@ -300,6 +366,7 @@ export const usePendingChatRequests = () =>
   useChatStore((state) => state.pendingRequests);
 export const useSelectedChatSessionId = () =>
   useChatStore((state) => state.selectedSessionId);
+// Memoize actions selector to prevent unnecessary re-renders
 export const useChatActions = () => useChatStore((state) => state.actions);
 export const useIsBookingInProgress = (sessionId: string) =>
   useChatStore((state) => state.bookingInProgress.includes(sessionId));

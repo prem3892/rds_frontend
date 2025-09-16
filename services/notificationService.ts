@@ -307,6 +307,7 @@ class NotificationService {
         ? session.customerId?.name || "Customer"
         : "Customer";
 
+    const isPriorityChat = session.priorityNotificationSentCount > 0;
     const notificationTag = `chat-request-${session._id}`;
     
     // Set up click handler if provided
@@ -317,12 +318,17 @@ class NotificationService {
     }
 
     await this.showNotification({
-      title: `New chat request from ${customerName}`,
-      body: `New message from ${customerName}`, // Generic message, don't show actual content
+      title: isPriorityChat 
+        ? `PRIORITY chat request from ${customerName}` 
+        : `New chat request from ${customerName}`,
+      body: isPriorityChat 
+        ? `This chat has been waiting for a while and needs immediate attention!` 
+        : `New message from ${customerName}`,
       tag: notificationTag,
       data: {
         sessionId: session._id,
         customerName,
+        isPriority: isPriorityChat,
       },
       icon: "/convoia-logo.svg",
       requireInteraction: true,

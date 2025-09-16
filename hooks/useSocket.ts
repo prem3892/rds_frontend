@@ -7,6 +7,9 @@ import { useVisitorActions } from "@/stores/visitor";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { ChatMessage, VisitorActivityEvent } from "@/types";
+import { toast } from "sonner";
+import { isLocalStatusChangeActive } from "@/lib/status-change-tracker";
+import { AGENTS_QUERY_KEY, queryClient } from "@/lib/api";
 
 // Hook for initializing the socket only once
 export function useSocketInitializer() {
@@ -34,12 +37,10 @@ export function useSocketInitializer() {
             chatActions.setConnected(data);
             break;
           case "authenticated":
-            // When authenticated, set the online status from the persisted state
-            const currentOnlineStatus = useAuthStore.getState().isOnline;
-            if (currentOnlineStatus) {
-              // If the user was online before, set them online again
-              socketService.setOnlineStatus(true);
-            }
+            // Authentication successful - no automatic status restoration
+            // The user's online Zstatus will remain as stored in ustand
+            // They can manually change it if needed without triggering server notifications
+            console.log("Socket authenticated successfully");
             break;
           case "authFailed":
             // Handle auth failed (could show toast here)
@@ -84,6 +85,17 @@ export function useSocketInitializer() {
             // This handles status changes from other devices
             authActions.setOnlineStatus(data.isOnline);
             console.log(`Online status synchronized from server: ${data.isOnline ? "Online" : "Offline"}`);
+            
+            // Invalidate agent profile query now that server has confirmed the status change
+            queryClient.invalidateQueries({ queryKey: [AGENTS_QUERY_KEY, "me"] });
+            
+            // Only show toast notification if this was NOT a local change
+            // This prevents duplicate notifications on the device that initiated the change
+            if (!isLocalStatusChangeActive()) {
+              toast.info('Status updated', {
+                description: 'Your status has been changed to ' + (data.isOnline ? 'Online' : 'Offline') + ' from another device or by Admin',
+              });
+            }
             break;
           case "agentPoolStatusUpdate":
             // Handle agent pool status updates (this might include online status changes)
@@ -135,11 +147,37 @@ export function useSocketInitializer() {
             break;
           case "customerDisconnectedFromChat":
             // Handle customer disconnection - could show a notification or update UI
+           toast.info('Customer disconnected from chat', {
+            description: `Customer ${data.customerName} disconnected from chat ${data.chatSessionId}`,
+           });
             console.log(`Customer ${data.customerName} disconnected from chat ${data.chatSessionId}`);
             break;
           case "customerReconnectedToChat":
             // Handle customer reconnection - could show a notification or update UI
             console.log(`Customer ${data.customerName} reconnected to chat ${data.chatSessionId}`);
+            break;
+          case "server:priority_chat_notification":
+            // Handle priority chat notification - update the pending request with priority status
+            console.log("Priority chat notification received:", data);
+            chatActions.updatePendingRequest(data._id, data);
+            // Show priority chat notification
+            showChatRequestNotification(data).catch(console.error);
+            showChatRequestToast(data);
+            break;
+          case "server:message_seen_by_agent":
+            // Handle message seen by agent acknowledgment from server
+            console.log("Messages seen by agent:", data);
+            chatActions.markMessagesAsSeenByAgent(data.chatSessionId, data.timestamp);
+            break;
+          case "server:messages_read_ack":
+            // Handle read acknowledgment for the agent who triggered the read
+            // console.log("Messages read acknowledgment:", data);
+            chatActions.markMessagesAsSeenByAgent(data.chatSessionId, data.timestamp);
+            break;
+          case "server:message_seen_by_customer":
+            // Handle message seen by customer acknowledgment from server
+            console.log("Message seen by customer:", data);
+            chatActions.markMessagesAsSeenByCustomer(data.chatSessionId, data.timestamp);
             break;
         }
       });
@@ -214,6 +252,13 @@ export function useSocketOperations() {
     []
   );
 
+  const markMessagesAsRead = useCallback(
+    (payload: { chatSessionId: string; messageId: string }) => {
+      return socketService.markMessagesAsRead(payload);
+    },
+    []
+  );
+
   return {
     sendMessage,
     acceptChat,
@@ -222,6 +267,7 @@ export function useSocketOperations() {
     sendTypingStop,
     endChat,
     bookCustomer,
+    markMessagesAsRead,
     isConnected: socketService.isConnected,
     socket: socketService.instance,
   };

@@ -89,6 +89,7 @@ export const REDIRECTS = {
 export const COOKIE_NAMES = {
   AUTH_TOKEN: 'auth-token',
   REFRESH_TOKEN: 'refresh-token',
+  ONLINE_STATUS: 'online-status',
 } as const;
 
 export const HEADERS = {

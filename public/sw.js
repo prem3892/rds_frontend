@@ -22,6 +22,7 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   const { sessionId, customerName } = event.notification.data || {};
+  const tag = event.notification.tag;
 
   event.waitUntil(
     (async () => {
@@ -38,8 +39,11 @@ self.addEventListener('notificationclick', (event) => {
           client.focus();
           client.postMessage({
             type: 'NOTIFICATION_CLICKED',
-            sessionId,
-            customerName,
+            tag: tag,
+            data: {
+              sessionId,
+              customerName,
+            },
           });
           return;
         }
@@ -59,8 +63,11 @@ self.addEventListener('notificationclick', (event) => {
           setTimeout(() => {
             newClient.postMessage({
               type: 'NOTIFICATION_CLICKED',
-              sessionId,
-              customerName,
+              tag: tag,
+              data: {
+                sessionId,
+                customerName,
+              },
             });
           }, 1000);
         }

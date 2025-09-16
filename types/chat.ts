@@ -21,6 +21,16 @@ export interface ChatSession {
         timezone?: string;
         timestamp?: string;
       };
+      ipInfo: {
+        clientIp: string,        // Actual client IP
+        country?: string,        // Country code (US, GB, etc.)
+        city?: string,          // City name
+        cfRay?: string,         // Cloudflare Ray ID
+        isCloudflare: boolean,  // Whether request came through Cloudflare
+        proxyChain?: string[],  // Full proxy chain if available
+        timestamp: Date,        // When IP was captured
+        isPrivate: boolean      // Whether IP is from private network
+      },      
       currentPageUrl?: string;
       initialDomain?: string;
     };
@@ -90,6 +100,7 @@ export interface PaginatedResponse<T> {
 // From GET /chat/sessions/:sessionId/messages
 export interface ChatMessageContent {
   text?: string;
+  type?: string; // For customer messages
   url?: string; // For images/files
   filename?: string;
   mimetype?: string;
@@ -97,17 +108,26 @@ export interface ChatMessageContent {
   [key: string]: any; // Allow other properties for different message types
 }
 
+export interface AgentInfo {
+  fullName: string;
+  profilePicture: string;
+}
+
 export interface ChatMessage {
   _id: string;
+  id?: string; // Some responses include this field
   readByCustomer: boolean;
   readByAgent: boolean;
   chatSessionId: string;
   senderId: string; // Customer ID, Agent ID, or "SYSTEM"
   senderType: "CUSTOMER" | "AGENT" | "SYSTEM";
+  messageType: "TEXT" | "IMAGE" | "FILE"; // New field from API response
   content: ChatMessageContent;
   timestamp: string; // ISO 8601 Date string
-  createdAt: string; // ISO 8601 Date string
+  createdAt?: string; // ISO 8601 Date string
   updatedAt: string; // ISO 8601 Date string
+  __v?: number; // MongoDB version field
+  agentInfo?: AgentInfo; // New field for agent messages
 }
 
 // For GET /chat/sessions/:sessionId/messages query parameters
@@ -120,4 +140,25 @@ export interface GetMessagesQueryDto {
 export interface SendMessageDto {
   chatSessionId: string;
   messageContent: ChatMessageContent;
+}
+
+// --- Chat Initiate API Types ---
+export interface InitiateChatRequest {
+  customerId: string;
+}
+
+export interface InitiateChatResponse {
+  chatSessionId: string;
+  status: "ACTIVE";
+  customer: {
+    id: string;
+    name: string;
+  };
+  widget: {
+    id: string;
+    name: string;
+    welcomeMessage: string;
+  };
+  createdAt: string;
+  message: string;
 }

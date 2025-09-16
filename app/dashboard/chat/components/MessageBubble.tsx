@@ -4,8 +4,8 @@ import { ChatMessage } from "@/types";
 import { useCurrentUser } from "@/stores/auth";
 import { Check, CheckCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useGetMyAgentProfile } from "@/lib/agent.api";
 import { useChatStore } from "@/stores/chat";
+import { cn, getColorFromString } from "@/lib/utils";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -16,7 +16,6 @@ interface MessageBubbleProps {
 
 const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = true, isFirstInGroup = true }: MessageBubbleProps) => {
   const currentUser = useCurrentUser();
-  const { data: agentProfile } = useGetMyAgentProfile();
   const selectedSession = useChatStore((state) => {
     const sessionId = state.selectedSessionId;
     return sessionId ? state.activeSessions[sessionId] : null;
@@ -42,26 +41,33 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
     return { name, initials };
   };
 
-  // Get agent info for avatar
+  // Get agent info for avatar from message
   const getAgentInfo = () => {
-    if (!agentProfile) return { name: "Agent", initials: "A", profilePicture: null };
-    
-    const name = `${agentProfile.user.firstName} ${agentProfile.user.lastName}`;
-    const initials = `${agentProfile.user.firstName.charAt(0)}${agentProfile.user.lastName.charAt(0)}`;
-    
-    // Get profile picture URL
-    let profilePicture = null;
-    if (agentProfile.profilePicture) {
-      if (agentProfile.profilePicture.startsWith('http')) {
-        profilePicture = agentProfile.profilePicture;
-      } else {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
-        const SERVER_BASE_URL = API_BASE_URL.replace('/api/v1', '');
-        profilePicture = `${SERVER_BASE_URL}${agentProfile.profilePicture}`;
+    // Use agentInfo from the message if available (for agent messages)
+    if (message.agentInfo) {
+      const name = message.agentInfo.fullName;
+      const nameParts = name.split(' ');
+      const initials = nameParts.length >= 2 
+        ? `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`
+        : name.charAt(0);
+      
+      // Get profile picture URL
+      let profilePicture = null;
+      if (message.agentInfo.profilePicture) {
+        if (message.agentInfo.profilePicture.startsWith('http')) {
+          profilePicture = message.agentInfo.profilePicture;
+        } else {
+          const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+          const SERVER_BASE_URL = API_BASE_URL.replace('/api/v1', '');
+          profilePicture = `${SERVER_BASE_URL}${message.agentInfo.profilePicture}`;
+        }
       }
+      
+      return { name, initials, profilePicture };
     }
     
-    return { name, initials, profilePicture };
+    // Fallback for messages without agentInfo
+    return { name: "Agent", initials: "A", profilePicture: null };
   };
 
   const customerInfo = getCustomerInfo();
@@ -99,7 +105,10 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
             {isCustomer ? (
               <>
                 <AvatarImage src={undefined} />
-                <AvatarFallback className="text-xs bg-slate-200 text-slate-700">
+                <AvatarFallback className={cn(
+                  "text-xs text-white font-medium",
+                  getColorFromString(customerInfo.name)
+                )}>
                   {customerInfo.initials}
                 </AvatarFallback>
               </>
@@ -168,7 +177,7 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
                     <Check className="w-3 h-3 text-blue-200" />
                   )}
                   <span className="text-xs text-blue-200">
-                    {message.readByCustomer ? "Read" : "Sent"}
+                    {message.readByCustomer ? "Seen" : "Sent"}
                   </span>
                 </div>
               )}

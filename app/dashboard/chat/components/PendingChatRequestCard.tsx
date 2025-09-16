@@ -52,9 +52,15 @@ const PendingChatRequestCard = ({
     return () => clearInterval(interval);
   }, [session.createdAt]);
 
+  const isPriorityChat = session.priorityNotificationSentCount > 0;
+
   return (
     <div
-      className="mb-2 p-3 hover:shadow-md transition-shadow cursor-pointer border border-green-200 rounded-lg bg-white relative"
+      className={`mb-2 p-3 hover:shadow-md transition-shadow cursor-pointer border rounded-lg relative ${
+        isPriorityChat 
+          ? "border-red-300 bg-red-50 hover:bg-red-100" 
+          : "border-green-200 bg-white"
+      }`}
       onClick={() => onAccept(session._id)}
     >
       <div className="flex justify-between w-full items-start mb-2">
@@ -71,16 +77,29 @@ const PendingChatRequestCard = ({
             })}
           </div>
         </div>
-        <Badge className="bg-green-500 text-white text-xs px-2 py-1 rounded-md ml-2">
-          NEW
-        </Badge>
+        <div className="flex flex-col gap-1 ml-2">
+          {isPriorityChat && (
+            <Badge className="bg-red-500 text-white text-xs px-2 py-1 rounded-md">
+              PRIORITY
+            </Badge>
+          )}
+          <Badge className={`text-white text-xs px-2 py-1 rounded-md ${
+            isPriorityChat ? "bg-orange-500" : "bg-green-500"
+          }`}>
+            NEW
+          </Badge>
+        </div>
       </div>
       
       {/* Continuous Timer in bottom right */}
-      <div className="absolute bottom-2 right-2">
-        <div className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
+      <div className=" flex items-center justify-end">
+        <span className={`text-xs font-mono px-2 py-1 rounded ${
+          isPriorityChat 
+            ? "text-red-600 bg-red-100 border border-red-200" 
+            : "text-gray-500 bg-gray-100"
+        }`}>
           {elapsedTime}
-        </div>
+        </span>
       </div>
     </div>
   );
