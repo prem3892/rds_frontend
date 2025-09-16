@@ -1,4 +1,5 @@
 // types/visitor.ts
+import { CurrentVisitorData } from "@/lib/visitor.api";
 
 export interface VisitorActivityEvent {
   customerId: string;
@@ -147,59 +148,6 @@ export function convertApiDataToVisitorInfo(
   };
 }
 
-// New type for the current visitors API
-export interface CurrentVisitorData {
-  customerId: string;
-  widgetId: string;
-  domain: string;
-  name: string;
-  status: "connected" | "disconnected" | "reconnected";
-  lastActivity: string;
-  connectedAt: string;
-  metadata?: {
-    browserInfo?: {
-      userAgent?: string;
-      language?: string;
-      platform?: string;
-      cookieEnabled?: boolean;
-      screenResolution?: string;
-      timezone?: string;
-      timestamp?: string;
-    };
-    currentPageUrl?: string;
-    initialDomain?: string;
-    clientFingerprint?: string;
-    ipInfo?: {
-      // clientIp?: string;
-      // isCloudflare?: boolean;
-      // proxyChain?: any[];
-      // timestamp?: string;
-      // isPrivate?: boolean;
-      clientIp: string,        // Actual client IP
-      country?: string,        // Country code (US, GB, etc.)
-      city?: string,          // City name
-      cfRay?: string,         // Cloudflare Ray ID
-      isCloudflare: boolean,  // Whether request came through Cloudflare
-      proxyChain?: string[],  // Full proxy chain if available
-      timestamp: Date,        // When IP was captured
-      isPrivate: boolean 
-    };
-    [key: string]: any;
-  };
-  fingerprint?: string;
-  currentPageUrl: string;
-  browserInfo?: {
-    userAgent?: string;
-    language?: string;
-    platform?: string;
-    cookieEnabled?: boolean;
-    screenResolution?: string;
-    timezone?: string;
-    timestamp?: string;
-  };
-  email?: string;
-  phone?: string;
-}
 
 // Utility function to convert new current visitors API data to VisitorInfo
 export function convertCurrentVisitorDataToVisitorInfo(

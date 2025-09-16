@@ -8,10 +8,9 @@ import {
   VisitorStatus,
   ApiVisitorData,
   convertApiDataToVisitorInfo,
-  CurrentVisitorData,
   convertCurrentVisitorDataToVisitorInfo,
 } from "@/types/visitor";
-import { VisitorSyncResponse, CurrentVisitorsResponse } from "@/lib/visitor.api";
+import { VisitorSyncResponse, CurrentVisitorsResponse, CurrentVisitorData } from "@/lib/visitor.api";
 
 interface VisitorState {
   visitors: Record<string, VisitorInfo>; // customerId -> VisitorInfo
