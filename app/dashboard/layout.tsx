@@ -4,6 +4,8 @@ import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper";
 import { GlobalSocketInitializer } from "@/hooks/useSocket";
 import { useTokenRefresh } from "@/hooks/useTokenRefresh";
 import { useCurrentUser, useHasHydrated } from "@/stores/auth";
+import CustomerInactivityAlertDialog from "@/components/layout/customer-inactivity-alert-dialog";
+import { customerInactivityEvents, type CustomerInactivityData } from "@/lib/customer-inactivity-events";
 import { useEffect, useState } from "react";
 
 export default function DashboardLayout({
@@ -14,9 +16,23 @@ export default function DashboardLayout({
   const currentUser = useCurrentUser();
   const hasHydrated = useHasHydrated();
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Customer inactivity alert state
+  const [alertData, setAlertData] = useState<CustomerInactivityData | null>(null);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   // Initialize token refresh
   useTokenRefresh();
+
+  // Listen for customer inactivity events
+  useEffect(() => {
+    const removeListener = customerInactivityEvents.addListener((data) => {
+      setAlertData(data);
+      setIsAlertOpen(true);
+    });
+
+    return removeListener;
+  }, []);
 
   // Initialize the layout after hydration
   useEffect(() => {
@@ -135,6 +151,17 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-muted/40 overflow-hidden mobile-no-overflow">
       <GlobalSocketInitializer /> {/* Global persistent socket */}
       <MainLayoutWrapper>{children}</MainLayoutWrapper>
+      
+      {/* Customer Inactivity Alert Dialog */}
+      {alertData && (
+        <CustomerInactivityAlertDialog
+          open={isAlertOpen}
+          onOpenChange={setIsAlertOpen}
+          message={alertData.message}
+          customerName={alertData.customerName}
+          chatSessionId={alertData.chatSessionId}
+        />
+      )}
     </div>
   );
 }

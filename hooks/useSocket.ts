@@ -9,7 +9,8 @@ import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { ChatMessage, VisitorActivityEvent } from "@/types";
 import { toast } from "sonner";
 import { isLocalStatusChangeActive } from "@/lib/status-change-tracker";
-import { AGENTS_QUERY_KEY, queryClient } from "@/lib/api";
+import { AGENTS_QUERY_KEY, queryClient, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY } from "@/lib/api";
+import { customerInactivityEvents } from "@/lib/customer-inactivity-events";
 
 // Hook for initializing the socket only once
 export function useSocketInitializer() {
@@ -81,20 +82,38 @@ export function useSocketInitializer() {
             chatActions.removePendingRequest(data.chatSessionId);
             break;
           case "onlineStatusUpdated":
-            // Update the online status in the store and persist it
-            // This handles status changes from other devices
-            authActions.setOnlineStatus(data.isOnline);
-            console.log(`Online status synchronized from server: ${data.isOnline ? "Online" : "Offline"}`);
-            
-            // Invalidate agent profile query now that server has confirmed the status change
-            queryClient.invalidateQueries({ queryKey: [AGENTS_QUERY_KEY, "me"] });
-            
-            // Only show toast notification if this was NOT a local change
-            // This prevents duplicate notifications on the device that initiated the change
-            if (!isLocalStatusChangeActive()) {
-              toast.info('Status updated', {
-                description: 'Your status has been changed to ' + (data.isOnline ? 'Online' : 'Offline') + ' from another device or by Admin',
-              });
+            // Handle the new payload structure with success/error cases
+            if (data.success) {
+              // Success case: Update the online status in the store and persist it
+              authActions.setOnlineStatus(data.isOnline!);
+              console.log(`Online status synchronized from server: ${data.isOnline ? "Online" : "Offline"}`);
+              
+              // Invalidate agent profile query now that server has confirmed the status change
+              queryClient.invalidateQueries({ queryKey: [AGENTS_QUERY_KEY, "me"] });
+              
+              // Show appropriate toast based on whether this was a local change or from another device
+              if (isLocalStatusChangeActive()) {
+                // This was a local change - show success toast
+                toast.success('Status updated', {
+                  description: `Your status has been changed to ${data.isOnline ? 'Online' : 'Offline'}`,
+                });
+              } else {
+                // This was from another device or admin - show info toast
+                toast.info('Status updated', {
+                  description: 'Your status has been changed to ' + (data.isOnline ? 'Online' : 'Offline') + ' from another device or by Admin',
+                });
+              }
+            } else {
+              // Error case: Show error message and don't update status
+              console.error('Failed to update online status:', data.error);
+              
+              // Only show error toast if this was a local change
+              // Don't show error toast for changes from other devices
+              if (isLocalStatusChangeActive()) {
+                toast.error('Status update failed', {
+                  description: data.error || 'Failed to update online status',
+                });
+              }
             }
             break;
           case "agentPoolStatusUpdate":
@@ -178,6 +197,30 @@ export function useSocketInitializer() {
             // Handle message seen by customer acknowledgment from server
             console.log("Message seen by customer:", data);
             chatActions.markMessagesAsSeenByCustomer(data.chatSessionId, data.timestamp);
+            break;
+          case "server:customer_inactive":
+            // Handle customer inactivity notification
+            console.log("Customer inactive:", data);
+            
+            // Remove the session from active sessions
+            chatActions.removeActiveSession(data.chatSessionId);
+            
+            // Invalidate active chat sessions API to refresh the data
+            queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY] });
+            
+            // Show toast notification about customer inactivity
+            // toast.info('Chat Session Ended', {
+            //   description: data.message,
+            // });
+            
+            // Emit global event for modal dialog
+            customerInactivityEvents.emit({
+              chatSessionId: data.chatSessionId,
+              message: data.message,
+              customerId: data.customerId,
+              customerName: data.customerName,
+              sessionStatus: data.sessionStatus,
+            });
             break;
         }
       });

@@ -11,6 +11,7 @@ import {
   AgentProfile,
   useGetAllAgents,
   useSetAgentStatusMutation,
+  useBlockAgentMutation,
 } from "@/lib/agent.api";
 import { useGetAllDepartments } from "@/lib/department.api";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,8 @@ export default function AgentsPage() {
   const [isCreateAgentDialogOpen, setIsCreateAgentDialogOpen] = useState(false);
   const [isEditAgentDialogOpen, setIsEditAgentDialogOpen] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
+  const [statusLoadingAgentId, setStatusLoadingAgentId] = useState<string | null>(null);
+  const [blockLoadingAgentId, setBlockLoadingAgentId] = useState<string | null>(null);
   const [agentFilters, setAgentFilters] = useState<AgentFilters>({
     search: "",
     department: "all",
@@ -96,12 +99,31 @@ export default function AgentsPage() {
       toast("Status Updated", {
         description: "Agent online status has been updated.",
       });
+      setStatusLoadingAgentId(null);
       queryClient.invalidateQueries({ queryKey: [AGENTS_QUERY_KEY] });
     },
     onError: (error) => {
       toast.error("Status Update Failed", {
         description: error.message,
       });
+      setStatusLoadingAgentId(null);
+    },
+  });
+
+  const blockAgentMutation = useBlockAgentMutation({
+    onSuccess: (updatedAgent) => {
+      const action = updatedAgent.isBlocked ? "blocked" : "unblocked";
+      toast("Agent Updated", {
+        description: `Agent has been ${action} successfully.`,
+      });
+      setBlockLoadingAgentId(null);
+      queryClient.invalidateQueries({ queryKey: [AGENTS_QUERY_KEY] });
+    },
+    onError: (error) => {
+      toast.error("Block Status Update Failed", {
+        description: error.message,
+      });
+      setBlockLoadingAgentId(null);
     },
   });
 
@@ -157,8 +179,18 @@ export default function AgentsPage() {
   };
 
   const handleToggleStatus = (agent: AgentProfile) => {
+    setStatusLoadingAgentId(agent._id);
     setAgentStatusMutation.mutate({
-      isOnline: !agent.isOnline,
+      agentId: agent._id,
+      data: { isOnline: !agent.isOnline },
+    });
+  };
+
+  const handleBlockAgent = (agent: AgentProfile, isBlocked: boolean) => {
+    setBlockLoadingAgentId(agent._id);
+    blockAgentMutation.mutate({
+      agentId: agent._id,
+      data: { isBlocked },
     });
   };
 
@@ -276,6 +308,9 @@ export default function AgentsPage() {
               departments={departments || []}
               onEdit={handleEditAgent}
               onToggleStatus={handleToggleStatus}
+              onBlockAgent={handleBlockAgent}
+              blockLoadingAgentId={blockLoadingAgentId}
+              statusLoadingAgentId={statusLoadingAgentId}
             />
           </TabsContent>
 

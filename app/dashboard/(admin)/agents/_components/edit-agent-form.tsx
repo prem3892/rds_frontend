@@ -21,7 +21,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import {
   AgentProfile,
   AGENTS_QUERY_KEY,
@@ -79,7 +78,6 @@ const agentFormSchema = z.object({
   website: z.string().url().optional().or(z.literal("")),
   departmentIds: z.array(z.string()),
   domainAccess: z.array(z.string()),
-  isOnline: z.boolean(),
   maxConcurrentChats: z
     .number()
     .min(1, { message: "Must handle at least 1 chat." }),
@@ -160,14 +158,6 @@ const EditAgentFormSkeleton = () => (
         <Skeleton className="h-3 w-64" />
       </div>
 
-      {/* Online Status */}
-      <div className="flex items-center justify-between border p-3 rounded-lg">
-        <div className="space-y-1">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-3 w-40" />
-        </div>
-        <Skeleton className="h-6 w-11 rounded-full" />
-      </div>
     </div>
 
     {/* Agent Shifts Section */}
@@ -262,7 +252,6 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
       website: "",
       departmentIds: [],
       domainAccess: [],
-      isOnline: false,
       maxConcurrentChats: 3,
       shifts: [],
       timezone: "America/New_York",
@@ -326,7 +315,6 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
         domainAccess: values.domainAccess
           .filter((domain) => domain.trim() !== "")
           .map((d) => d.trim()),
-        isOnline: values.isOnline,
         maxConcurrentChats: values.maxConcurrentChats,
         // Only include optional fields if they have values
         ...(values.phoneNo && values.phoneNo.trim() && { phoneNo: values.phoneNo.trim() }),
@@ -364,7 +352,6 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
         website: "",
         departmentIds: [],
         domainAccess: [],
-        isOnline: false,
         maxConcurrentChats: 3,
         shifts: [],
         timezone: "America/New_York",
@@ -399,12 +386,10 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
         website: agent.website || "",
         departmentIds: deptIds,
         domainAccess: agent.domainAccess || [],
-        isOnline: agent.isOnline || false,
         maxConcurrentChats: agent.maxConcurrentChats || 3,
         shifts: agent.shifts || [],
         timezone: agent.timezone || "America/New_York",
         profilePicture: agent.profilePicture || "",
-        // password: "", // Always reset password field
       });
 
       // Set the profile picture URL for display
@@ -681,26 +666,6 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
                 )}
               />
 
-              <FormField
-                name="isOnline"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Online Status</FormLabel>
-                      <FormDescription>
-                        Set agent as online or offline.
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
             </div>
 
             {/* Agent Shifts */}

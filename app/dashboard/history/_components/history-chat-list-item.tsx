@@ -10,56 +10,19 @@ import {
   Smartphone, 
   Tablet
 } from "lucide-react";
-import { rawTimeZones } from '@vvo/tzdb';
 import React from "react";
 
 import { FaChrome, FaFirefox, FaSafari, FaEdge, FaOpera, FaQuestionCircle, FaWindows, FaTablet } from 'react-icons/fa';
 import { SiApple, SiLinux, SiAndroid, SiMacos } from 'react-icons/si';
+import { getCountryFlagFromSession } from '@/lib/flag-utils';
 
 interface HistoryChatListItemProps {
   session: ChatSession;
   isSelected: boolean;
   onSelect: () => void;
 }
-const countryCodeToEmoji = (code: string) => {
-  try {
-    const OFFSET = 127397;
-    const codePoints = code.toUpperCase().split('').map(char => char.charCodeAt(0) + OFFSET);
-  console.log(codePoints, "codePoints");
-    return String.fromCodePoint(...codePoints);
-  } catch (error) {
-    return "🏳️"; // Return neutral flag if conversion fails
-  }
-};
 const HistoryChatListItem = React.memo(
   ({ session, isSelected, onSelect }: HistoryChatListItemProps) => {
- 
-    console.log(session, "session");
-
-    const getCountryFlag = (timezone: string) => {
-      try {
-        // Get the timezone from the session data
-        // const timezone = session.customerId?.metadata?.browserInfo?.timezone;
-        console.log(timezone, "timezone");
-        if (!timezone) return "🏳️"; // Return a neutral flag if no timezone
-
-        // Find the timezone in the database
-        const tz = rawTimeZones.find(t =>  t.group.includes(timezone));
-        const countryCode = tz?.countryCode;
-        console.log(tz, "tz");
-        console.log(countryCode, "countryCode");
-        
-        // If we found a country code, convert it to an emoji
-        if (countryCode && countryCode.length === 2) {
-          console.log(countryCode, "countryCode");
-          return countryCodeToEmoji(countryCode);
-        }
-        
-        return "🏳️"; // Return a neutral flag as a fallback
-      } catch (error) {
-        return "🏳️"; // Return neutral flag if anything goes wrong
-      }
-    };
     const getBrowserIcon = (userAgent?: string) => {
       if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
       
@@ -137,7 +100,7 @@ const HistoryChatListItem = React.memo(
 
 
     const getCountry = () => {
-      return session.customerId?.metadata?.ipInfo.country || "N/A";
+      return session.customerId?.metadata?.ipInfo.country ;
     }
 
     const getCity = () => {
@@ -180,7 +143,7 @@ const HistoryChatListItem = React.memo(
                 {getCustomerName()}
               </span>
               <span className="text-base sm:text-lg flex-shrink-0">
-                {getCountryFlag(session.customerId?.metadata?.browserInfo?.timezone || "")}
+                {getCountryFlagFromSession(session)}
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}
@@ -209,8 +172,10 @@ const HistoryChatListItem = React.memo(
             )} */}
             <div className="flex items-center gap-2">
               <Badge  className="rounded-full">IP: {getIpInfo()}</Badge>
-              <Badge  className="rounded-full">Country: {getCountry()}</Badge>
-              <Badge  className="rounded-full">City: {getCity()}</Badge>
+             {
+              session.customerId?.metadata?.ipInfo.country &&
+             <Badge  className="rounded-full">Country: {getCountry()}</Badge>}
+              {/* <Badge  className="rounded-full">City: {getCity()}</Badge> */}
             </div>
           </div>
 

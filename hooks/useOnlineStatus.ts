@@ -27,27 +27,27 @@ export function useOnlineStatus() {
     // Mark this as a local change to prevent duplicate toast notifications
     markLocalStatusChange();
     
-    // Update the local store first (this persists to localStorage)
-    actions.setOnlineStatus(status);
+    // Check if socket is connected before attempting to send
+    if (!socketService.isConnected) {
+      console.warn("Socket not connected. Cannot send status update.");
+      toast.error('Connection failed', {
+        description: 'Unable to connect to server. Please check your internet connection.',
+      });
+      // Clear loading state since we're not waiting for server response
+      // Note: This will be handled by the component's loading state management
+      return;
+    }
     
     // Send the status change to the server via socket
-    // This will trigger notifications to other devices
+    // Do NOT update local status until server confirms
     const success = socketService.setOnlineStatus(status);
     
     if (!success) {
-      console.warn("Failed to send online status to server. Socket may not be connected.");
-      toast.warning('Status update failed', {
-        description: 'Failed to send online status to server. Socket may not be connected.',
-      });
-    } else {
-      // Show immediate confirmation toast for successful status change
-      toast.success('Status updated', {
-        description: `Your status has been changed to ${status ? 'Online' : 'Offline'}`,
-      });
-      // Note: Query invalidation will happen when server confirms via "onlineStatusUpdated" event
+      console.warn("Failed to send online status to server.");
+      // This should not happen if socket is connected, but just in case
+      // Don't show toast here - let the socket error handling show appropriate message
     }
     
-    console.log(`Online status changed to: ${status ? "Online" : "Offline"}`);
 
   }, [actions]);
 

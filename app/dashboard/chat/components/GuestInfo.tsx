@@ -220,7 +220,7 @@ export function GuestInfo({
                     </Avatar>
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">{getCustomerName()}</h3>
-                      <p className="text-sm text-gray-600">Ghāziābād, India</p>
+                      <p className="text-sm text-gray-600">{session.customerId.metadata?.ipInfo.city || ""} {session.customerId.metadata?.ipInfo.country || ""}</p>
                     </div>
                     <Button
                       variant="destructive"
@@ -378,7 +378,9 @@ export function GuestInfo({
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="w-4 h-4 text-gray-500" />
                         <span className="text-gray-600">Region:</span>
-                        <span className="font-medium">Uttar Pradesh</span>
+                       {
+                       session.customerId.metadata?.ipInfo.city &&
+                       <span className="font-medium">{session.customerId.metadata?.ipInfo.city }</span>}
                       </div>
                       
                       {/* <div className="flex items-center gap-2 text-sm">

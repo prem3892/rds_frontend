@@ -46,7 +46,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HomeIcon } from "../icons";
 import { MobileStatusSwitch } from "../mobile-toggle-switch";
 import { Separator } from "../ui/separator";
@@ -110,6 +110,7 @@ export function MainLayoutWrapper({
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isStatusLoading, setIsStatusLoading] = useState(false);
+  const statusUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
   const { data: agentProfile, isLoading, error } = useGetMyAgentProfile();
 
@@ -120,14 +121,30 @@ export function MainLayoutWrapper({
 
   // Listen for online status updates from server
   useEffect(() => {
-    const removeListener = socketService.addListener((event) => {
+    const removeListener = socketService.addListener((event, data) => {
       if (event === "onlineStatusUpdated") {
+        // Clear loading state for both success and error cases
         setIsStatusLoading(false);
+        
+        // Clear the timeout since we got a response
+        if (statusUpdateTimeoutRef.current) {
+          clearTimeout(statusUpdateTimeoutRef.current);
+          statusUpdateTimeoutRef.current = null;
+        }
       }
     });
 
     return () => {
       removeListener();
+    };
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (statusUpdateTimeoutRef.current) {
+        clearTimeout(statusUpdateTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -149,31 +166,15 @@ export function MainLayoutWrapper({
   };
 
   const handleStatusChange = (checked: boolean) => {
-    try {
-      setIsStatusLoading(true);
-
-      // setOnlineStatusMutation.mutateAsync({
-      //   isOnline: checked,
-      // }).catch((error) => {
-      //   console.error('Status update failed:', error);
-      // });
-
-      // Use the new hook which handles both local state and server sync
-      setOnlineStatus(checked);
-    } catch (error) {
-      console.error("Status update failed:", error);
-    } finally {
+    setIsStatusLoading(true);
+    // Use the new hook which handles both local state and server sync
+    setOnlineStatus(checked);
+    
+    // Add a timeout to clear loading state if no response is received
+    // This handles cases where socket is not connected
+    statusUpdateTimeoutRef.current = setTimeout(() => {
       setIsStatusLoading(false);
-    }
-    // Set loading state
-
-    // setOnlineStatusMutation.mutateAsync({
-    //   isOnline: checked,
-    // }).catch((error) => {
-    //   console.error('Status update failed:', error);
-    // });
-
-    // setIsStatusLoading(false);
+    }, 5000); // 5 second timeout
   };
 
   const allMenuItems = [
