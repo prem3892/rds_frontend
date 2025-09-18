@@ -10,7 +10,7 @@ import { ChatMessage, VisitorActivityEvent } from "@/types";
 import { toast } from "sonner";
 import { isLocalStatusChangeActive } from "@/lib/status-change-tracker";
 import { AGENTS_QUERY_KEY, queryClient, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY } from "@/lib/api";
-import { customerInactivityEvents } from "@/lib/customer-inactivity-events";
+import { customerInactivityEvents, chatEndedEvents } from "@/lib/customer-inactivity-events";
 
 // Hook for initializing the socket only once
 export function useSocketInitializer() {
@@ -215,6 +215,30 @@ export function useSocketInitializer() {
             
             // Emit global event for modal dialog
             customerInactivityEvents.emit({
+              chatSessionId: data.chatSessionId,
+              message: data.message,
+              customerId: data.customerId,
+              customerName: data.customerName,
+              sessionStatus: data.sessionStatus,
+            });
+            break;
+          case "server:chat_ended":
+            // Handle chat ended notification
+            console.log("Chat ended:", data);
+            
+            // Remove the session from active sessions
+            chatActions.removeActiveSession(data.chatSessionId);
+            
+            // Invalidate active chat sessions API to refresh the data
+            queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY] });
+            
+            // Show toast notification about chat ending
+            // toast.error('Chat Session Ended', {
+            //   description: data.message,
+            // });
+            
+            // Emit global event for modal dialog
+            chatEndedEvents.emit({
               chatSessionId: data.chatSessionId,
               message: data.message,
               customerId: data.customerId,

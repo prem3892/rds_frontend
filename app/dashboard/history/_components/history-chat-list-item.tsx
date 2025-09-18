@@ -14,7 +14,7 @@ import React from "react";
 
 import { FaChrome, FaFirefox, FaSafari, FaEdge, FaOpera, FaQuestionCircle, FaWindows, FaTablet } from 'react-icons/fa';
 import { SiApple, SiLinux, SiAndroid, SiMacos } from 'react-icons/si';
-import { getCountryFlagFromSession } from '@/lib/flag-utils';
+import ReactCountryFlag from "react-country-flag";
 
 interface HistoryChatListItemProps {
   session: ChatSession;
@@ -23,6 +23,9 @@ interface HistoryChatListItemProps {
 }
 const HistoryChatListItem = React.memo(
   ({ session, isSelected, onSelect }: HistoryChatListItemProps) => {
+ 
+    console.log(session, "session");
+
     const getBrowserIcon = (userAgent?: string) => {
       if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
       
@@ -58,8 +61,10 @@ const HistoryChatListItem = React.memo(
     };
 
     const getTimeDisplay = () => {
-      if (session.lastMessageAt) {
-        const date = parseISO(session.lastMessageAt);
+      const messageTime = session.lastMessageAt ? session.lastMessageAt : session.initiatedAt;
+
+      if (messageTime) {
+        const date = parseISO(messageTime);
         const now = new Date();
         const isToday = date.toDateString() === now.toDateString();
 
@@ -143,7 +148,11 @@ const HistoryChatListItem = React.memo(
                 {getCustomerName()}
               </span>
               <span className="text-base sm:text-lg flex-shrink-0">
-                {getCountryFlagFromSession(session)}
+                <ReactCountryFlag 
+                  countryCode={session.customerId?.metadata?.ipInfo?.country || ""} 
+                  svg 
+                  style={{ width: '20px', height: '15px' }} 
+                />
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}

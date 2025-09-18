@@ -5,7 +5,8 @@ import { GlobalSocketInitializer } from "@/hooks/useSocket";
 import { useTokenRefresh } from "@/hooks/useTokenRefresh";
 import { useCurrentUser, useHasHydrated } from "@/stores/auth";
 import CustomerInactivityAlertDialog from "@/components/layout/customer-inactivity-alert-dialog";
-import { customerInactivityEvents, type CustomerInactivityData } from "@/lib/customer-inactivity-events";
+import ChatEndedAlertDialog from "@/components/layout/chat-ended-alert-dialog";
+import { customerInactivityEvents, chatEndedEvents, type CustomerInactivityData, type ChatEndedData } from "@/lib/customer-inactivity-events";
 import { useEffect, useState } from "react";
 
 export default function DashboardLayout({
@@ -21,6 +22,10 @@ export default function DashboardLayout({
   const [alertData, setAlertData] = useState<CustomerInactivityData | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
 
+  // Chat ended alert state
+  const [chatEndedData, setChatEndedData] = useState<ChatEndedData | null>(null);
+  const [isChatEndedAlertOpen, setIsChatEndedAlertOpen] = useState(false);
+
   // Initialize token refresh
   useTokenRefresh();
 
@@ -29,6 +34,16 @@ export default function DashboardLayout({
     const removeListener = customerInactivityEvents.addListener((data) => {
       setAlertData(data);
       setIsAlertOpen(true);
+    });
+
+    return removeListener;
+  }, []);
+
+  // Listen for chat ended events
+  useEffect(() => {
+    const removeListener = chatEndedEvents.addListener((data) => {
+      setChatEndedData(data);
+      setIsChatEndedAlertOpen(true);
     });
 
     return removeListener;
@@ -160,6 +175,17 @@ export default function DashboardLayout({
           message={alertData.message}
           customerName={alertData.customerName}
           chatSessionId={alertData.chatSessionId}
+        />
+      )}
+
+      {/* Chat Ended Alert Dialog */}
+      {chatEndedData && (
+        <ChatEndedAlertDialog
+          open={isChatEndedAlertOpen}
+          onOpenChange={setIsChatEndedAlertOpen}
+          message={chatEndedData.message}
+          customerName={chatEndedData.customerName}
+          chatSessionId={chatEndedData.chatSessionId}
         />
       )}
     </div>

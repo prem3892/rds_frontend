@@ -15,9 +15,11 @@ import {
   Laptop,
   MonitorIcon
 } from "lucide-react";
+import { rawTimeZones } from '@vvo/tzdb';
+
 import { FaChrome, FaFirefox, FaSafari, FaEdge, FaTablet,FaOpera, FaQuestionCircle, FaWindows } from 'react-icons/fa';
 import {  SiApple, SiLinux, SiAndroid, SiMacos,  SiTableau } from 'react-icons/si'; // Simple Icons for brands
-import { getCountryFlagFromSession } from '@/lib/flag-utils';
+import ReactCountryFlag from "react-country-flag";
 
 
 interface ChatListItemProps {
@@ -28,6 +30,7 @@ interface ChatListItemProps {
   isSelected: boolean;
   onSelect: () => void;
 }
+
 
 const ChatListItem = React.memo(
   ({ session, isSelected, onSelect }: ChatListItemProps) => {
@@ -115,7 +118,11 @@ const ChatListItem = React.memo(
                 {getCustomerName()}
               </span>
               <span className="text-base sm:text-lg flex-shrink-0">
-                {getCountryFlagFromSession(session)}
+                <ReactCountryFlag 
+                  countryCode={session.customerId?.metadata?.ipInfo?.country || ""} 
+                  svg 
+                  style={{ width: '20px', height: '15px' }} 
+                />
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}
