@@ -6,40 +6,36 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useGetMyActiveChatSessions } from "@/lib/chat.api";
 import {
   cn,
   formatRelativeTime,
 } from "@/lib/utils";
-import { 
-  useOnlineVisitorsCount, 
-  useVisitorsArray, 
-  useVisitorActions, 
-  useIsInitialSyncComplete
+import { useCurrentVisitorsInfinite } from "@/lib/visitor.api";
+import { useActiveChatSessions, useChatActions } from "@/stores/chat";
+import {
+  useIsInitialSyncComplete,
+  useOnlineVisitorsCount,
+  useVisitorActions,
+  useVisitorsArray
 } from "@/stores/visitor";
 import { VisitorStatus } from "@/types/visitor";
-import { useVisitorSyncMutation, useCurrentVisitorsInfinite } from "@/lib/visitor.api";
-import { useGetMyActiveChatSessions } from "@/lib/chat.api";
-import { useActiveChatSessions, useChatActions } from "@/stores/chat";
-import ChatListItem from "./ChatListItem";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Apple,
   ChevronDown,
-  Chrome,
   Globe,
-  Search,
-  Users,
+  Loader2,
   Monitor,
-  Smartphone,
-  Tablet,
-  Loader2
+  Search,
+  Users
 } from "lucide-react";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { rawTimeZones } from '@vvo/tzdb';
 import { toast } from "sonner";
+import ChatListItem from "./ChatListItem";
 
-import { FaChrome, FaFirefox, FaSafari, FaEdge, FaTablet,FaOpera, FaQuestionCircle, FaWindows } from 'react-icons/fa';
-import {  SiApple, SiLinux, SiAndroid, SiMacos,  SiTableau } from 'react-icons/si'; // Simple Icons for brands
-import { getCountryFlagFromSession, getCountryFlag } from '@/lib/flag-utils';
+import { FaChrome, FaEdge, FaFirefox, FaOpera, FaQuestionCircle, FaSafari, FaTablet, FaWindows } from 'react-icons/fa';
+import { SiAndroid, SiApple, SiLinux, SiMacos } from 'react-icons/si'; // Simple Icons for brands
 
 
 interface GuestFeedProps {
@@ -51,8 +47,17 @@ interface GuestFeedProps {
 }
 
 
-// Note: For visitors, we still use timezone-based flags since visitor API doesn't include country code yet
-// TODO: Update to use country code from visitor ipInfo once backend provides this data
+const countryCodeToEmoji = (code: string) => {
+  try {
+    const OFFSET = 127397;
+    const codePoints = code.toUpperCase().split('').map(char => char.charCodeAt(0) + OFFSET);
+    return String.fromCodePoint(...codePoints);
+  } catch (error) {
+    return "🏳️"; // Return neutral flag if conversion fails
+  }
+};
+
+
 
 export function GuestFeed({
   className,
@@ -223,13 +228,28 @@ export function GuestFeed({
     );
   };
 
-    // Simplified visitor flag logic - fallback to neutral flag for now
-    // TODO: Remove this once visitor API includes country code in metadata
-    const getVisitorCountryFlag = (timezone: string) => {
-      // For now, return neutral flag since visitor API doesn't provide country code
-      // We could implement timezone-to-country mapping here if needed, but for simplicity
-      // we're just showing neutral flags until backend provides country data
-      return "🏳️";
+    const getCountryFlag = (timezone: string) => {
+      try {
+        // Get the timezone from the session data
+        // const timezone = session.customerId?.metadata?.browserInfo?.timezone;
+        console.log(timezone, "timezone");
+        if (!timezone) return "🏳️"; // Return a neutral flag if no timezone
+
+        // Find the timezone in the database
+        const tz = rawTimeZones.find(t =>  t.group.includes(timezone));
+        const countryCode = tz?.countryCode;
+
+        
+        // If we found a country code, convert it to an emoji
+        if (countryCode && countryCode.length === 2) {
+       
+          return countryCodeToEmoji(countryCode);
+        }
+        
+        return "🏳️"; // Return a neutral flag as a fallback
+      } catch (error) {
+        return "🏳️"; // Return neutral flag if anything goes wrong
+      }
     };
 
   const getBrowserIcon = (userAgent?: string) => {
@@ -367,7 +387,7 @@ export function GuestFeed({
                                 {visitor.name}
                               </span>
                               <span className="text-lg flex-shrink-0">
-                                {getVisitorCountryFlag(visitor.browserInfo.timezone || "")}
+                                {getCountryFlag(visitor.browserInfo.timezone || "")}
                               </span>
                               <div className="flex items-center gap-1 flex-shrink-0">
                                 {getBrowserIcon(visitor.browserInfo.userAgent)}
