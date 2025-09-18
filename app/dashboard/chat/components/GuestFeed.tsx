@@ -38,6 +38,9 @@ import { FaChrome, FaEdge, FaFirefox, FaOpera, FaQuestionCircle, FaSafari, FaTab
 import { SiAndroid, SiApple, SiLinux, SiMacos } from 'react-icons/si'; // Simple Icons for brands
 
 
+import ReactCountryFlag from "react-country-flag";
+
+
 interface GuestFeedProps {
   className?: string;
   maxHeight?: string;
@@ -47,15 +50,6 @@ interface GuestFeedProps {
 }
 
 
-const countryCodeToEmoji = (code: string) => {
-  try {
-    const OFFSET = 127397;
-    const codePoints = code.toUpperCase().split('').map(char => char.charCodeAt(0) + OFFSET);
-    return String.fromCodePoint(...codePoints);
-  } catch (error) {
-    return "🏳️"; // Return neutral flag if conversion fails
-  }
-};
 
 
 
@@ -228,29 +222,6 @@ export function GuestFeed({
     );
   };
 
-    const getCountryFlag = (timezone: string) => {
-      try {
-        // Get the timezone from the session data
-        // const timezone = session.customerId?.metadata?.browserInfo?.timezone;
-        console.log(timezone, "timezone");
-        if (!timezone) return "🏳️"; // Return a neutral flag if no timezone
-
-        // Find the timezone in the database
-        const tz = rawTimeZones.find(t =>  t.group.includes(timezone));
-        const countryCode = tz?.countryCode;
-
-        
-        // If we found a country code, convert it to an emoji
-        if (countryCode && countryCode.length === 2) {
-       
-          return countryCodeToEmoji(countryCode);
-        }
-        
-        return "🏳️"; // Return a neutral flag as a fallback
-      } catch (error) {
-        return "🏳️"; // Return neutral flag if anything goes wrong
-      }
-    };
 
   const getBrowserIcon = (userAgent?: string) => {
       if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
@@ -387,7 +358,7 @@ export function GuestFeed({
                                 {visitor.name}
                               </span>
                               <span className="text-lg flex-shrink-0">
-                                {getCountryFlag(visitor.browserInfo.timezone || "")}
+                                <ReactCountryFlag countryCode={visitor.metadata?.ipInfo?.country || ""} svg style={{ width: '20px', height: '15px' }} />
                               </span>
                               <div className="flex items-center gap-1 flex-shrink-0">
                                 {getBrowserIcon(visitor.browserInfo.userAgent)}

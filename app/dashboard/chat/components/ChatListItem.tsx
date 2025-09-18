@@ -19,6 +19,7 @@ import { rawTimeZones } from '@vvo/tzdb';
 
 import { FaChrome, FaFirefox, FaSafari, FaEdge, FaTablet,FaOpera, FaQuestionCircle, FaWindows } from 'react-icons/fa';
 import {  SiApple, SiLinux, SiAndroid, SiMacos,  SiTableau } from 'react-icons/si'; // Simple Icons for brands
+import ReactCountryFlag from "react-country-flag";
 
 
 interface ChatListItemProps {
@@ -30,40 +31,9 @@ interface ChatListItemProps {
   onSelect: () => void;
 }
 
-const countryCodeToEmoji = (code: string) => {
-  try {
-    const OFFSET = 127397;
-    const codePoints = code.toUpperCase().split('').map(char => char.charCodeAt(0) + OFFSET);
-    return String.fromCodePoint(...codePoints);
-  } catch (error) {
-    return "🏳️"; // Return neutral flag if conversion fails
-  }
-};
 
 const ChatListItem = React.memo(
   ({ session, isSelected, onSelect }: ChatListItemProps) => {
-    const getCountryFlag = (timezone: string) => {
-      try {
-
-        if (!timezone) return "🏳️"; // Return a neutral flag if no timezone
-
-        // Find the timezone in the database
-        const tz = rawTimeZones.find(t =>  t.group.includes(timezone));
-        const countryCode = tz?.countryCode;
-        // console.log(tz, "tz");
-        // console.log(countryCode, "countryCode");
-        
-        // If we found a country code, convert it to an emoji
-        if (countryCode && countryCode.length === 2) {
-          // console.log(countryCode, "countryCode");
-          return countryCodeToEmoji(countryCode);
-        }
-        
-        return "🏳️"; // Return a neutral flag as a fallback
-      } catch (error) {
-        return "🏳️"; // Return neutral flag if anything goes wrong
-      }
-    };
 
 
     const getBrowserIcon = (userAgent?: string) => {
@@ -148,7 +118,11 @@ const ChatListItem = React.memo(
                 {getCustomerName()}
               </span>
               <span className="text-base sm:text-lg flex-shrink-0">
-                {getCountryFlag(session.customerId?.metadata?.browserInfo?.timezone || "")}
+                <ReactCountryFlag 
+                  countryCode={session.customerId?.metadata?.ipInfo?.country || ""} 
+                  svg 
+                  style={{ width: '20px', height: '15px' }} 
+                />
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}
