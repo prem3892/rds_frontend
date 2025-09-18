@@ -210,6 +210,12 @@ class SocketService {
       this.notifyListeners("server:customer_inactive", data);
     });
 
+    // Chat ended event
+    this.socket.on("server:chat_ended", (data: { chatSessionId: string; message: string; customerId: string; customerName: string; sessionStatus: string }) => {
+      console.log("Chat ended notification:", data);
+      this.notifyListeners("server:chat_ended", data);
+    });
+
     return this.socket;
   }
 

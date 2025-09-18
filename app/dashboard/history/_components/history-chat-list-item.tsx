@@ -10,7 +10,6 @@ import {
   Smartphone, 
   Tablet
 } from "lucide-react";
-import { rawTimeZones } from '@vvo/tzdb';
 import React from "react";
 
 import { FaChrome, FaFirefox, FaSafari, FaEdge, FaOpera, FaQuestionCircle, FaWindows, FaTablet } from 'react-icons/fa';
@@ -62,8 +61,10 @@ const HistoryChatListItem = React.memo(
     };
 
     const getTimeDisplay = () => {
-      if (session.lastMessageAt) {
-        const date = parseISO(session.lastMessageAt);
+      const messageTime = session.lastMessageAt ? session.lastMessageAt : session.initiatedAt;
+
+      if (messageTime) {
+        const date = parseISO(messageTime);
         const now = new Date();
         const isToday = date.toDateString() === now.toDateString();
 
