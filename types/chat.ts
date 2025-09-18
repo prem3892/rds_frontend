@@ -57,6 +57,12 @@ export interface ChatSession {
   createdAt: string; // ISO 8601 Date string
   updatedAt: string; // ISO 8601 Date string
   agentLastSeen: string; // ISO 8601 Date string
+  appointmentBooked: boolean;
+  appointmentData?: {
+    date: string; // ISO 8601 Date string
+    notes?: string;
+    bookedAt: string; // ISO 8601 Date string
+  };
 }
 
 export type ChatSessionStatus =

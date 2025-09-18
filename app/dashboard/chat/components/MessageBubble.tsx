@@ -78,15 +78,7 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
       <div className="my-2 text-center">
         <span className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-muted-foreground rounded-full">
           {message.content.text || "System Notification"}
-          {message.content.appointmentDetails && (
-            <span className="block text-xxs">
-              Appointment:{" "}
-              {format(
-                parseISO(message.content.appointmentDetails.appointmentTime),
-                "Pp"
-              )}
-            </span>
-          )}
+        
         </span>
       </div>
     );

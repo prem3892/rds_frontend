@@ -72,7 +72,7 @@ const HistoryChatMessages = ({ messages, isLoading }: HistoryChatMessagesProps) 
               </div>
               
               {/* Messages for this date */}
-              {dateMessages.map((msg) => (
+              {dateMessages.reverse().map((msg) => (
                 <motion.div
                   key={msg._id}
                   layout

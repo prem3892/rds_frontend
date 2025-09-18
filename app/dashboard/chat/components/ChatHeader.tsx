@@ -132,7 +132,7 @@ const ChatHeader = ({
               </Button>
             )}
             
-            {/* <Button
+            <Button
               variant="outline"
               size="sm"
               onClick={handleBookClick}
@@ -156,7 +156,7 @@ const ChatHeader = ({
                   </span>
                 </>
               )}
-            </Button> */}
+            </Button>
             
             <Button
               variant="destructive"
