@@ -94,7 +94,14 @@ class SocketService {
 
     this.socket.on(
       "server:online_status_updated",
-      (data: { isOnline: boolean }) => {
+      (data: { 
+        success: boolean; 
+        isOnline?: boolean; 
+        error?: string; 
+        requestedStatus?: boolean;
+        triggeredBySocket?: string;
+        totalSockets?: number;
+      }) => {
         console.log("Online status updated by server:", data);
         this.notifyListeners("onlineStatusUpdated", data);
       }
@@ -195,6 +202,18 @@ class SocketService {
     this.socket.on("server:message_seen_by_customer", (data: { chatSessionId: string; messageId: string; timestamp: string }) => {
       console.log("Message seen by customer:", data);
       this.notifyListeners("server:message_seen_by_customer", data);
+    });
+
+    // Customer inactivity event
+    this.socket.on("server:customer_inactive", (data: { chatSessionId: string; message: string; customerId: string; customerName: string; sessionStatus: string }) => {
+      console.log("Customer inactive notification:", data);
+      this.notifyListeners("server:customer_inactive", data);
+    });
+
+    // Chat ended event
+    this.socket.on("server:chat_ended", (data: { chatSessionId: string; message: string; customerId: string; customerName: string; sessionStatus: string }) => {
+      console.log("Chat ended notification:", data);
+      this.notifyListeners("server:chat_ended", data);
     });
 
     return this.socket;

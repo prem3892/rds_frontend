@@ -27,6 +27,10 @@ export interface VisitorSyncChange {
     metadata?: {
       source?: string;
       referrer?: string;
+      ipInfo?: {
+        country?: string;
+        [key: string]: any;
+      };
       [key: string]: any;
     };
     connectedAt: string; // ISO date string

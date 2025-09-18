@@ -115,9 +115,9 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <span>
                 {
-                  session.customerId?.metadata?.ipInfo.city || "Seattle"
+                  session.customerId?.metadata?.ipInfo.city || ""
                 }, {
-                  session.customerId?.metadata?.ipInfo.country || "Washington"
+                  session.customerId?.metadata?.ipInfo.country || ""
                 }
               </span>
               <span>•</span>
@@ -238,7 +238,7 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
                   <div className="flex items-center gap-2 text-xs">
                     <MapPin className="w-3 h-3 text-gray-500" />
                     <span className="text-gray-600">Region:</span>
-                    <span className="font-medium">{session.customerId?.metadata?.ipInfo.city || "Seattle"}, {session.customerId?.metadata?.ipInfo.country || "Washington"}</span>
+                    <span className="font-medium">{session.customerId?.metadata?.ipInfo.city || ""}, {session.customerId?.metadata?.ipInfo.country || ""}</span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-xs">

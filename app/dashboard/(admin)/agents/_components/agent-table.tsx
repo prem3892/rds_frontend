@@ -2,15 +2,18 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable } from "@/components/ui/data-table";
 import { ApiErrorResponse, Department } from "@/types";
 import { AgentProfile } from "@/lib/agent.api";
 import { Row } from "@tanstack/react-table";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Shield, ShieldCheck, ToggleLeft } from "lucide-react";
 import { createAgentColumns } from "./agent-columns";
 import CellAction from "./cell-actions";
+import { useState } from "react";
+import { BlockAgentDialog } from "./block-agent-dialog";
 
 // Helper function to get the full image URL
 const getFullImageUrl = (imagePath: string) => {
@@ -35,6 +38,9 @@ type Props = {
   departments: Department[];
   onEdit: (agent: AgentProfile) => void;
   onToggleStatus: (agent: AgentProfile) => void;
+  onBlockAgent: (agent: AgentProfile, isBlocked: boolean) => void;
+  blockLoadingAgentId?: string | null;
+  statusLoadingAgentId?: string | null;
 };
 
 // Agent Card Component for mobile view
@@ -42,13 +48,32 @@ const AgentCard = ({
   agent, 
   departments, 
   onEdit,
-  onToggleStatus 
+  onToggleStatus,
+  onBlockAgent,
+  blockLoadingAgentId,
+  statusLoadingAgentId
 }: { 
   agent: AgentProfile; 
   departments: Department[];
   onEdit: (agent: AgentProfile) => void;
   onToggleStatus: (agent: AgentProfile) => void;
+  onBlockAgent: (agent: AgentProfile, isBlocked: boolean) => void;
+  blockLoadingAgentId?: string | null;
+  statusLoadingAgentId?: string | null;
 }) => {
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
+
+  const handleBlockToggle = () => {
+    setShowBlockDialog(true);
+  };
+
+  const handleConfirmBlock = () => {
+    onBlockAgent(agent, !agent.isBlocked);
+    setShowBlockDialog(false);
+  };
+
+  const isStatusLoading = statusLoadingAgentId === agent._id;
+  const isBlockLoading = blockLoadingAgentId === agent._id;
   // Process department names
   const departmentNames = agent.departmentIds.length > 0 ? (
     Array.isArray(agent.departmentIds) &&
@@ -129,7 +154,7 @@ const AgentCard = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 pt-3 mt-3 border-t border-gray-100">
+          <div className="flex items-center gap-1 pt-3 mt-3 border-t border-gray-100">
             <Button
               variant="outline"
               size="sm"
@@ -140,17 +165,58 @@ const AgentCard = ({
               Edit
             </Button>
             <Button
-              variant="outline"
+              variant={agent.isOnline ? "destructive" : "default"}
               size="sm"
               onClick={() => onToggleStatus(agent)}
-              className="flex-1 h-8 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+              disabled={isStatusLoading}
+              className="flex-1 h-8 text-xs"
             >
-              <Trash2 className="h-3 w-3 mr-1" />
-              Delete
+              {isStatusLoading ? (
+                <>
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                  {agent.isOnline ? "Going Offline..." : "Going Online..."}
+                </>
+              ) : (
+                <>
+                  <ToggleLeft className="h-3 w-3 mr-1" />
+                  {agent.isOnline ? "Go Offline" : "Go Online"}
+                </>
+              )}
+            </Button>
+            <Button
+              variant={agent.isBlocked ? "default" : "destructive"}
+              size="sm"
+              onClick={handleBlockToggle}
+              disabled={isBlockLoading}
+              className="flex-1 h-8 text-xs"
+            >
+              {isBlockLoading ? (
+                <>
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                  {agent.isBlocked ? "Unblocking..." : "Blocking..."}
+                </>
+              ) : (
+                <>
+                  {agent.isBlocked ? (
+                    <ShieldCheck className="h-3 w-3 mr-1" />
+                  ) : (
+                    <Shield className="h-3 w-3 mr-1" />
+                  )}
+                  {agent.isBlocked ? "Unblock" : "Block"}
+                </>
+              )}
             </Button>
           </div>
         </div>
       </CardContent>
+
+      <BlockAgentDialog
+        isOpen={showBlockDialog}
+        onClose={() => setShowBlockDialog(false)}
+        onConfirm={handleConfirmBlock}
+        agent={agent}
+        isLoading={isBlockLoading}
+      />
     </Card>
   );
 };
@@ -162,7 +228,10 @@ const AgentTable = (props: Props) => {
     agentsError, 
     departments,
     onEdit,
-    onToggleStatus
+    onToggleStatus,
+    onBlockAgent,
+    blockLoadingAgentId,
+    statusLoadingAgentId
   } = props;
   
   const agents = agentData || [];
@@ -187,7 +256,7 @@ const AgentTable = (props: Props) => {
     );
   }
 
-  const columns = createAgentColumns({ departments, onEdit, onToggleStatus });
+  const columns = createAgentColumns({ departments, onEdit, onToggleStatus, onBlockAgent, blockLoadingAgentId, statusLoadingAgentId });
 
   return (
     <div className="bg-white p-2 sm:p-3 md:p-4 rounded-xl mt-3 sm:mt-4 overflow-hidden">
@@ -249,6 +318,9 @@ const AgentTable = (props: Props) => {
                 departments={departments}
                 onEdit={onEdit}
                 onToggleStatus={onToggleStatus}
+                onBlockAgent={onBlockAgent}
+                blockLoadingAgentId={blockLoadingAgentId}
+                statusLoadingAgentId={statusLoadingAgentId}
               />
             ))}
           </div>

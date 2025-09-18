@@ -18,11 +18,15 @@ import {
   User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import CellAction from "./cell-actions";
 
 interface AgentColumnsProps {
   departments: Department[];
   onEdit: (agent: AgentProfile) => void;
   onToggleStatus: (agent: AgentProfile) => void;
+  onBlockAgent: (agent: AgentProfile, isBlocked: boolean) => void;
+  blockLoadingAgentId?: string | null;
+  statusLoadingAgentId?: string | null;
 }
 
 // Helper function to get the full image URL
@@ -42,7 +46,10 @@ const getFullImageUrl = (imagePath: string) => {
 export const createAgentColumns = ({ 
   departments, 
   onEdit,
-  onToggleStatus 
+  onToggleStatus,
+  onBlockAgent,
+  blockLoadingAgentId,
+  statusLoadingAgentId 
 }: AgentColumnsProps): ColumnDef<AgentProfile>[] => [
   {
     accessorKey: "name",
@@ -230,18 +237,15 @@ export const createAgentColumns = ({
       )
     },
     cell: ({ row }) => {
-      const agent = row.original;
       return (
-        <div className="flex items-center justify-start space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onEdit(agent)}
-            className="h-8 w-8"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-        </div>
+        <CellAction
+          row={row}
+          onEdit={onEdit}
+          onToggleStatus={onToggleStatus}
+          onBlockAgent={onBlockAgent}
+          blockLoadingAgentId={blockLoadingAgentId}
+          statusLoadingAgentId={statusLoadingAgentId}
+        />
       );
     },
   },

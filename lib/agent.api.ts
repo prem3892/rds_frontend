@@ -32,6 +32,7 @@ export interface AgentProfile {
   departmentIds: any[]; // Can be string IDs or department objects with details
   domainAccess: string[];
   isOnline: boolean;
+  isBlocked?: boolean;
   maxConcurrentChats: number;
   phoneNo?: string;
   website?: string;
@@ -46,13 +47,14 @@ export interface AgentProfile {
     email: string;
     firstName: string;
     lastName: string;
+    role: "ADMIN" | "AGENT";
   };
 }
 
 export interface UpdateAgentProfileDto {
   departmentIds?: string[];
   domainAccess?: string[];
-  isOnline?: boolean;
+  // isOnline?: boolean;
   maxConcurrentChats?: number;
   firstName?: string;
   lastName?: string;
@@ -68,7 +70,7 @@ export interface UpdateAgentProfileDto {
 export interface UpdateMyAgentProfileDto {
   departmentIds?: string[];
   domainAccess?: string[];
-  isOnline?: boolean;
+  // isOnline?: boolean;
   maxConcurrentChats?: number;
   firstName?: string;
   lastName?: string;
@@ -83,6 +85,10 @@ export interface UpdateMyAgentProfileDto {
 
 export interface SetOnlineStatusDto {
   isOnline: boolean;
+}
+
+export interface BlockAgentDto {
+  isBlocked: boolean;
 }
 
 // Query key constants
@@ -169,18 +175,22 @@ export const useUpdateAgentProfileMutation = (
   });
 };
 
-// Set agent online status
+// Set agent online status (admin only)
 export const useSetAgentStatusMutation = (
   options?: UseMutationOptions<
     AgentProfile,
     ApiErrorResponse,
-    SetOnlineStatusDto
+    { agentId: string; data: SetOnlineStatusDto }
   >
 ) => {
-  return useMutation<AgentProfile, ApiErrorResponse, SetOnlineStatusDto>({
-    mutationFn: (data: SetOnlineStatusDto) =>
-      customFetch<AgentProfile>("/agents/status", {
-        method: "PATCH",
+  return useMutation<
+    AgentProfile,
+    ApiErrorResponse,
+    { agentId: string; data: SetOnlineStatusDto }
+  >({
+    mutationFn: ({ agentId, data }) =>
+      customFetch<AgentProfile>(`/agents/${agentId}/profile`, {
+        method: "PUT",
         body: JSON.stringify(data),
       }),
     ...options,
@@ -195,6 +205,28 @@ export const useRegisterAgentMutation = (
     mutationFn: (data: RegisterAgentDto) =>
       customFetch<User>("/auth/register", {
         method: "POST",
+        body: JSON.stringify(data),
+      }),
+    ...options,
+  });
+};
+
+// Block/unblock agent (admin only)
+export const useBlockAgentMutation = (
+  options?: UseMutationOptions<
+    AgentProfile,
+    ApiErrorResponse,
+    { agentId: string; data: BlockAgentDto }
+  >
+) => {
+  return useMutation<
+    AgentProfile,
+    ApiErrorResponse,
+    { agentId: string; data: BlockAgentDto }
+  >({
+    mutationFn: ({ agentId, data }) =>
+      customFetch<AgentProfile>(`/agents/${agentId}/block`, {
+        method: "PATCH",
         body: JSON.stringify(data),
       }),
     ...options,
