@@ -15,6 +15,7 @@ import React from "react";
 import { FaChrome, FaFirefox, FaSafari, FaEdge, FaOpera, FaQuestionCircle, FaWindows, FaTablet } from 'react-icons/fa';
 import { SiApple, SiLinux, SiAndroid, SiMacos } from 'react-icons/si';
 import ReactCountryFlag from "react-country-flag";
+import { getTimeZones, TimeZone } from "@vvo/tzdb";
 
 interface HistoryChatListItemProps {
   session: ChatSession;
@@ -105,7 +106,13 @@ const HistoryChatListItem = React.memo(
 
 
     const getCountry = () => {
-      return session.customerId?.metadata?.ipInfo.country ;
+      const countryCode = session.customerId?.metadata?.ipInfo.country;
+      if (!countryCode) {
+        return "N/A";
+      }
+      const timeZones = getTimeZones();
+      const timeZone = timeZones.find((tz: TimeZone) => tz.countryCode === countryCode);
+      return timeZone ? timeZone.countryName : countryCode;
     }
 
     const getCity = () => {

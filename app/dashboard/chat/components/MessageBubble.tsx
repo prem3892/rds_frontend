@@ -6,6 +6,7 @@ import { Check, CheckCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useChatStore } from "@/stores/chat";
 import { cn, getColorFromString } from "@/lib/utils";
+import Image from "next/image";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -145,9 +146,42 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
                   : "rounded-bl-md" // Middle message from others
           }`}
         >
-          <p className="text-sm whitespace-pre-wrap">
-            {message.content.text || JSON.stringify(message.content)}
-          </p>
+          {/* Render different content based on message type */}
+          {message.messageType === "IMAGE" ? (
+            <div className="space-y-2">
+              <div 
+                className="relative max-w-full cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => {
+                  // Open image in new tab for full view
+                  window.open(`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${message.content.url}`, '_blank');
+                }}
+              >
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${message.content.url}`}
+                  alt={message.content.filename || "Image"}
+                  width={400}
+                  height={300}
+                  className="max-w-full h-auto rounded-lg"
+                  style={{ maxHeight: '300px', objectFit: 'contain' }}
+                  unoptimized={true} // Since these are user-uploaded images from external API
+                />
+              </div>
+              {message.content.filename && (
+                <p className="text-xs text-gray-500 truncate">
+                  {message.content.filename}
+                  {message.content.fileSize && (
+                    <span className="ml-2">
+                      ({Math.round(message.content.fileSize / 1024)}KB)
+                    </span>
+                  )}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm whitespace-pre-wrap">
+              {message.content.text || JSON.stringify(message.content)}
+            </p>
+          )}
           
           {/* Timestamp and read status - only show on last message in group */}
           {isLastInGroup && (

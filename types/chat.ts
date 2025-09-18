@@ -110,6 +110,8 @@ export interface ChatMessageContent {
   url?: string; // For images/files
   filename?: string;
   mimetype?: string;
+  fileSize?: number; // For file size in bytes
+  mimeType?: string; // Alternative spelling for mime type
   // For appointment notices or other structured content
   [key: string]: any; // Allow other properties for different message types
 }
