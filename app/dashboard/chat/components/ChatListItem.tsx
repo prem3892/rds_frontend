@@ -4,23 +4,37 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
 import ChatStatusIndicator from "./ChatStatusIndicator";
-import { 
-  Chrome, 
-  Apple, 
-  Globe, 
-  Monitor, 
-  Smartphone, 
+import {
+  Chrome,
+  Apple,
+  Globe,
+  Monitor,
+  Smartphone,
   Tablet,
   MonitorSmartphone,
   Laptop,
-  MonitorIcon
+  MonitorIcon,
 } from "lucide-react";
-import { rawTimeZones } from '@vvo/tzdb';
+import { rawTimeZones } from "@vvo/tzdb";
 
-import { FaChrome, FaFirefox, FaSafari, FaEdge, FaTablet,FaOpera, FaQuestionCircle, FaWindows } from 'react-icons/fa';
-import {  SiApple, SiLinux, SiAndroid, SiMacos,  SiTableau } from 'react-icons/si'; // Simple Icons for brands
+import {
+  FaChrome,
+  FaFirefox,
+  FaSafari,
+  FaEdge,
+  FaTablet,
+  FaOpera,
+  FaQuestionCircle,
+  FaWindows,
+} from "react-icons/fa";
+import {
+  SiApple,
+  SiLinux,
+  SiAndroid,
+  SiMacos,
+  SiTableau,
+} from "react-icons/si"; // Simple Icons for brands
 import ReactCountryFlag from "react-country-flag";
-
 
 interface ChatListItemProps {
   session: ChatSession & {
@@ -31,63 +45,74 @@ interface ChatListItemProps {
   onSelect: () => void;
 }
 
-
 const ChatListItem = React.memo(
   ({ session, isSelected, onSelect }: ChatListItemProps) => {
-
-
     const getBrowserIcon = (userAgent?: string) => {
-      if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
-      
+      if (!userAgent) return <Globe className="w-3 h-4 text-gray-500" />;
+
       const ua = userAgent.toLowerCase();
-      if (ua.includes("chrome") && !ua.includes("edg")) return <FaChrome className="w-3 h-3 text-blue-600" />;
-      if (ua.includes("firefox")) return <FaFirefox className="w-3 h-3 text-orange-500" />;
-      if (ua.includes("safari") && !ua.includes("chrome")) return <FaSafari className="w-3 h-3 text-blue-500" />;
-      if (ua.includes("edge")) return <FaEdge className="w-3 h-3 text-blue-700" />;
-      if (ua.includes("opera")) return <FaOpera className="w-3 h-3 text-red-500" />;
-      return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
+      if (ua.includes("chrome") && !ua.includes("edg"))
+        return <FaChrome className="w-3 h-4 text-blue-600" />;
+      if (ua.includes("firefox"))
+        return <FaFirefox className="w-3 h-4 text-orange-500" />;
+      if (ua.includes("safari") && !ua.includes("chrome"))
+        return <FaSafari className="w-3 h-4 text-blue-500" />;
+      if (ua.includes("edge"))
+        return <FaEdge className="w-3 h-4 text-blue-700" />;
+      if (ua.includes("opera"))
+        return <FaOpera className="w-3 h-4 text-red-500" />;
+      return <FaQuestionCircle className="w-3 h-4 text-gray-500" />;
     };
 
     const getPlatformIcon = (platform?: string) => {
-      if (!platform) return <Monitor className="w-3 h-3 text-gray-500" />;
-      
+      if (!platform) return <Monitor className="w-3 h-4 text-gray-500" />;
+
       const platformLower = platform.toLowerCase();
-      if (platformLower.includes("mac")) return <SiMacos className="w-3 h-3 text-gray-800" />;
-        if (platformLower.includes("win")) return <FaWindows className="w-3 h-3 text-blue-600" />;
-      if (platformLower.includes("linux")) return <SiLinux className="w-3 h-3 text-green-600" />;
-      if (platformLower.includes("ios")) return <SiApple className="w-3 h-3 text-blue-500" />;
-      if (platformLower.includes("android")) return <SiAndroid className="w-3 h-3 text-green-500" />;
-      if (platformLower.includes("mobile")) return <SiAndroid className="w-3 h-3 text-gray-600" />;
-      if (platformLower.includes("tablet")) return <FaTablet className="w-3 h-3 text-gray-600" />;
-      return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
+      if (platformLower.includes("mac"))
+        return <SiMacos className="w-3 h-4 text-gray-800" />;
+      if (platformLower.includes("win"))
+        return <FaWindows className="w-3 h-4 text-blue-600" />;
+      if (platformLower.includes("linux"))
+        return <SiLinux className="w-3 h-4 text-green-600" />;
+      if (platformLower.includes("ios"))
+        return <SiApple className="w-3 h-4 text-blue-500" />;
+      if (platformLower.includes("android"))
+        return <SiAndroid className="w-3 h-4 text-green-500" />;
+      if (platformLower.includes("mobile"))
+        return <SiAndroid className="w-3 h-4 text-gray-600" />;
+      if (platformLower.includes("tablet"))
+        return <FaTablet className="w-3 h-4 text-gray-600" />;
+      return <FaQuestionCircle className="w-3 h-4 text-gray-500" />;
     };
 
     const getCustomerName = () => {
-      return session.customerId?.name || 
-             session.customerId?.email || 
-             `Guest${session.customerId?._id.slice(-6)}`;
+      return (
+        session.customerId?.name ||
+        session.customerId?.email ||
+        `Guest${session.customerId?._id.slice(-6)}`
+      );
     };
 
     const getTimeDisplay = () => {
-
-
-  const messageTime = session.lastMessageAt ? session.lastMessageAt : session.initiatedAt;
+      const messageTime = session.lastMessageAt
+        ? session.lastMessageAt
+        : session.initiatedAt;
 
       if (messageTime) {
         const date = parseISO(messageTime);
         const now = new Date();
         const isToday = date.toDateString() === now.toDateString();
-        
+
         if (isToday) {
-          return date.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: false 
+          return date.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
           });
         } else {
-          return date.toLocaleDateString('en-GB', { 
-            day: '2-digit', 
-            month: '2-digit' 
+          return date.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
           });
         }
       }
@@ -96,17 +121,17 @@ const ChatListItem = React.memo(
 
     const getDomainDisplay = () => {
       // Use metadata.initialDomain if available, otherwise fall back to session.domain
-      return session.customerId?.metadata?.initialDomain || session.domain || "N/A";
+      return (
+        session.customerId?.metadata?.initialDomain || session.domain || "N/A"
+      );
     };
-
-
 
     return (
       <Button
         variant={isSelected ? "secondary" : "ghost"}
         className={`w-full justify-start p-2 sm:p-3 h-auto mb-1 sm:mb-2 flex items-start text-left rounded-lg transition-all duration-200 ${
-          isSelected 
-            ? "bg-gray-100 text-white hover:bg-gray-200" 
+          isSelected
+            ? "bg-gray-100 text-white hover:bg-gray-200"
             : "hover:bg-gray-50 bg-gray-50"
         }`}
         onClick={onSelect}
@@ -117,23 +142,28 @@ const ChatListItem = React.memo(
               <span className="font-semibold text-xs sm:text-sm truncate">
                 {getCustomerName()}
               </span>
-              <span className="text-base sm:text-lg flex-shrink-0">
-                <ReactCountryFlag 
-                  countryCode={session.customerId?.metadata?.ipInfo?.country || ""} 
-                  svg 
-                  style={{ width: '20px', height: '15px' }} 
+             
+              <div className="flex items-center  gap-1 flex-shrink-0">
+              <ReactCountryFlag
+                  countryCode={
+                    session.customerId?.metadata?.ipInfo?.country || ""
+                  }
+                  svg
+                  style={{ width: "20px", height: "16px" }}
                 />
-              </span>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}
-                {getPlatformIcon(session.customerId?.metadata?.browserInfo?.platform)}
+                {getBrowserIcon(
+                  session.customerId?.metadata?.browserInfo?.userAgent
+                )}
+                {getPlatformIcon(
+                  session.customerId?.metadata?.browserInfo?.platform
+                )}
               </div>
             </div>
             <div className="text-xs text-gray-500 flex-shrink-0 ml-1">
               {getTimeDisplay()}
             </div>
           </div>
-          
+
           <div className="text-xs text-gray-600 truncate mb-1">
             At: {getDomainDisplay()}
           </div>

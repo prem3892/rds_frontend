@@ -1,12 +1,12 @@
 "use client";
 
+import ChatEndedAlertDialog from "@/components/layout/chat-ended-alert-dialog";
+import CustomerInactivityAlertDialog from "@/components/layout/customer-inactivity-alert-dialog";
 import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper";
 import { GlobalSocketInitializer } from "@/hooks/useSocket";
 import { useTokenRefresh } from "@/hooks/useTokenRefresh";
-import { useCurrentUser, useHasHydrated } from "@/stores/auth";
-import CustomerInactivityAlertDialog from "@/components/layout/customer-inactivity-alert-dialog";
-import ChatEndedAlertDialog from "@/components/layout/chat-ended-alert-dialog";
-import { customerInactivityEvents, chatEndedEvents, type CustomerInactivityData, type ChatEndedData } from "@/lib/customer-inactivity-events";
+import { chatEndedEvents, customerInactivityEvents, type ChatEndedData, type CustomerInactivityData } from "@/lib/customer-inactivity-events";
+import { useHasHydrated } from "@/stores/auth";
 import { useEffect, useState } from "react";
 
 export default function DashboardLayout({
@@ -14,7 +14,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const currentUser = useCurrentUser();
+
   const hasHydrated = useHasHydrated();
   const [isInitialized, setIsInitialized] = useState(false);
   

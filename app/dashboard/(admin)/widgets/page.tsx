@@ -66,7 +66,7 @@ export default function WidgetsPage() {
             <span className="p-2 bg-blue-500  text-white mr-1 rounded-md ">
               <Globe className=" text-2xl " />
             </span>
-            Widgets
+            Domains
           </h1>
         </div>
         <Button

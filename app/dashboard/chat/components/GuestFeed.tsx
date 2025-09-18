@@ -224,29 +224,29 @@ export function GuestFeed({
 
 
   const getBrowserIcon = (userAgent?: string) => {
-      if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
+      if (!userAgent) return <Globe className="w-3 h-4 text-gray-500" />;
       
       const ua = userAgent.toLowerCase();
-      if (ua.includes("chrome") && !ua.includes("edg")) return <FaChrome className="w-3 h-3 text-blue-600" />;
-      if (ua.includes("firefox")) return <FaFirefox className="w-3 h-3 text-orange-500" />;
-      if (ua.includes("safari") && !ua.includes("chrome")) return <FaSafari className="w-3 h-3 text-blue-500" />;
-      if (ua.includes("edge")) return <FaEdge className="w-3 h-3 text-blue-700" />;
-      if (ua.includes("opera")) return <FaOpera className="w-3 h-3 text-red-500" />;
-      return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
+          if (ua.includes("chrome") && !ua.includes("edg")) return <FaChrome className="w-3 h-4 text-blue-600" />;
+      if (ua.includes("firefox")) return <FaFirefox className="w-3 h-4 text-orange-500" />;
+      if (ua.includes("safari") && !ua.includes("chrome")) return <FaSafari className="w-3 h-4 text-blue-500" />;
+      if (ua.includes("edge")) return <FaEdge className="w-3 h-4 text-blue-700" />;
+      if (ua.includes("opera")) return <FaOpera className="w-3 h-4 text-red-500" />;
+      return <FaQuestionCircle className="w-3 h-4 text-gray-500" />;
     };
 
     const getPlatformIcon = (platform?: string) => {
-      if (!platform) return <Monitor className="w-3 h-3 text-gray-500" />;
+      if (!platform) return <Monitor className="w-3 h-4 text-gray-500" />;
       
       const platformLower = platform.toLowerCase();
-      if (platformLower.includes("mac")) return <SiMacos className="w-3 h-3 text-gray-800" />;
-        if (platformLower.includes("win")) return <FaWindows className="w-3 h-3 text-blue-600" />;
-      if (platformLower.includes("linux")) return <SiLinux className="w-3 h-3 text-green-600" />;
-      if (platformLower.includes("ios")) return <SiApple className="w-3 h-3 text-blue-500" />;
-      if (platformLower.includes("android")) return <SiAndroid className="w-3 h-3 text-green-500" />;
-      if (platformLower.includes("mobile")) return <SiAndroid className="w-3 h-3 text-gray-600" />;
-      if (platformLower.includes("tablet")) return <FaTablet className="w-3 h-3 text-gray-600" />;
-      return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
+      if (platformLower.includes("mac")) return <SiMacos className="w-3 h-4 text-gray-800" />;
+        if (platformLower.includes("win")) return <FaWindows className="w-3 h-4 text-blue-600" />;
+      if (platformLower.includes("linux")) return <SiLinux className="w-3 h-4 text-green-600" />;
+        if (platformLower.includes("ios")) return <SiApple className="w-3 h-4 text-blue-500" />;
+      if (platformLower.includes("android")) return <SiAndroid className="w-3 h-4 text-green-500" />;
+      if (platformLower.includes("mobile")) return <SiAndroid className="w-3 h-4 text-gray-600" />;
+      if (platformLower.includes("tablet")) return <FaTablet className="w-3 h-4 text-gray-600" />;
+      return <FaQuestionCircle className="w-3 h-4 text-gray-500" />;
     };
 
   return (
@@ -357,10 +357,9 @@ export function GuestFeed({
                               <span className="font-medium text-sm truncate">
                                 {visitor.name}
                               </span>
-                              <span className="text-lg flex-shrink-0">
-                                <ReactCountryFlag countryCode={visitor.metadata?.ipInfo?.country || ""} svg style={{ width: '20px', height: '15px' }} />
-                              </span>
-                              <div className="flex items-center gap-1 flex-shrink-0">
+                           
+                              <div className="flex items-center  gap-1 flex-shrink-0">
+                              <ReactCountryFlag countryCode={visitor.metadata?.ipInfo?.country || "IN"} svg style={{ width: '20px', height: '16px' }} />
                                 {getBrowserIcon(visitor.browserInfo.userAgent)}
                                 {getPlatformIcon(visitor.browserInfo.platform)}
                               </div>

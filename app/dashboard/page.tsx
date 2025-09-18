@@ -5,10 +5,23 @@ import { useCurrentUser, useHasHydrated } from "@/stores/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardOverviewPage() {
   const currentUser = useCurrentUser();
   const hasHydrated = useHasHydrated();
+  const router = useRouter();
+
+
+  useEffect(() => {
+    // Since middleware handles authentication server-side,
+    // we can redirect immediately without checking client state
+    // The middleware will handle the actual authentication check
+    router.replace("/dashboard/chat");
+  }, [router]);
+
+
 
   if (!hasHydrated || !currentUser) {
     return (
@@ -41,36 +54,7 @@ export default function DashboardOverviewPage() {
       transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      <h1 className="text-3xl font-bold tracking-tight">
-        Welcome, {currentUser.firstName}!
-      </h1>
-      <p className="text-muted-foreground">
-        This is your dashboard overview. Select an option from the sidebar to
-        get started.
-      </p>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Role</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{currentUser.role}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-green-500">Online</p>{" "}
-            {/* Placeholder */}
-          </CardContent>
-        </Card>
-        {/* Add more summary cards as needed */}
-      </div>
-
-      {/* Future content: Quick access to active chats, notifications, etc. */}
     </motion.div>
   );
 }
