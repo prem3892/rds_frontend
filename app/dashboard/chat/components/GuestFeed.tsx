@@ -359,7 +359,7 @@ export function GuestFeed({
                               </span>
                            
                               <div className="flex items-center  gap-1 flex-shrink-0">
-                              <ReactCountryFlag countryCode={visitor.metadata?.ipInfo?.country || "IN"} svg style={{ width: '20px', height: '16px' }} />
+                              <ReactCountryFlag countryCode={visitor.metadata?.ipInfo?.country || ""} svg style={{ width: '20px', height: '16px' }} />
                                 {getBrowserIcon(visitor.browserInfo.userAgent)}
                                 {getPlatformIcon(visitor.browserInfo.platform)}
                               </div>
