@@ -132,7 +132,7 @@ const ChatListItem = React.memo(
         variant={isSelected ? "secondary" : "ghost"}
         className={`w-full justify-start p-2 sm:p-3 h-auto mb-1 sm:mb-2 flex items-start text-left rounded-lg transition-all duration-200 ${
           isSelected
-            ? "bg-gray-100 text-white hover:bg-gray-200"
+            ? "bg-primary/20 text-white hover:bg-primary/50"
             : "hover:bg-gray-50 bg-gray-50"
         }`}
         onClick={onSelect}
