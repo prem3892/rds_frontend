@@ -76,6 +76,8 @@ export const useGetAllChatSessions = (
         queryParams.append("customerName", apiParams.customerName);
       if (apiParams.customerEmail)
         queryParams.append("customerEmail", apiParams.customerEmail);
+      if (apiParams.hasScheduledAppointment !== undefined)
+        queryParams.append("hasScheduledAppointment", apiParams.hasScheduledAppointment.toString());
       const queryString = queryParams.toString();
       const url = `/chat/sessions${queryString ? `?${queryString}` : ""}`;
       
@@ -207,6 +209,8 @@ export const useGetAllChatSessionsInfinite = (
         queryParams.append("customerName", apiParams.customerName);
       if (apiParams.customerEmail)
         queryParams.append("customerEmail", apiParams.customerEmail);
+      if (apiParams.hasScheduledAppointment !== undefined)
+        queryParams.append("hasScheduledAppointment", apiParams.hasScheduledAppointment.toString());
       const queryString = queryParams.toString();
 
       return customFetch<ChatSessionsResponse>(

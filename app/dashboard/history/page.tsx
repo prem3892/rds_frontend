@@ -11,7 +11,7 @@ import {
 } from "@/types";
 import { motion } from "framer-motion";
 import { HistoryIcon } from "lucide-react";
-import { HistorySearchFilters } from "../history-old/_components";
+
 import HistoryChatSidebar from "./_components/history-chat-sidebar";
 import HistoryChatMessages from "./_components/history-chat-messages";
 import HistoryGuestInfo from "./_components/history-guest-info";
@@ -19,6 +19,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import HistorySearchFilters from "./_components/history-search-filters";
 
 interface HistoryFilters {
   search: string;
@@ -27,6 +28,7 @@ interface HistoryFilters {
   departmentId: string | "all";
   customerName: string;
   customerEmail: string;
+  hasScheduledAppointment: string | "all";
 }
 
 const HistoryPageSkeleton = () => (
@@ -157,6 +159,7 @@ export default function HistoryNewPage() {
     departmentId: "all",
     customerName: "",
     customerEmail: "",
+    hasScheduledAppointment: "all",
   });
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
   const [pageSize] = useState(10);
@@ -200,6 +203,7 @@ export default function HistoryNewPage() {
     departmentId: filters.departmentId && filters.departmentId !== "all" ? filters.departmentId : undefined,
     customerName: filters.customerName || undefined,
     customerEmail: filters.customerEmail || undefined,
+    hasScheduledAppointment: filters.hasScheduledAppointment && filters.hasScheduledAppointment !== "all" ? filters.hasScheduledAppointment === "true" : undefined,
   };
 
   const {
@@ -240,6 +244,7 @@ export default function HistoryNewPage() {
       departmentId: "all",
       customerName: "",
       customerEmail: "",
+      hasScheduledAppointment: "all",
     };
     setFilters(clearedFilters);
   };
