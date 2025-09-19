@@ -246,6 +246,12 @@ export function useSocketInitializer() {
               sessionStatus: data.sessionStatus,
             });
             break;
+          case "server:customer_info_request_sent":
+            // Handle customer info request acknowledgment
+            console.log("Customer info request sent:", data);
+            // The success feedback is already handled in the component
+            // This is just for logging and potential future use
+            break;
         }
       });
 
@@ -326,6 +332,13 @@ export function useSocketOperations() {
     []
   );
 
+  const requestCustomerInfo = useCallback(
+    (payload: { chatSessionId: string }) => {
+      return socketService.requestCustomerInfo(payload);
+    },
+    []
+  );
+
   return {
     sendMessage,
     acceptChat,
@@ -335,6 +348,7 @@ export function useSocketOperations() {
     endChat,
     bookCustomer,
     markMessagesAsRead,
+    requestCustomerInfo,
     isConnected: socketService.isConnected,
     socket: socketService.instance,
   };

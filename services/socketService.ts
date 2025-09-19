@@ -216,6 +216,18 @@ class SocketService {
       this.notifyListeners("server:chat_ended", data);
     });
 
+    // Customer info request acknowledgment
+    this.socket.on("server:customer_info_request_sent", (data: { 
+      chatSessionId: string; 
+      customerId: string; 
+      triggeredBySocket: string; 
+      totalAgentSockets: number; 
+      requestedAt: string; 
+    }) => {
+      console.log("Customer info request sent acknowledgment:", data);
+      this.notifyListeners("server:customer_info_request_sent", data);
+    });
+
     return this.socket;
   }
 
@@ -299,6 +311,16 @@ class SocketService {
     }
     console.debug("Marking messages as read for chat session:", payload);
     this.socket.emit("agent:mark_messages_read", payload);
+    return true;
+  }
+
+  requestCustomerInfo(payload: { chatSessionId: string }) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot request customer info.");
+      return false;
+    }
+    console.debug("Requesting customer info for chat session:", payload);
+    this.socket.emit("agent:customer_info_request", payload);
     return true;
   }
 
