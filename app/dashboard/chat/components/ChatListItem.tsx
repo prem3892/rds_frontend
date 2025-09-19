@@ -89,7 +89,7 @@ const ChatListItem = React.memo(
       return (
         session.customerId?.name ||
         session.customerId?.email ||
-        `Guest${session.customerId?._id.slice(-6)}`
+        `Guest-${session.customerId?._id.slice(-6)}`
       );
     };
 
