@@ -2,12 +2,13 @@ import React, { useState, useCallback } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Loader2, ArrowLeft, User, ShieldX } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ArrowLeft, User, ShieldX, Calendar } from "lucide-react";
 import { ChatSession } from "@/types";
 import { useIsBookingInProgress, useChatActions } from "@/stores/chat";
 import BookingForm from "./BookingForm";
 import ChatStatusIndicator from "./ChatStatusIndicator";
 import { cn, getColorFromString } from "@/lib/utils";
+import { format, parseISO } from "date-fns";
 
 interface ChatHeaderProps {
   session: ChatSession;
@@ -171,12 +172,29 @@ const ChatHeader = ({
           </div>
         </div>
 
-        {/* Care message */}
-        <div className="mt-3 p-3 bg-gradient-to-r from-blue-100  to-transparent rounded-none">
-          <p className="text-sm text-blue-800 font-medium">
-            While chatting, let&apos;s show them care!
-          </p>
-        </div>
+        {/* Care message or Appointment info */}
+        {session.appointmentBooked && session.appointmentData ? (
+          <div className="mt-3 p-3 bg-gradient-to-r from-green-100 to-transparent rounded-none">
+            <div className="flex items-center gap-2 text-sm text-green-800 font-medium">
+              <Calendar className="w-4 h-4" />
+              <span>Appointment Booked</span>
+            </div>
+            <div className="text-sm text-green-700 mt-1">
+              {format(parseISO(session.appointmentData.date), "EEEE, MMMM dd, yyyy 'at' h:mm a")}
+            </div>
+            {session.appointmentData.notes && (
+              <div className="text-sm text-green-600 mt-1">
+                Note: {session.appointmentData.notes}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="mt-3 p-3 bg-gradient-to-r from-blue-100  to-transparent rounded-none">
+            <p className="text-sm text-blue-800 font-medium">
+              While chatting, let&apos;s show them care!
+            </p>
+          </div>
+        )}
       </header>
 
       <BookingForm

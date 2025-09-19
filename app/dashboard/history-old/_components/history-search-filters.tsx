@@ -176,7 +176,7 @@ export default function HistorySearchFilters({
               <SelectContent>
                 <SelectItem value="all">All Agents</SelectItem>
                 {agents.map((agent) => (
-                  <SelectItem key={agent._id} value={agent._id}>
+                  <SelectItem key={agent.userId} value={agent.userId}>
                     {agent.user.firstName} {agent.user.lastName}
                   </SelectItem>
                 ))}

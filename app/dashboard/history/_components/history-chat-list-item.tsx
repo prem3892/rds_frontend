@@ -1,14 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
-import { parseISO } from "date-fns";
+import { parseISO, format } from "date-fns";
 import { 
   Clock, 
   Globe, 
   User, 
   Monitor, 
   Smartphone, 
-  Tablet
+  Tablet,
+  Calendar
 } from "lucide-react";
 import React from "react";
 
@@ -143,8 +144,8 @@ const HistoryChatListItem = React.memo(
         variant={isSelected ? "secondary" : "ghost"}
         className={`w-full justify-start p-2 sm:p-3 h-auto mb-1 flex items-start text-left rounded-lg transition-all duration-200 ${
           isSelected
-            ? "bg-blue-100 text-blue-900 border-blue-200"
-            : "hover:bg-gray-50 bg-white"
+            ? "bg-blue-100 text-blue-900 border-blue-200 hover:bg-primary/20"
+            : "hover:bg-primary20 bg-white"
         }`}
         onClick={onSelect}
       >
@@ -216,6 +217,24 @@ const HistoryChatListItem = React.memo(
               </div>
             )}
           </div>
+
+          {/* Appointment information */}
+          {session.appointmentBooked && session.appointmentData && (
+            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
+              <div className="flex items-center gap-1 text-xs text-green-700">
+                <Calendar className="w-3 h-3" />
+                <span className="font-medium">Appointment Booked</span>
+              </div>
+              <div className="text-xs text-green-600 mt-1">
+                {format(parseISO(session.appointmentData.date), "MMM dd, yyyy 'at' h:mm a")}
+              </div>
+              {session.appointmentData.notes && (
+                <div className="text-xs text-green-600 mt-1 truncate">
+                  Note: {session.appointmentData.notes}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </Button>
     );
