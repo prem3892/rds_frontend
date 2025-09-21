@@ -25,6 +25,7 @@ interface HistoryFilters {
   departmentId: string | "all";
   customerName: string;
   customerEmail: string;
+  hasScheduledAppointment: string | "all";
 }
 
 interface HistorySearchFiltersProps {
@@ -176,7 +177,7 @@ export default function HistorySearchFilters({
               <SelectContent>
                 <SelectItem value="all">All Agents</SelectItem>
                 {agents.map((agent) => (
-                  <SelectItem key={agent._id} value={agent._id}>
+                  <SelectItem key={agent.userId} value={agent.userId}>
                     {agent.user.firstName} {agent.user.lastName}
                   </SelectItem>
                 ))}
@@ -223,6 +224,24 @@ export default function HistorySearchFilters({
               value={localCustomerEmail}
               onChange={(e) => handleInputChange("customerEmail", e.target.value)}
             />
+          </div>
+
+          {/* Has Scheduled Appointment Filter */}
+          <div className="space-y-2">
+            <Label htmlFor="hasScheduledAppointment">Appointment Status</Label>
+            <Select
+              value={filters.hasScheduledAppointment}
+              onValueChange={(value) => handleInputChange("hasScheduledAppointment", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="All Appointments" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Appointments</SelectItem>
+                <SelectItem value="true">Has Scheduled Appointment</SelectItem>
+                <SelectItem value="false">No Scheduled Appointment</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       )}

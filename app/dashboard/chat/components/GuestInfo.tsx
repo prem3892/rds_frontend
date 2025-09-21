@@ -21,12 +21,14 @@ import {
   Edit,
   Mail,
   Phone,
-  User
+  User,
+  Calendar
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { format, parseISO } from "date-fns";
 
 interface GuestInfoProps {
   session: ChatSession | null;
@@ -398,6 +400,40 @@ export function GuestInfo({
                       </Link>
                     </CardContent>
                   </Card>
+
+                  {/* Appointment Information */}
+                  {session.appointmentBooked && session.appointmentData && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-semibold flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-green-600" />
+                          Appointment Details
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="w-4 h-4 text-green-500" />
+                          <span className="text-gray-600">Date & Time:</span>
+                          <span className="font-medium text-green-700">
+                            {format(parseISO(session.appointmentData.date), "EEEE, MMMM dd, yyyy 'at' h:mm a")}
+                          </span>
+                        </div>
+                        {session.appointmentData.notes && (
+                          <div className="flex items-start gap-2 text-sm">
+                            <span className="text-gray-600 mt-0.5">Notes:</span>
+                            <span className="font-medium text-gray-800">{session.appointmentData.notes}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 text-sm">
+                          <Clock className="w-4 h-4 text-gray-500" />
+                          <span className="text-gray-600">Booked:</span>
+                          <span className="font-medium">
+                            {format(parseISO(session.appointmentData.bookedAt), "MMM dd, yyyy 'at' h:mm a")}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </ScrollArea>
             </div>

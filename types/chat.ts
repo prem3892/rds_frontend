@@ -86,6 +86,7 @@ export interface GetChatSessionsQueryDto {
   departmentId?: string;
   customerName?: string;
   customerEmail?: string;
+  hasScheduledAppointment?: boolean;
   // For "Chat History" specific to an agent
   forCurrentAgent?: boolean; // Custom client-side flag to add agentId filter
 }
