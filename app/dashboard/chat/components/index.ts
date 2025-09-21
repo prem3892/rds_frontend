@@ -16,3 +16,4 @@ export { default as GuestFeed } from "./GuestFeed";
 export { default as GuestInfo } from "./GuestInfo";
 export { default as CannedMessageSelector } from "./CannedMessageSelector";
 export { default as BlockCustomerDialog } from "./BlockCustomerDialog";
+export { default as AskForEmailButton } from "./AskForEmailButton";

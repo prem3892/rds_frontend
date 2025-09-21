@@ -60,6 +60,7 @@ export default function MyChatsPage() {
     sendTypingStop,
     endChat,
     bookCustomer,
+    requestCustomerInfo,
   } = useSocketOperations();
 
   // Block customer mutation
@@ -95,6 +96,11 @@ export default function MyChatsPage() {
       error.message || "Failed to initiate chat. Please try again."
     );
   }, []);
+
+  // Wrapper function for requesting customer info
+  const handleRequestCustomerInfo = useCallback(async (chatSessionId: string): Promise<boolean> => {
+    return requestCustomerInfo({ chatSessionId });
+  }, [requestCustomerInfo]);
 
   // Initiate chat mutation
   const initiateChatMutation = useInitiateChatMutation({
@@ -446,6 +452,7 @@ export default function MyChatsPage() {
                 onTypingStart={handleTypingStart}
                 onTypingStop={handleTypingStop}
                 sessionId={selectedSessionId}
+                onRequestCustomerInfo={handleRequestCustomerInfo}
               />
             </div>
           </main>
@@ -588,6 +595,7 @@ export default function MyChatsPage() {
               onTypingStart={handleTypingStart}
               onTypingStop={handleTypingStop}
               sessionId={selectedSessionId}
+              onRequestCustomerInfo={handleRequestCustomerInfo}
             />
           </div>
         ) : (

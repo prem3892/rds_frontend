@@ -53,7 +53,7 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
   const getCustomerName = () => {
     return session.customerId?.name || 
            session.customerId?.email || 
-           `Guest${session.customerId._id.slice(-6)}`;
+           `Guest-${session.customerId._id.slice(-6)}`;
   };
 
   const getCustomerInitial = () => {
