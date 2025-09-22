@@ -225,7 +225,7 @@ export function MainLayoutWrapper({
       label: "Auto Message",
       href: "/dashboard/auto-messages",
       active: pathname.includes("/auto-messages"),
-      roles: ["ADMIN", "AGENT"], // Available to both roles
+      roles: ["ADMIN"], // Available to only Admins
     },
     {
       icon: UserX,

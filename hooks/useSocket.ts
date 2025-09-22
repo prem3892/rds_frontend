@@ -81,6 +81,12 @@ export function useSocketInitializer() {
           case "chatTakenOrResolved":
             chatActions.removePendingRequest(data.chatSessionId);
             break;
+          case "chatAlreadyAccepted":
+            // Show toast to inform the agent the chat was already accepted elsewhere
+            toast.info('Chat already accepted', {
+              description: `Chat is already accepted by ${data?.acceptedByAgentName || 'another agent'}`,
+            });
+            break;
           case "onlineStatusUpdated":
             // Handle the new payload structure with success/error cases
             if (data.success) {

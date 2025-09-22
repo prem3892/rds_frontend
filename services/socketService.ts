@@ -94,6 +94,7 @@ class SocketService {
 
     this.socket.on("server:chat_already_accepted", (data: any) => {
       console.log("Chat already accepted by another agent:", data);
+      this.notifyListeners("chatAlreadyAccepted", data);
     });
 
     this.socket.on(

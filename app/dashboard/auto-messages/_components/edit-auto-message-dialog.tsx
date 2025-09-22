@@ -62,6 +62,13 @@ export default function EditAutoMessageDialog({
   autoMessage,
   widgets,
 }: EditAutoMessageDialogProps) {
+  const normalizeWidgetId = (value: unknown): string => {
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object" && "_id" in (value as any)) {
+      return (value as any)._id ?? "";
+    }
+    return "";
+  };
   const [newPagePath, setNewPagePath] = useState("");
   const queryClient = useQueryClient();
 
@@ -70,7 +77,7 @@ export default function EditAutoMessageDialog({
     defaultValues: {
       title: autoMessage?.title || "",
       message: autoMessage?.message || "",
-      widgetId: autoMessage?.widgetId || "",
+      widgetId: normalizeWidgetId((autoMessage as any)?.widgetId),
       domain: autoMessage?.domain || "",
       sitewide: autoMessage?.sitewide || false,
       pagePaths: autoMessage?.pagePaths || [],
@@ -98,7 +105,7 @@ export default function EditAutoMessageDialog({
       form.reset({
         title: autoMessage.title,
         message: autoMessage.message,
-        widgetId: autoMessage.widgetId,
+        widgetId: normalizeWidgetId((autoMessage as any).widgetId),
         domain: autoMessage.domain,
         sitewide: autoMessage.sitewide,
         pagePaths: autoMessage.pagePaths,
@@ -107,6 +114,14 @@ export default function EditAutoMessageDialog({
       });
     }
   }, [autoMessage, form]);
+
+  // Ensure any lingering non-string widgetId is normalized
+  useEffect(() => {
+    const current = (form.getValues as any)("widgetId");
+    if (current && typeof current !== "string") {
+      form.setValue("widgetId", normalizeWidgetId(current));
+    }
+  }, [form]);
 
   const handleClose = () => {
     setNewPagePath("");
