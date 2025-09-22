@@ -29,6 +29,7 @@ import * as z from "zod";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -194,6 +195,7 @@ export default function EditAutoMessageDialog({
                         {...field}
                       />
                     </FormControl>
+               
                     <FormMessage />
                   </FormItem>
                 )}
@@ -246,7 +248,7 @@ export default function EditAutoMessageDialog({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+         
               <FormField
                 control={form.control}
                 name="domain"
@@ -259,12 +261,17 @@ export default function EditAutoMessageDialog({
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      Enter domains without http(s)://
+                      </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
+        
+<div className="grid grid-cols-2 gap-4">
+            <FormField
                 control={form.control}
                 name="showAfterSeconds"
                 render={({ field }) => (
@@ -283,13 +290,12 @@ export default function EditAutoMessageDialog({
                   </FormItem>
                 )}
               />
-            </div>
 
             <FormField
               control={form.control}
               name="isEnabled"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormItem className="flex flex-row items-end space-x-3 space-y-0 rounded-md  p-4">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -302,6 +308,7 @@ export default function EditAutoMessageDialog({
                 </FormItem>
               )}
             />
+            </div>
 
             <FormField
               control={form.control}
