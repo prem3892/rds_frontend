@@ -120,7 +120,7 @@ const ChatListItem = React.memo(
     const getDomainDisplay = () => {
       // Use metadata.initialDomain if available, otherwise fall back to session.domain
       return (
-        session.customerId?.metadata?.initialDomain || session.domain || "N/A"
+        session.customerId?.metadata?.initialDomain?.split("?")[0] || session.domain.split("?")[0] || "N/A"
       );
     };
 
