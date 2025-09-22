@@ -105,8 +105,8 @@ export function VisitorsList({
 
 
   return (
-    <Card className={cn("w-full h-full bg-white rounded-3xl border-none", className)}>
-      <CardHeader className="pb-3">
+    <Card className={cn("w-full h-full bg-white rounded-3xl border-none flex flex-col", className)}>
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <Users className="w-5 h-5" />
@@ -129,8 +129,8 @@ export function VisitorsList({
         </div>
       </CardHeader>
 
-      <CardContent className="p-0">
-        <ScrollArea className={cn(maxHeight, "px-6 pb-6")}>
+      <CardContent className="p-0 flex-1 min-h-0">
+        <ScrollArea className={cn("h-full", "px-6 pb-6")}>
           <AnimatePresence mode="popLayout">
             {visitors.length === 0 ? (
               <motion.div
