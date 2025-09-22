@@ -65,12 +65,18 @@ interface ChatState {
 
     loadPendingRequests: (sessions: ChatSession[]) => void;
     addPendingRequest: (session: ChatSession) => void;
-    updatePendingRequest: (sessionId: string, updates: Partial<ChatSession>) => void;
+    updatePendingRequest: (
+      sessionId: string,
+      updates: Partial<ChatSession>
+    ) => void;
     removePendingRequest: (sessionId: string) => void;
 
     // Message read status
     markMessagesAsSeenByAgent: (sessionId: string, timestamp: string) => void;
-    markMessagesAsSeenByCustomer: (sessionId: string, timestamp: string) => void;
+    markMessagesAsSeenByCustomer: (
+      sessionId: string,
+      timestamp: string
+    ) => void;
 
     // TODO: Add more actions for sending messages, accepting chats via WebSocket
     // clearChatState: () => void; // For logout or re-initialization
@@ -251,11 +257,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
         ],
       })),
     updatePendingRequest: (sessionId, updates) =>
-      set((state) => ({
-        pendingRequests: state.pendingRequests.map((session) =>
-          session._id === sessionId ? { ...session, ...updates } : session
-        ),
-      })),
+      set((state) => {
+        const existingIndex = state.pendingRequests.findIndex(
+          (session) => session._id === sessionId
+        );
+
+        if (existingIndex !== -1) {
+          // Update existing session
+          const updatedRequests = [...state.pendingRequests];
+          updatedRequests[existingIndex] = {
+            ...updatedRequests[existingIndex],
+            ...updates,
+          };
+          return { pendingRequests: updatedRequests };
+        } else {
+          // Add new session if it doesn't exist
+          // Assuming 'updates' contains the full session data when adding new
+          return {
+            pendingRequests: [...state.pendingRequests, updates as ChatSession],
+          };
+        }
+      }),
     removePendingRequest: (sessionId) =>
       set((state) => ({
         pendingRequests: state.pendingRequests.filter(
@@ -293,21 +315,23 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
         return state; // No change needed
       }),
-    
+
     markMessagesAsSeenByAgent: (sessionId, timestamp) =>
       set((state) => {
         if (!state.activeSessions[sessionId]) return state;
-        
+
         const timestampMs = new Date(timestamp).getTime();
-        
+
         // Mark all messages before the timestamp as read by agent
-        const updatedMessages = state.activeSessions[sessionId].messages.map(message => {
-          const messageTimestampMs = new Date(message.timestamp).getTime();
-          if (messageTimestampMs <= timestampMs) {
-            return { ...message, readByAgent: true };
+        const updatedMessages = state.activeSessions[sessionId].messages.map(
+          (message) => {
+            const messageTimestampMs = new Date(message.timestamp).getTime();
+            if (messageTimestampMs <= timestampMs) {
+              return { ...message, readByAgent: true };
+            }
+            return message;
           }
-          return message;
-        });
+        );
 
         return {
           activeSessions: {
@@ -323,17 +347,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
     markMessagesAsSeenByCustomer: (sessionId, timestamp) =>
       set((state) => {
         if (!state.activeSessions[sessionId]) return state;
-        
+
         const timestampMs = new Date(timestamp).getTime();
-        
+
         // Mark all messages before the timestamp as read by customer
-        const updatedMessages = state.activeSessions[sessionId].messages.map(message => {
-          const messageTimestampMs = new Date(message.timestamp).getTime();
-          if (messageTimestampMs <= timestampMs) {
-            return { ...message, readByCustomer: true };
+        const updatedMessages = state.activeSessions[sessionId].messages.map(
+          (message) => {
+            const messageTimestampMs = new Date(message.timestamp).getTime();
+            if (messageTimestampMs <= timestampMs) {
+              return { ...message, readByCustomer: true };
+            }
+            return message;
           }
-          return message;
-        });
+        );
 
         return {
           activeSessions: {
@@ -345,7 +371,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           },
         };
       }),
-    
+
     // clearChatState: () => set(initialState),
   },
 }));

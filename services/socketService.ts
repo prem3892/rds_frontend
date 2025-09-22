@@ -92,12 +92,16 @@ class SocketService {
       }
     );
 
+    this.socket.on("server:chat_already_accepted", (data: any) => {
+      console.log("Chat already accepted by another agent:", data);
+    });
+
     this.socket.on(
       "server:online_status_updated",
-      (data: { 
-        success: boolean; 
-        isOnline?: boolean; 
-        error?: string; 
+      (data: {
+        success: boolean;
+        isOnline?: boolean;
+        error?: string;
         requestedStatus?: boolean;
         triggeredBySocket?: string;
         totalSockets?: number;
@@ -110,7 +114,12 @@ class SocketService {
     // Listen for agent pool status updates that might affect online status
     this.socket.on(
       "server:agent_pool_status_update",
-      (data: { departmentId: string; domain: string; onlineAgentsCount: number; isAvailable: boolean }) => {
+      (data: {
+        departmentId: string;
+        domain: string;
+        onlineAgentsCount: number;
+        isAvailable: boolean;
+      }) => {
         console.log("Agent pool status update received:", data);
         this.notifyListeners("agentPoolStatusUpdate", data);
       }
@@ -160,73 +169,133 @@ class SocketService {
     });
 
     // Agent disconnection events
-    this.socket.on("server:agent_disconnected_from_chat", (data: { chatSessionId: string; agentName: string }) => {
-      console.log("Agent disconnected from chat:", data);
-      this.notifyListeners("agentDisconnectedFromChat", data);
-    });
+    this.socket.on(
+      "server:agent_disconnected_from_chat",
+      (data: { chatSessionId: string; agentName: string }) => {
+        console.log("Agent disconnected from chat:", data);
+        this.notifyListeners("agentDisconnectedFromChat", data);
+      }
+    );
 
-    this.socket.on("server:agent_reconnected_to_chat", (data: { chatSessionId: string; agentName: string }) => {
-      console.log("Agent reconnected to chat:", data);
-      this.notifyListeners("agentReconnectedToChat", data);
-    });
+    this.socket.on(
+      "server:agent_reconnected_to_chat",
+      (data: { chatSessionId: string; agentName: string }) => {
+        console.log("Agent reconnected to chat:", data);
+        this.notifyListeners("agentReconnectedToChat", data);
+      }
+    );
 
     // Customer disconnection events
-    this.socket.on("server:customer_disconnected_from_chat", (data: { chatSessionId: string; customerName: string }) => {
-      console.log("Customer disconnected from chat:", data);
-      this.notifyListeners("customerDisconnectedFromChat", data);
-    });
+    this.socket.on(
+      "server:customer_disconnected_from_chat",
+      (data: { chatSessionId: string; customerName: string }) => {
+        console.log("Customer disconnected from chat:", data);
+        this.notifyListeners("customerDisconnectedFromChat", data);
+      }
+    );
 
-    this.socket.on("server:customer_reconnected_to_chat", (data: { chatSessionId: string; customerName: string }) => {
-      console.log("Customer reconnected to chat:", data);
-      this.notifyListeners("customerReconnectedToChat", data);
-    });
+    this.socket.on(
+      "server:customer_reconnected_to_chat",
+      (data: { chatSessionId: string; customerName: string }) => {
+        console.log("Customer reconnected to chat:", data);
+        this.notifyListeners("customerReconnectedToChat", data);
+      }
+    );
 
     // Priority chat notification
-    this.socket.on("server:priority_chat_notification", (session: ChatSession) => {
-      console.log("Priority chat notification received:", session);
-      this.notifyListeners("server:priority_chat_notification", session);
-    });
+    this.socket.on(
+      "server:priority_chat_notification",
+      (session: ChatSession) => {
+        console.log("Priority chat notification received:", session);
+        this.notifyListeners("server:priority_chat_notification", session);
+      }
+    );
 
     // Message seen by agent events
-    this.socket.on("server:message_seen_by_agent", (data: { chatSessionId: string; messageId: string; timestamp: string; agentId: string }) => {
-      console.log("Message seen by agent:", data);
-      this.notifyListeners("server:message_seen_by_agent", data);
-    });
+    this.socket.on(
+      "server:message_seen_by_agent",
+      (data: {
+        chatSessionId: string;
+        messageId: string;
+        timestamp: string;
+        agentId: string;
+      }) => {
+        console.log("Message seen by agent:", data);
+        this.notifyListeners("server:message_seen_by_agent", data);
+      }
+    );
 
-    this.socket.on("server:messages_read_ack", (data: { chatSessionId: string; messageId: string; timestamp: string; triggeredBySocket: string; totalAgentSockets: number }) => {
-      console.log("Messages read acknowledgment:", data);
-      this.notifyListeners("server:messages_read_ack", data);
-    });
+    this.socket.on(
+      "server:messages_read_ack",
+      (data: {
+        chatSessionId: string;
+        messageId: string;
+        timestamp: string;
+        triggeredBySocket: string;
+        totalAgentSockets: number;
+      }) => {
+        console.log("Messages read acknowledgment:", data);
+        this.notifyListeners("server:messages_read_ack", data);
+      }
+    );
 
     // Message seen by customer events
-    this.socket.on("server:message_seen_by_customer", (data: { chatSessionId: string; messageId: string; timestamp: string }) => {
-      console.log("Message seen by customer:", data);
-      this.notifyListeners("server:message_seen_by_customer", data);
-    });
+    this.socket.on(
+      "server:message_seen_by_customer",
+      (data: {
+        chatSessionId: string;
+        messageId: string;
+        timestamp: string;
+      }) => {
+        console.log("Message seen by customer:", data);
+        this.notifyListeners("server:message_seen_by_customer", data);
+      }
+    );
 
     // Customer inactivity event
-    this.socket.on("server:customer_inactive", (data: { chatSessionId: string; message: string; customerId: string; customerName: string; sessionStatus: string }) => {
-      console.log("Customer inactive notification:", data);
-      this.notifyListeners("server:customer_inactive", data);
-    });
+    this.socket.on(
+      "server:customer_inactive",
+      (data: {
+        chatSessionId: string;
+        message: string;
+        customerId: string;
+        customerName: string;
+        sessionStatus: string;
+      }) => {
+        console.log("Customer inactive notification:", data);
+        this.notifyListeners("server:customer_inactive", data);
+      }
+    );
 
     // Chat ended event
-    this.socket.on("server:chat_ended", (data: { chatSessionId: string; message: string; customerId: string; customerName: string; sessionStatus: string }) => {
-      console.log("Chat ended notification:", data);
-      this.notifyListeners("server:chat_ended", data);
-    });
+    this.socket.on(
+      "server:chat_ended",
+      (data: {
+        chatSessionId: string;
+        message: string;
+        customerId: string;
+        customerName: string;
+        sessionStatus: string;
+      }) => {
+        console.log("Chat ended notification:", data);
+        this.notifyListeners("server:chat_ended", data);
+      }
+    );
 
     // Customer info request acknowledgment
-    this.socket.on("server:customer_info_request_sent", (data: { 
-      chatSessionId: string; 
-      customerId: string; 
-      triggeredBySocket: string; 
-      totalAgentSockets: number; 
-      requestedAt: string; 
-    }) => {
-      console.log("Customer info request sent acknowledgment:", data);
-      this.notifyListeners("server:customer_info_request_sent", data);
-    });
+    this.socket.on(
+      "server:customer_info_request_sent",
+      (data: {
+        chatSessionId: string;
+        customerId: string;
+        triggeredBySocket: string;
+        totalAgentSockets: number;
+        requestedAt: string;
+      }) => {
+        console.log("Customer info request sent acknowledgment:", data);
+        this.notifyListeners("server:customer_info_request_sent", data);
+      }
+    );
 
     return this.socket;
   }
