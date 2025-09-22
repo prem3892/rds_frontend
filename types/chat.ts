@@ -63,6 +63,8 @@ export interface ChatSession {
     notes?: string;
     bookedAt: string; // ISO 8601 Date string
   };
+  // Number of unread messages for the agent; provided by API and socket updates
+  unreadCount?: number;
 }
 
 export type ChatSessionStatus =
@@ -125,6 +127,7 @@ export interface AgentInfo {
 export interface ChatMessage {
   _id: string;
   id?: string; // Some responses include this field
+  unreadCount?: number;
   readByCustomer: boolean;
   readByAgent: boolean;
   chatSessionId: string;
@@ -137,6 +140,7 @@ export interface ChatMessage {
   updatedAt: string; // ISO 8601 Date string
   __v?: number; // MongoDB version field
   agentInfo?: AgentInfo; // New field for agent messages
+
 }
 
 // For GET /chat/sessions/:sessionId/messages query parameters

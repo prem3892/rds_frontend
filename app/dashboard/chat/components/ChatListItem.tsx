@@ -38,10 +38,7 @@ import {
 import ReactCountryFlag from "react-country-flag";
 
 interface ChatListItemProps {
-  session: ChatSession & {
-    unreadCount?: number;
-    lastMessagePreview?: string;
-  };
+  session: ChatSession ;
   isSelected: boolean;
   onSelect: () => void;
 }
@@ -127,6 +124,8 @@ const ChatListItem = React.memo(
       );
     };
 
+
+    console.log(session.appointmentData, session.appointmentBooked,"APPOINTMENT DATA");
     return (
       <Button
         variant={isSelected ? "secondary" : "ghost"}
@@ -172,12 +171,12 @@ const ChatListItem = React.memo(
           {/* Status and unread count */}
           <div className="flex items-center justify-between mt-1">
             <ChatStatusIndicator status={session.status} className="text-xs" />
-            {session.unreadCount && session.unreadCount > 0 && (
+            {Number(session.unreadCount ?? 0) > 0 && !isSelected && (
               <Badge
                 variant="destructive"
                 className="text-xs px-1.5 py-0.5 flex-shrink-0"
               >
-                {session.unreadCount}
+                {Number(session.unreadCount)}
               </Badge>
             )}
           </div>
@@ -190,9 +189,9 @@ const ChatListItem = React.memo(
                 <span className="font-medium">Appointment Booked</span>
               </div>
               <div className="text-xs text-green-600 mt-1">
-                {format(parseISO(session.appointmentData.date), "MMM dd, yyyy 'at' h:mm a")}
+                {format(parseISO(session.appointmentData?.date), "MMM dd, yyyy 'at' h:mm a")}
               </div>
-              {session.appointmentData.notes && (
+              {session.appointmentData?.notes && (
                 <div className="text-xs text-green-600 mt-1 truncate">
                   Note: {session.appointmentData.notes}
                 </div>
