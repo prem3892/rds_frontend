@@ -86,6 +86,8 @@ export function useSocketInitializer() {
             toast.info('Chat already accepted', {
               description: `Chat is already accepted by ${data?.acceptedByAgentName || 'another agent'}`,
             });
+            // Immediately remove from pending requests without requiring a refresh
+            chatActions.removePendingRequest(data.chatSessionId);
             queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY,PENDING_CHAT_SESSIONS_QUERY_KEY] });
             break;
           case "onlineStatusUpdated":
