@@ -250,9 +250,9 @@ export function GuestFeed({
     };
 
   return (
-    <Card className={cn("w-full h-full rounded-3xl border-none shadow-sm", className)}>
+    <Card className={cn("w-full h-full rounded-3xl border-none shadow-sm flex flex-col", className)}>
       <Tabs defaultValue="guests" className="w-full h-full flex flex-col">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-4 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
               <Users className="w-5 h-5 text-blue-600" />
@@ -296,9 +296,9 @@ export function GuestFeed({
           </div>
         </CardHeader>
 
-        <CardContent className="p-0 flex-1">
+        <CardContent className="p-0 flex-1 min-h-0">
           <TabsContent value="guests" className="mt-0 h-full">
-            <ScrollArea className={cn(maxHeight)}>
+            <ScrollArea className="h-full">
               <AnimatePresence mode="sync">
                 {isLoadingVisitors && visitors.length === 0 ? (
                   <motion.div
@@ -404,7 +404,7 @@ export function GuestFeed({
           </TabsContent>
 
           <TabsContent value="chats" className="mt-0 h-full">
-            <ScrollArea className={cn(maxHeight, "gap-4 px-2")}>
+            <ScrollArea className="h-full gap-4 px-2">
               <AnimatePresence mode="sync">
                 {isLoadingChatSessions && activeSessionsArray.length === 0 ? (
                   <motion.div
