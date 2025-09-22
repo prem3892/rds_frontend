@@ -9,7 +9,7 @@ import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { ChatMessage, VisitorActivityEvent } from "@/types";
 import { toast } from "sonner";
 import { isLocalStatusChangeActive } from "@/lib/status-change-tracker";
-import { AGENTS_QUERY_KEY, queryClient, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY } from "@/lib/api";
+import { AGENTS_QUERY_KEY, queryClient, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY, PENDING_CHAT_SESSIONS_QUERY_KEY } from "@/lib/api";
 import { customerInactivityEvents, chatEndedEvents } from "@/lib/customer-inactivity-events";
 
 // Hook for initializing the socket only once
@@ -80,6 +80,15 @@ export function useSocketInitializer() {
             break;
           case "chatTakenOrResolved":
             chatActions.removePendingRequest(data.chatSessionId);
+            break;
+          case "chatAlreadyAccepted":
+            // Show toast to inform the agent the chat was already accepted elsewhere
+            toast.info('Chat already accepted', {
+              description: `Chat is already accepted by ${data?.acceptedByAgentName || 'another agent'}`,
+            });
+            // Immediately remove from pending requests without requiring a refresh
+            chatActions.removePendingRequest(data.chatSessionId);
+            queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY,PENDING_CHAT_SESSIONS_QUERY_KEY] });
             break;
           case "onlineStatusUpdated":
             // Handle the new payload structure with success/error cases

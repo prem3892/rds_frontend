@@ -29,6 +29,7 @@ import * as z from "zod";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -62,6 +63,13 @@ export default function EditAutoMessageDialog({
   autoMessage,
   widgets,
 }: EditAutoMessageDialogProps) {
+  const normalizeWidgetId = (value: unknown): string => {
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object" && "_id" in (value as any)) {
+      return (value as any)._id ?? "";
+    }
+    return "";
+  };
   const [newPagePath, setNewPagePath] = useState("");
   const queryClient = useQueryClient();
 
@@ -70,7 +78,7 @@ export default function EditAutoMessageDialog({
     defaultValues: {
       title: autoMessage?.title || "",
       message: autoMessage?.message || "",
-      widgetId: autoMessage?.widgetId || "",
+      widgetId: normalizeWidgetId((autoMessage as any)?.widgetId),
       domain: autoMessage?.domain || "",
       sitewide: autoMessage?.sitewide || false,
       pagePaths: autoMessage?.pagePaths || [],
@@ -98,7 +106,7 @@ export default function EditAutoMessageDialog({
       form.reset({
         title: autoMessage.title,
         message: autoMessage.message,
-        widgetId: autoMessage.widgetId,
+        widgetId: normalizeWidgetId((autoMessage as any).widgetId),
         domain: autoMessage.domain,
         sitewide: autoMessage.sitewide,
         pagePaths: autoMessage.pagePaths,
@@ -107,6 +115,14 @@ export default function EditAutoMessageDialog({
       });
     }
   }, [autoMessage, form]);
+
+  // Ensure any lingering non-string widgetId is normalized
+  useEffect(() => {
+    const current = (form.getValues as any)("widgetId");
+    if (current && typeof current !== "string") {
+      form.setValue("widgetId", normalizeWidgetId(current));
+    }
+  }, [form]);
 
   const handleClose = () => {
     setNewPagePath("");
@@ -179,6 +195,7 @@ export default function EditAutoMessageDialog({
                         {...field}
                       />
                     </FormControl>
+               
                     <FormMessage />
                   </FormItem>
                 )}
@@ -231,7 +248,7 @@ export default function EditAutoMessageDialog({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+         
               <FormField
                 control={form.control}
                 name="domain"
@@ -244,12 +261,17 @@ export default function EditAutoMessageDialog({
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      Enter domains without http(s)://
+                      </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
+        
+<div className="grid grid-cols-2 gap-4">
+            <FormField
                 control={form.control}
                 name="showAfterSeconds"
                 render={({ field }) => (
@@ -268,13 +290,12 @@ export default function EditAutoMessageDialog({
                   </FormItem>
                 )}
               />
-            </div>
 
             <FormField
               control={form.control}
               name="isEnabled"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormItem className="flex flex-row items-end space-x-3 space-y-0 rounded-md  p-4">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -287,6 +308,7 @@ export default function EditAutoMessageDialog({
                 </FormItem>
               )}
             />
+            </div>
 
             <FormField
               control={form.control}

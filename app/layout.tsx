@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RDS Live Chat",
-  description: "RDS Live Chat",
+  title: "Convoia Chat",
+  description: "Convoia Chat",
 };
 
 export default function RootLayout({

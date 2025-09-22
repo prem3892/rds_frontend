@@ -14,6 +14,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -201,7 +202,7 @@ export default function CreateAutoMessageDialog({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+     
               <FormField
                 control={form.control}
                 name="domain"
@@ -214,12 +215,16 @@ export default function CreateAutoMessageDialog({
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      Enter domains without http(s)://
+                      </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
+           
+            <FormField
                 control={form.control}
                 name="showAfterSeconds"
                 render={({ field }) => (
@@ -234,17 +239,17 @@ export default function CreateAutoMessageDialog({
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
                     </FormControl>
+              
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
             <FormField
               control={form.control}
               name="sitewide"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormItem className="flex flex-row items-end space-x-3 space-y-0 rounded-md  p-4">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
