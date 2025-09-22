@@ -376,7 +376,8 @@ export function GuestFeed({
                             className="text-xs text-gray-600 block truncate hover:text-blue-600 transition-colors"
                             title={visitor.currentPageUrl}
                           >
-                            At: {visitor.currentPageUrl}
+
+                            At: {visitor.currentPageUrl.split("?")[0]}
                           </a>
 
                           {/* Status and action */}

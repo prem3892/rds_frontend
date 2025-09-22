@@ -82,6 +82,9 @@ export function VisitorsList({
     }
   };
 
+
+
+
   const getDeviceInfo = (browserInfo: VisitorInfo["browserInfo"]) => {
     const parts = [];
     if (browserInfo.platform) parts.push(browserInfo.platform);
@@ -219,7 +222,10 @@ export function VisitorsList({
                           className="truncate"
                           title={visitor.currentPageUrl}
                         >
-                          {visitor.currentPageUrl}
+                          {
+                            visitor.currentPageUrl
+                     
+                          }
                         </span>
                       </div>
 
