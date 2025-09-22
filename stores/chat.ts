@@ -41,6 +41,7 @@ interface ChatState {
     setSelectedSessionId: (sessionId: string | null) => void;
 
     addMessageToSession: (sessionId: string, message: ChatMessage) => void;
+    setUnreadCount: (sessionId: string, unreadCount: number) => void;
     loadMessagesForSession: (
       sessionId: string,
       messages: ChatMessage[]
@@ -186,6 +187,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
               ),
               lastMessageTimestamp: message.timestamp,
               // TODO: Update unread status if this session is not selectedSessionId
+              hasUnread: true,
+              // If the message payload includes unreadCount, trust it; otherwise increment
+              unreadCount:
+                typeof message.unreadCount === "number"
+                  ? message.unreadCount
+                  : (state.activeSessions[sessionId].unreadCount || 0) +
+                    (message.senderType === "CUSTOMER" ? 1 : 0),
+            },
+          },
+        };
+      }),
+    setUnreadCount: (sessionId, unreadCount) =>
+      set((state) => {
+        if (!state.activeSessions[sessionId]) return state;
+        return {
+          activeSessions: {
+            ...state.activeSessions,
+            [sessionId]: {
+              ...state.activeSessions[sessionId],
+              unreadCount,
+              hasUnread: (unreadCount || 0) > 0,
             },
           },
         };
@@ -215,6 +237,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
               messages: uniqueMessages,
               // hasMoreMessages: hasMore, // REMOVE
               isLoadingMessages: false,
+              hasUnread: true,
             },
           },
         };
@@ -228,6 +251,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
             [sessionId]: {
               ...state.activeSessions[sessionId],
               isLoadingMessages: isLoading,
+              hasUnread: true,
             },
           },
         };

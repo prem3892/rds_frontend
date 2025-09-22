@@ -48,6 +48,10 @@ export function useSocketInitializer() {
             break;
           case "newMessage":
             chatActions.addMessageToSession(data.chatSessionId, data);
+            // If server provided unreadCount in message payload, update store count
+            if (typeof data.unreadCount === "number") {
+              chatActions.setUnreadCount(data.chatSessionId, data.unreadCount);
+            }
             // Show notification and toast for incoming customer messages
             const session = activeSessions[data.chatSessionId];
             if (session && data.senderType === "CUSTOMER") {
@@ -69,6 +73,13 @@ export function useSocketInitializer() {
               data.status,
               data
             );
+            // If server provided unreadCount in session update, update store count
+            if (typeof (data as any).unreadCount === "number") {
+              chatActions.setUnreadCount(
+                data.chatSessionId,
+                (data as any).unreadCount
+              );
+            }
             if (data.status !== "PENDING_ASSIGNMENT") {
               chatActions.removePendingRequest(data.chatSessionId);
             }
