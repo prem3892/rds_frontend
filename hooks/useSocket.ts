@@ -166,6 +166,12 @@ export function useSocketInitializer() {
             // Handle visitor activity events
             visitorActions.handleVisitorActivity(data as VisitorActivityEvent);
             break;
+          case "visitorCleanup":
+            // Remove expired visitor from the store to update UI immediately
+            if (data?.customerId) {
+              visitorActions.removeVisitor(data.customerId);
+            }
+            break;
           case "chatSessionRestored":
             // Handle chat session restoration - add the session to active sessions
             chatActions.addActiveSession(data);
