@@ -5,7 +5,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, VariantProps } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
 
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMobile, useIsMedium } from "@/hooks/use-breakpoint"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,6 +67,7 @@ function SidebarProvider({
   onOpenChange?: (open: boolean) => void
 }) {
   const isMobile = useIsMobile()
+  const isMedium = useIsMedium()
   const [openMobile, setOpenMobile] = React.useState(false)
 
   // This is the internal state of the sidebar.
@@ -87,6 +88,13 @@ function SidebarProvider({
     },
     [setOpenProp, open]
   )
+
+  // Auto-collapse sidebar on medium screens
+  React.useEffect(() => {
+    if (isMedium && open) {
+      setOpen(false)
+    }
+  }, [isMedium, open, setOpen])
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
