@@ -125,7 +125,7 @@ const ChatListItem = React.memo(
     };
 
 
-    console.log(session.appointmentData, session.appointmentBooked,"APPOINTMENT DATA");
+    // console.log(session.appointmentData, session.appointmentBooked,"APPOINTMENT DATA");
     return (
       <Button
         variant={isSelected ? "secondary" : "ghost"}

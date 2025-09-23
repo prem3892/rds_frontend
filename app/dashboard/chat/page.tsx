@@ -431,6 +431,7 @@ export default function MyChatsPage() {
                 onBack={handleBackToChats}
                 onShowGuestInfo={handleShowGuestInfo}
                 onBlockCustomer={handleBlockCustomer}
+                onRequestCustomerInfo={handleRequestCustomerInfo}
               />
 
               <ChatMessages
@@ -452,7 +453,6 @@ export default function MyChatsPage() {
                 onTypingStart={handleTypingStart}
                 onTypingStop={handleTypingStop}
                 sessionId={selectedSessionId}
-                onRequestCustomerInfo={handleRequestCustomerInfo}
               />
             </div>
           </main>
@@ -569,6 +569,7 @@ export default function MyChatsPage() {
               onBack={handleBackToChats}
               onShowGuestInfo={handleShowGuestInfo}
               onBlockCustomer={handleBlockCustomer}
+              onRequestCustomerInfo={handleRequestCustomerInfo}
             />
 
             {/* Real-time Status Banner */}
@@ -595,7 +596,6 @@ export default function MyChatsPage() {
               onTypingStart={handleTypingStart}
               onTypingStop={handleTypingStop}
               sessionId={selectedSessionId}
-              onRequestCustomerInfo={handleRequestCustomerInfo}
             />
           </div>
         ) : (

@@ -4,7 +4,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import CannedMessageSelector from "./CannedMessageSelector";
-import AskForEmailButton from "./AskForEmailButton";
 
 interface MessageInputProps {
   disabled: boolean;
@@ -12,7 +11,6 @@ interface MessageInputProps {
   onTypingStart: (sessionId: string) => void;
   onTypingStop: (sessionId: string) => void;
   sessionId: string | null;
-  onRequestCustomerInfo?: (chatSessionId: string) => Promise<boolean>;
 }
 
 const MessageInput = ({
@@ -21,7 +19,6 @@ const MessageInput = ({
   onTypingStart,
   onTypingStop,
   sessionId,
-  onRequestCustomerInfo,
 }: MessageInputProps) => {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -105,17 +102,6 @@ const MessageInput = ({
         onSelectMessage={handleCannedMessageSelect}
         onClose={handleCannedMessageClose}
       />
-      
-      {/* Ask for Email Button - Floating above input */}
-      {sessionId && onRequestCustomerInfo && (
-        <div className="absolute bg-rose-500 -top-10 right-1/2 left-1/2 z-20">
-          <AskForEmailButton
-            chatSessionId={sessionId}
-            onRequestCustomerInfo={onRequestCustomerInfo}
-            disabled={disabled}
-          />
-        </div>
-      )}
       
       <div className="flex items-center space-x-2">
         <Textarea
