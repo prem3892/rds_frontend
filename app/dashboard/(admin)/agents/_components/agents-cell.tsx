@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
     Tooltip,
@@ -16,6 +16,19 @@ interface AgentsCellProps {
   department: Department;
   agents: AgentProfile[];
 }
+
+const getFullImageUrl = (imagePath: string) => {
+  if (!imagePath) return undefined;
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the API base URL
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/";
+  return `${API_BASE_URL}${imagePath}`;
+};
 
 export function AgentsCell({ department, agents }: AgentsCellProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,6 +48,10 @@ export function AgentsCell({ department, agents }: AgentsCellProps) {
                     <AvatarFallback className="text-xs bg-blue-100 text-blue-600 font-medium">
                       {agent.user.firstName[0]}{agent.user.lastName[0]}
                     </AvatarFallback>
+                    <AvatarImage
+                      src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined}
+                      alt={`${agent.user.firstName} ${agent.user.lastName}`}
+                    />
                   </Avatar>
                 </TooltipTrigger>
                 <TooltipContent>
