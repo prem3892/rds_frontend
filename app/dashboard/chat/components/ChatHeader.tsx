@@ -2,13 +2,14 @@ import React, { useState, useCallback } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Loader2, ArrowLeft, User, ShieldX, Calendar } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ArrowLeft, User, ShieldX, Calendar, Mail } from "lucide-react";
 import { ChatSession } from "@/types";
 import { useIsBookingInProgress, useChatActions } from "@/stores/chat";
 import BookingForm from "./BookingForm";
 import ChatStatusIndicator from "./ChatStatusIndicator";
 import { cn, getColorFromString } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
+import { toast } from "sonner";
 
 interface ChatHeaderProps {
   session: ChatSession;
@@ -21,6 +22,7 @@ interface ChatHeaderProps {
   onBack?: () => void;
   onShowGuestInfo?: () => void;
   onBlockCustomer?: (sessionId: string) => void;
+  onRequestCustomerInfo?: (chatSessionId: string) => Promise<boolean>;
 }
 
 const ChatHeader = ({ 
@@ -29,11 +31,13 @@ const ChatHeader = ({
   onEnd, 
   onBack,
   onShowGuestInfo,
-  onBlockCustomer
+  onBlockCustomer,
+  onRequestCustomerInfo
 }: ChatHeaderProps) => {
   const isBookingInProgress = useIsBookingInProgress(session._id);
   const chatActions = useChatActions();
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
+  const [isRequestingEmail, setIsRequestingEmail] = useState(false);
 
   const customerName =
 
@@ -69,6 +73,31 @@ const ChatHeader = ({
     },
     [session._id, onResolve, chatActions]
   );
+
+  const handleRequestEmail = useCallback(async () => {
+    if (!onRequestCustomerInfo || isRequestingEmail) return;
+
+    setIsRequestingEmail(true);
+    try {
+      const success = await onRequestCustomerInfo(session._id);
+      if (success) {
+        toast.success("Email request sent to customer", {
+          description: "The customer will be prompted to provide their email address.",
+        });
+      } else {
+        toast.error("Failed to send email request", {
+          description: "Please try again or check your connection.",
+        });
+      }
+    } catch (error) {
+      console.error("Error requesting customer email:", error);
+      toast.error("Failed to send email request", {
+        description: "An unexpected error occurred. Please try again.",
+      });
+    } finally {
+      setIsRequestingEmail(false);
+    }
+  }, [onRequestCustomerInfo, session._id, isRequestingEmail]);
 
   return (
     <>
@@ -117,6 +146,28 @@ const ChatHeader = ({
               >
                 <User className="h-4 w-4 mr-1" />
                 <span className="hidden md:inline">Guest Info</span>
+              </Button>
+            )}
+
+            {onRequestCustomerInfo && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRequestEmail}
+                disabled={session.status !== "ACTIVE" || isRequestingEmail}
+                className="text-xs"
+              >
+                {isRequestingEmail ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    <span className="hidden md:inline">Requesting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-4 w-4 mr-1" />
+                    <span className="hidden md:inline">Ask for Email</span>
+                  </>
+                )}
               </Button>
             )}
             
