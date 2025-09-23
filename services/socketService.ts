@@ -163,6 +163,15 @@ class SocketService {
       this.notifyListeners("visitorActivity", data);
     });
 
+    // Visitor cleanup (expired visitors removed by server job)
+    this.socket.on(
+      "server:visitor_cleanup",
+      (data: { customerId: string; widgetId?: string; domain?: string; reason?: string; timestamp?: string }) => {
+        console.log("Visitor cleanup received:", data);
+        this.notifyListeners("visitorCleanup", data);
+      }
+    );
+
     // Chat session restored
     this.socket.on("server:chat_session_restored", (session: ChatSession) => {
       console.log("Chat session restored:", session);

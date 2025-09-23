@@ -69,6 +69,8 @@ export function AgentShiftsForm({ control, name }: AgentShiftsFormProps) {
 
   const timezones = getTimeZones();
 
+
+
   const addShift = () => {
     if (fields.length < 7) {
       // Find the first available day
@@ -438,7 +440,7 @@ export function AgentShiftsForm({ control, name }: AgentShiftsFormProps) {
                                 (timezone) => timezone.name === field.value
                               );
                               return selectedTimezone
-                                ? `${selectedTimezone.name} (${selectedTimezone.alternativeName})`
+                                ? `${selectedTimezone.name} (${selectedTimezone.alternativeName}) (${selectedTimezone.abbreviation})`
                                 : "Select timezone";
                             })()
                           : "Select timezone"}
@@ -457,13 +459,13 @@ export function AgentShiftsForm({ control, name }: AgentShiftsFormProps) {
                         <CommandGroup>
                           {timezones.map((timezone) => (
                             <CommandItem
-                              value={timezone.name}
+                              value={`${timezone.name}  ${timezone.abbreviation}`}
                               key={timezone.name}
                               onSelect={() => {
                                 field.onChange(timezone.name);
                               }}
                             >
-                              {timezone.name} ({timezone.alternativeName})
+                              {timezone.name} ({timezone.alternativeName}) ({timezone.abbreviation})
                               <Check
                                 className={cn(
                                   "ml-auto",
