@@ -113,6 +113,8 @@ export function MainLayoutWrapper({
   const statusUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
   const { data: agentProfile, isLoading, error } = useGetMyAgentProfile();
+  const { setOnlineStatus: setAuthOnlineStatus } = useAuthActions();
+  const [isInitialStatusSet, setIsInitialStatusSet] = useState(false);
 
   // Auto-determine current screen based on route if not provided
   const screenTitle = useMemo(() => {
@@ -147,6 +149,14 @@ export function MainLayoutWrapper({
       }
     };
   }, []);
+
+  // Sync online status from API on initial load
+  useEffect(() => {
+    if (agentProfile && !isInitialStatusSet) {
+      setAuthOnlineStatus(agentProfile.isOnline);
+      setIsInitialStatusSet(true);
+    }
+  }, [agentProfile, isInitialStatusSet, setAuthOnlineStatus]);
 
   const handleLogout = async () => {
     try {
