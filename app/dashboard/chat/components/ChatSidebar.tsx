@@ -22,41 +22,19 @@ const ChatSidebar = ({
   onAcceptChat,
   isLoading,
 }: ChatSidebarProps) => (
-    <aside className="w-full md:w-80 xl:w-96 flex rounded-l-3xl flex-col p-2 sm:p-4 h-full">
-    <div className="bg-white rounded-3xl p-3 sm:p-5 h-full shadow-sm flex flex-col">
+  <aside className="w-full md:w-80 xl:w-96 flex rounded-l-3xl flex-col p-2 sm:p-4 h-full">
+    <div className="bg-white rounded-3xl p-3 sm:p-5 h-full shadow-sm flex flex-col overflow-hidden">
       <div className="p-2 sm:p-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="size-10 bg-blue-500 rounded-md flex items-center justify-center">
             <ChatIcon className="size-7 text-white" />
           </div>
-          <h2 className="text-lg sm:text-xl font-semibold">
-            Recent Chats
-          </h2>
+          <h2 className="text-lg sm:text-xl font-semibold">Recent Chats</h2>
         </div>
       </div>
 
-      {/* Pending Requests */}
-      {pendingSessions.length > 0 && (
-        <div className="p-1 sm:p-2 border-b border-gray-100 flex-shrink-0">
-          <h3 className="px-1 sm:px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-            Pending Requests ({pendingSessions.length})
-          </h3>
-          <ScrollArea className="max-h-48">
-            <div className="space-y-2">
-              {pendingSessions.map((session) => (
-                <PendingChatRequestCard
-                  key={session._id}
-                  session={session}
-                  onAccept={onAcceptChat}
-                />
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-      )}
-
       {/* Active Chats List */}
-      <div className="flex-1 min-h-0 p-1 sm:p-2">
+      <div className="flex-1 min-h-0 p-1 sm:p-2 relative z-0">
         <ScrollArea className="h-full">
           <div className="space-y-2">
             {isLoading && activeSessions.length === 0 && (
@@ -72,14 +50,31 @@ const ChatSidebar = ({
                   No active or pending chats.
                 </p>
               )}
-            {activeSessions.map((session) => (
-              <ChatListItem
-                key={session._id}
-                session={session}
-                isSelected={selectedSessionId === session._id}
-                onSelect={() => onSelectSession(session._id)}
-              />
-            ))}
+            {pendingSessions.length > 0 && (
+              <h3 className="px-1 sm:px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Pending Requests ({pendingSessions.length})
+              </h3>
+            )}
+            <ScrollArea className=" rounded-md ">
+              <div className="space-y-2">
+                {pendingSessions.map((session) => (
+                  <PendingChatRequestCard
+                    key={session._id}
+                    session={session}
+                    onAccept={onAcceptChat}
+                  />
+                ))}
+
+                {activeSessions.map((session) => (
+                  <ChatListItem
+                    key={session._id}
+                    session={session}
+                    isSelected={selectedSessionId === session._id}
+                    onSelect={() => onSelectSession(session._id)}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         </ScrollArea>
       </div>

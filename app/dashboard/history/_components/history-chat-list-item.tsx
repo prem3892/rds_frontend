@@ -187,11 +187,14 @@ const HistoryChatListItem = React.memo(
                 TZ: {session.customerId.metadata.browserInfo.timezone}
               </div>
             )} */}
-            <div className="flex items-center gap-2">
-              <Badge  className="rounded-full">IP: {getIpInfo()}</Badge>
+            <div className="flex flex-col items-start gap-2 flex-wrap">
+              <div className="w-full flex-wrap">
+
+              <Badge  className="rounded-full truncate text-wrap text-ellipsis text-xs">IP: {getIpInfo()}</Badge>
+              </div>
              {
               session.customerId?.metadata?.ipInfo.country &&
-             <Badge  className="rounded-full">Country: {getCountry()}</Badge>}
+             <Badge  className="rounded-full truncate text-wrap">Country: {getCountry()}</Badge>}
               {/* <Badge  className="rounded-full">City: {getCity()}</Badge> */}
             </div>
           </div>
