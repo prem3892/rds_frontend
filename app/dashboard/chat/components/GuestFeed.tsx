@@ -175,7 +175,7 @@ export function GuestFeed({
             variant="default"
             className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1"
           >
-            Returning
+            Online
           </Badge>
         );
       case VisitorStatus.RECONNECTED:
@@ -206,7 +206,7 @@ export function GuestFeed({
     const isInitiating = initiatingChatForCustomer === visitorId;
     
     return (
-      <div className="flex flex-col items-end gap-1">
+      <div className="flex flex-col items-end gap-1 shrink-0">
         <Button
           variant="ghost"
           size="sm"
@@ -217,7 +217,7 @@ export function GuestFeed({
           {isInitiating && <Loader2 className="w-3 h-3 animate-spin" />}
           {isInitiating ? "Initiating..." : "Initiate Chat"}
         </Button>
-        <ChevronDown className="w-3 h-3 text-gray-400" />
+        {/* <ChevronDown className="w-3 h-3 text-gray-400" /> */}
       </div>
     );
   };
@@ -332,7 +332,7 @@ export function GuestFeed({
                     )}
                   </motion.div>
                 ) : (
-                  <div className="space-y-3 px-3 pb-4">
+                  <div className="space-y-3 px-3  pb-4">
                     {visitors.map((visitor) => (
                       <motion.div
                         key={visitor.customerId}
@@ -340,7 +340,7 @@ export function GuestFeed({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.2 }}
-                        className="relative flex items-center gap-3"
+                        className="relative flex items-center gap-3 overflow-x-hidden"
                       >
                         {/* Activity indicator */}
                         <div className="flex-shrink-0 relative">
@@ -350,7 +350,7 @@ export function GuestFeed({
                         </div>
                         
                         {/* Mobile-optimized layout */}
-                        <div className="bg-gray-50 rounded-lg p-3 space-y-3 flex-1">
+                        <div className="bg-gray-50 rounded-lg p-3 space-y-3 flex-1 min-w-0 overflow-hidden">
                           {/* Header with name and time */}
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -373,7 +373,7 @@ export function GuestFeed({
                           <a 
                             href={visitor.currentPageUrl} 
                             target="_blank" 
-                            className="text-xs text-gray-600 block truncate hover:text-blue-600 transition-colors"
+                            className="text-xs text-gray-600 block w-full max-w-full truncate hover:text-blue-600 transition-colors text-ellipsis text-truncate text-wrap"
                             title={visitor.currentPageUrl}
                           >
 
@@ -405,7 +405,7 @@ export function GuestFeed({
           </TabsContent>
 
           <TabsContent value="chats" className="mt-0 h-full">
-            <ScrollArea className="h-full gap-4 px-2">
+            <ScrollArea className="h-full gap-4 px-2 ">
               <AnimatePresence mode="sync">
                 {isLoadingChatSessions && activeSessionsArray.length === 0 ? (
                   <motion.div

@@ -177,7 +177,7 @@ export function GuestInfo({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/30 bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black/30 bg-opacity-50 z-40 "
             onClick={onClose}
           />
           
@@ -187,11 +187,11 @@ export function GuestInfo({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-50"
+            className="fixed right-0 top-0 h-full max-w-xl  bg-white shadow-2xl z-50"
           >
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full ">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-">
                 <div className="flex items-center gap-2">
                   <UserIcon className="w-5 h-5 text-blue-600" />
                   <h2 className="text-lg font-semibold">Guest Info</h2>
@@ -207,8 +207,10 @@ export function GuestInfo({
               </div>
 
               {/* Content */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-6">
+              <ScrollArea className="flex-1 p-4 overflow-y-auto ">
+                {/* Enable horizontal scrolling for wide content */}
+                <div className="w-full overflow-x-auto ">
+                <div className="space-y-6  ">
                   {/* Guest Basic Info */}
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
@@ -235,7 +237,7 @@ export function GuestInfo({
                   </div>
 
                   {/* Contact Details */}
-                  <Card>
+                  <Card className="max-w-sm">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base font-semibold">Contact Details</CardTitle>
@@ -366,7 +368,7 @@ export function GuestInfo({
                   </Card>
 
                   {/* Guest Details */}
-                  <Card>
+                  <Card className="max-w-sm">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base font-semibold">Guest Details</CardTitle>
                     </CardHeader>
@@ -403,7 +405,7 @@ export function GuestInfo({
 
                   {/* Appointment Information */}
                   {session.appointmentBooked && session.appointmentData && (
-                    <Card>
+                    <Card className="max-w-sm">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base font-semibold flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-green-600" />
@@ -434,6 +436,7 @@ export function GuestInfo({
                       </CardContent>
                     </Card>
                   )}
+                </div>
                 </div>
               </ScrollArea>
             </div>

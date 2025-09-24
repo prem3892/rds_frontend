@@ -230,9 +230,16 @@ const ChatHeader = ({
               <Calendar className="w-4 h-4" />
               <span>Appointment Booked</span>
             </div>
-            <div className="text-sm text-green-700 mt-1">
-              {format(parseISO(session.appointmentData.date), "EEEE, MMMM dd, yyyy 'at' h:mm a")}
-            </div>
+            {session.appointmentData?.date ? (
+              <div className="text-sm text-green-700 mt-1">
+                {format(
+                  parseISO(session.appointmentData.date),
+                  "EEEE, MMMM dd, yyyy 'at' h:mm a"
+                )}
+              </div>
+            ) : (
+              <div className="text-sm text-green-700 mt-1">Date pending</div>
+            )}
             {session.appointmentData.notes && (
               <div className="text-sm text-green-600 mt-1">
                 Note: {session.appointmentData.notes}

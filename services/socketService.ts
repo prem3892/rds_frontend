@@ -1,6 +1,7 @@
 // services/socketService.ts
 import { io, Socket } from "socket.io-client";
 import { ChatMessage, ChatSession } from "@/types";
+import { CHAT_SESSIONS_QUERY_KEY_PREFIX, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY, PENDING_CHAT_SESSIONS_QUERY_KEY, queryClient } from "@/lib/api";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001";
 
@@ -380,6 +381,7 @@ class SocketService {
     }
     console.debug("Booking appointment for chat session:", payload);
     this.socket.emit("agent:book_appointment", payload);
+    queryClient.invalidateQueries({ queryKey: [CHAT_SESSIONS_QUERY_KEY_PREFIX, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY, PENDING_CHAT_SESSIONS_QUERY_KEY] });
     return true;
   }
 
