@@ -1,6 +1,6 @@
 "use client"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 // import { Card, CardContent } from "@/components/ui/card"
@@ -13,6 +13,7 @@ type AgentProfile = {
     firstName?: string
     lastName?: string
   }
+  profilePicture?: string
 }
 
 interface AgentsCellProps {
@@ -22,6 +23,19 @@ interface AgentsCellProps {
   isOpen: boolean
   onClose: () => void
 }
+
+const getFullImageUrl = (imagePath: string) => {
+  if (!imagePath) return undefined;
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the API base URL
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+    return `${API_BASE_URL}${imagePath}`;
+};
 
 function getInitials(first?: string, last?: string) {
   const a = (first?.[0] || "").toUpperCase()
@@ -76,6 +90,10 @@ export function AgentsModal({ departmentName, agents, isOpen, onClose }: AgentsC
                         <AvatarFallback className="text-xs bg-blue-100 text-blue-700 font-medium">
                           {getInitials(first, last)}
                         </AvatarFallback>
+                        <AvatarImage
+                          src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined}
+                          alt={`${agent.user.firstName} ${agent.user.lastName}`}
+                        />
                       </Avatar>
                       <h3 className="text-xs font-medium text-foreground">
                         {(first || "").trim()} {(last || "").trim()}

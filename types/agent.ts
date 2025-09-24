@@ -26,6 +26,7 @@ export interface AgentProfile {
   maxConcurrentChats: number;
   createdAt: string;
   updatedAt: string;
+  profilePicture?: string;
   user: {
     email: string;
     firstName: string;
