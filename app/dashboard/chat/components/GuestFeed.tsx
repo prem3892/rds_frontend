@@ -175,7 +175,7 @@ export function GuestFeed({
             variant="default"
             className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1"
           >
-            Returning
+            Online
           </Badge>
         );
       case VisitorStatus.RECONNECTED:
