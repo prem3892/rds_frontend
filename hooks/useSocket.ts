@@ -9,7 +9,7 @@ import { useToastNotifications } from "@/hooks/useToastNotifications";
 import { ChatMessage, VisitorActivityEvent } from "@/types";
 import { toast } from "sonner";
 import { isLocalStatusChangeActive } from "@/lib/status-change-tracker";
-import { AGENTS_QUERY_KEY, queryClient, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY, PENDING_CHAT_SESSIONS_QUERY_KEY } from "@/lib/api";
+import { AGENTS_QUERY_KEY, queryClient, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY, PENDING_CHAT_SESSIONS_QUERY_KEY, CHAT_SESSIONS_QUERY_KEY_PREFIX, CHAT_SESSIONS_INFINITE_QUERY_KEY_PREFIX } from "@/lib/api";
 import { customerInactivityEvents, chatEndedEvents } from "@/lib/customer-inactivity-events";
 
 // Hook for initializing the socket only once
@@ -161,6 +161,10 @@ export function useSocketInitializer() {
               data.chatSessionId,
               false
             );
+            // Invalidate queries so lists reflect the appointment status immediately
+            queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY] });
+            queryClient.invalidateQueries({ queryKey: [CHAT_SESSIONS_QUERY_KEY_PREFIX] });
+            queryClient.invalidateQueries({ queryKey: [CHAT_SESSIONS_INFINITE_QUERY_KEY_PREFIX] });
             break;
           case "visitorActivity":
             // Handle visitor activity events

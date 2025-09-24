@@ -119,9 +119,13 @@ const ChatListItem = React.memo(
 
     const getDomainDisplay = () => {
       // Use metadata.initialDomain if available, otherwise fall back to session.domain
-      return (
-        session.customerId?.metadata?.initialDomain?.split("?")[0] || session.domain.split("?")[0] || "N/A"
-      );
+      const initialDomain = session.customerId?.metadata?.initialDomain;
+      const fallbackDomain = session.domain;
+      const domainToUse = initialDomain || fallbackDomain;
+      if (typeof domainToUse === "string" && domainToUse.length > 0) {
+        return domainToUse.split("?")[0];
+      }
+      return "N/A";
     };
 
 
@@ -188,9 +192,13 @@ const ChatListItem = React.memo(
                 <Calendar className="w-3 h-3" />
                 <span className="font-medium">Appointment Booked</span>
               </div>
-              <div className="text-xs text-green-600 mt-1">
-                {format(parseISO(session.appointmentData?.date), "MMM dd, yyyy 'at' h:mm a")}
-              </div>
+              {session.appointmentData?.date ? (
+                <div className="text-xs text-green-600 mt-1">
+                  {format(parseISO(session.appointmentData.date), "MMM dd, yyyy 'at' h:mm a")}
+                </div>
+              ) : (
+                <div className="text-xs text-green-600 mt-1">Date pending</div>
+              )}
               {session.appointmentData?.notes && (
                 <div className="text-xs text-green-600 mt-1 truncate">
                   Note: {session.appointmentData.notes}
