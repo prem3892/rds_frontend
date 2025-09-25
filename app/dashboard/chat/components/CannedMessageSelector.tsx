@@ -2,10 +2,10 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useGetCannedMessages } from "@/lib/canned.api";
+import { useGetCannedMessagesInfinite } from "@/lib/canned.api";
 import { cn } from "@/lib/utils";
-import { MessageSquare, Tag } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { MessageSquare, Tag, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 interface CannedMessageSelectorProps {
   isVisible: boolean;
@@ -23,6 +23,10 @@ const CannedMessageSelector = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const previousScrollHeight = useRef<number>(0);
+  const previousScrollTop = useRef<number>(0);
+  const isScrollingToLoad = useRef<boolean>(false);
 
   // Debounced search query for API calls
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
@@ -39,24 +43,159 @@ const CannedMessageSelector = ({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch canned messages with debounced search filter
-  const { data: cannedMessagesResponse, isLoading } = useGetCannedMessages({
+  // Fetch canned messages with infinite scrolling
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isError,
+  } = useGetCannedMessagesInfinite({
     search: debouncedSearchQuery,
     limit: 10,
     sortBy: "createdAt",
     sortOrder: "desc",
   });
 
-  const messages = cannedMessagesResponse?.items || [];
+  // Flatten all pages into a single array and remove duplicates
+  const messages = data?.pages.flatMap((page: any) => page.items) || [];
+  const uniqueMessages = messages.filter((message, index, self) => 
+    index === self.findIndex(m => m._id === message._id)
+  );
 
   // Reset selected index when search changes
   useEffect(() => {
     setSelectedIndex(0);
   }, [searchQuery]);
 
+  // Prevent scroll jumping by maintaining position during data updates
+  useEffect(() => {
+    if (!isFetchingNextPage && isScrollingToLoad.current && scrollContainerRef.current) {
+      // After new data loads, maintain scroll position
+      const container = scrollContainerRef.current;
+      
+      // Use multiple attempts to restore scroll position
+      const restoreScrollPosition = () => {
+        if (container && previousScrollHeight.current > 0) {
+          const newScrollHeight = container.scrollHeight;
+          const heightDifference = newScrollHeight - previousScrollHeight.current;
+          
+          if (heightDifference > 0) {
+            // Maintain the scroll position by adjusting for the new content
+            const targetScrollTop = previousScrollTop.current + heightDifference;
+            container.scrollTop = targetScrollTop;
+            
+            // Verify the scroll position was set correctly
+            if (Math.abs(container.scrollTop - targetScrollTop) > 5) {
+              // If not set correctly, try again
+              setTimeout(() => {
+                container.scrollTop = targetScrollTop;
+              }, 10);
+            }
+          }
+        }
+        
+        // Reset all tracking variables
+        previousScrollHeight.current = 0;
+        previousScrollTop.current = 0;
+        isScrollingToLoad.current = false;
+      };
+      
+      // Try multiple times to ensure scroll position is restored
+      setTimeout(restoreScrollPosition, 10);
+      setTimeout(restoreScrollPosition, 50);
+      setTimeout(restoreScrollPosition, 100);
+    }
+  }, [isFetchingNextPage, uniqueMessages.length]);
+
+  // Store scroll position when starting to fetch next page
+  useEffect(() => {
+    if (isFetchingNextPage && isScrollingToLoad.current && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      previousScrollHeight.current = container.scrollHeight;
+      previousScrollTop.current = container.scrollTop;
+    }
+  }, [isFetchingNextPage]);
+
+  // Intersection Observer for infinite scrolling
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [target] = entries;
+      
+      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        // Store scroll position before triggering fetch
+        if (scrollContainerRef.current) {
+          const container = scrollContainerRef.current;
+          previousScrollHeight.current = container.scrollHeight;
+          previousScrollTop.current = container.scrollTop;
+          isScrollingToLoad.current = true;
+        }
+        fetchNextPage();
+      }
+    },
+    [hasNextPage, isFetchingNextPage, fetchNextPage]
+  );
+
+  useEffect(() => {
+    if (!isVisible || !hasNextPage) return;
+
+    let observer: IntersectionObserver | null = null;
+
+    // Use a small delay to ensure the element is rendered
+    const timer = setTimeout(() => {
+      const element = loadMoreRef.current;
+      if (!element) return;
+
+      observer = new IntersectionObserver(handleObserver, {
+        threshold: 0.1,
+        rootMargin: '20px'
+      });
+
+      observer.observe(element);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [handleObserver, isVisible, hasNextPage, uniqueMessages.length]);
+
+  // Fallback scroll event listener
+  useEffect(() => {
+    if (!isVisible || !hasNextPage || isFetchingNextPage) return;
+
+    const handleScroll = () => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50; // 50px threshold
+
+      if (isNearBottom && hasNextPage && !isFetchingNextPage) {
+        // Store scroll position before triggering fetch
+        const container = scrollContainerRef.current;
+        if (container) {
+          previousScrollHeight.current = container.scrollHeight;
+          previousScrollTop.current = container.scrollTop;
+          isScrollingToLoad.current = true;
+        }
+        fetchNextPage();
+      }
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [isVisible, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   // Scroll to selected item when it changes
   useEffect(() => {
-    if (isVisible && messages.length > 0) {
+    if (isVisible && uniqueMessages.length > 0) {
       setTimeout(() => {
         const selectedElement = scrollContainerRef.current?.querySelector(`[data-message-index="${selectedIndex}"]`);
         if (selectedElement) {
@@ -67,7 +206,7 @@ const CannedMessageSelector = ({
         }
       }, 100);
     }
-  }, [selectedIndex, isVisible, messages.length]);
+  }, [selectedIndex, isVisible, uniqueMessages.length]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -78,7 +217,7 @@ const CannedMessageSelector = ({
         case "ArrowDown":
           e.preventDefault();
           setSelectedIndex((prev) => {
-            const newIndex = prev < messages.length - 1 ? prev + 1 : 0;
+            const newIndex = prev < uniqueMessages.length - 1 ? prev + 1 : 0;
             // Scroll to the selected item
             setTimeout(() => {
               const selectedElement = scrollContainerRef.current?.querySelector(`[data-message-index="${newIndex}"]`);
@@ -95,7 +234,7 @@ const CannedMessageSelector = ({
         case "ArrowUp":
           e.preventDefault();
           setSelectedIndex((prev) => {
-            const newIndex = prev > 0 ? prev - 1 : messages.length - 1;
+            const newIndex = prev > 0 ? prev - 1 : uniqueMessages.length - 1;
             // Scroll to the selected item
             setTimeout(() => {
               const selectedElement = scrollContainerRef.current?.querySelector(`[data-message-index="${newIndex}"]`);
@@ -111,8 +250,8 @@ const CannedMessageSelector = ({
           break;
         case "Enter":
           e.preventDefault();
-          if (messages[selectedIndex]) {
-            onSelectMessage(messages[selectedIndex].content);
+          if (uniqueMessages[selectedIndex]) {
+            onSelectMessage(uniqueMessages[selectedIndex].content);
           }
           break;
         case "Escape":
@@ -124,7 +263,7 @@ const CannedMessageSelector = ({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isVisible, messages, selectedIndex, onSelectMessage, onClose]);
+  }, [isVisible, uniqueMessages, selectedIndex, onSelectMessage, onClose]);
 
   // Handle click outside to close
   useEffect(() => {
@@ -169,7 +308,7 @@ const CannedMessageSelector = ({
               )}
             </div>
             <Badge variant="secondary" className="text-xs">
-              {messages.length} messages
+              {uniqueMessages.length} messages{hasNextPage ? "+" : ""}
             </Badge>
           </div>
 
@@ -180,13 +319,17 @@ const CannedMessageSelector = ({
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mx-auto mb-2"></div>
                 Loading messages...
               </div>
-            ) : messages.length === 0 ? (
+            ) : isError ? (
+              <div className="p-4 text-center text-red-500">
+                Failed to load messages. Please try again.
+              </div>
+            ) : uniqueMessages.length === 0 ? (
               <div className="p-4 text-center text-gray-500">
                 {searchQuery ? "No messages found" : "No canned messages available"}
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {messages.map((message, index) => (
+                {uniqueMessages.map((message, index) => (
                   <div
                     key={message._id}
                     data-message-index={index}
@@ -215,7 +358,7 @@ const CannedMessageSelector = ({
                           <div className="flex items-center gap-1 mt-2">
                             <Tag className="h-3 w-3 text-gray-400" />
                             <div className="flex gap-1">
-                              {message.tags.slice(0, 3).map((tag) => (
+                              {message.tags.slice(0, 3).map((tag: string) => (
                                 <Badge key={tag} variant="outline" className="text-xs">
                                   {tag}
                                 </Badge>
@@ -232,6 +375,22 @@ const CannedMessageSelector = ({
                     </div>
                   </div>
                 ))}
+                
+                {/* Load More Trigger */}
+                {hasNextPage && (
+                  <div ref={loadMoreRef} className="p-3 text-center border-t border-gray-100">
+                    {isFetchingNextPage ? (
+                      <div className="flex items-center justify-center gap-2 text-blue-600 py-2 bg-blue-50 rounded-lg mx-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm font-medium">Loading more messages...</span>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-400 py-1">
+                        Scroll down for more messages
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
