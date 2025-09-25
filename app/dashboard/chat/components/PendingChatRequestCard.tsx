@@ -69,7 +69,7 @@ const PendingChatRequestCard = ({
             {getCustomerDisplay()}
           </div>
           <div className="text-xs text-gray-600 mb-1">
-            Dept: {getDepartmentDisplay()}
+            At : {session.domain.split("?")[0]}
           </div>
           <div className="text-xs text-gray-600">
             {formatDistanceToNowStrict(parseISO(session.createdAt), {

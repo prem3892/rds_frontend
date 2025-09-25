@@ -2,8 +2,10 @@
 import {
   useMutation,
   useQuery,
+  useInfiniteQuery,
   UseMutationOptions,
   UseQueryOptions,
+  UseInfiniteQueryOptions,
 } from "@tanstack/react-query";
 import { customFetch } from "./api";
 import { 
@@ -60,6 +62,38 @@ export const useGetCannedMessages = (
       
       return customFetch<PaginatedCannedMessageResponse>(url);
     },
+    ...options,
+  });
+};
+
+// 2.1. Get Canned Messages with Infinite Scrolling
+export const useGetCannedMessagesInfinite = (
+  filters?: Omit<CannedMessageFilters, 'page'>,
+  options?: any
+) => {
+  return useInfiniteQuery({
+    queryKey: [CANNED_MESSAGES_QUERY_KEY + "-infinite", filters],
+    queryFn: ({ pageParam = 1 }: { pageParam: number }) => {
+      const params = new URLSearchParams();
+      if (filters?.search) params.append("search", filters.search);
+      if (filters?.tags) params.append("tags", filters.tags);
+      if (filters?.departmentIds) params.append("departmentIds", filters.departmentIds);
+      if (filters?.isGlobal !== undefined) params.append("isGlobal", filters.isGlobal.toString());
+      if (filters?.myMessages !== undefined) params.append("myMessages", filters.myMessages.toString());
+      params.append("page", pageParam.toString());
+      if (filters?.limit) params.append("limit", filters.limit.toString());
+      if (filters?.sortBy) params.append("sortBy", filters.sortBy);
+      if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+      
+      const queryString = params.toString();
+      const url = queryString ? `/agents/canned-messages?${queryString}` : "/agents/canned-messages";
+      
+      return customFetch<PaginatedCannedMessageResponse>(url);
+    },
+    getNextPageParam: (lastPage: PaginatedCannedMessageResponse) => {
+      return lastPage.meta.hasNext ? lastPage.meta.page + 1 : undefined;
+    },
+    initialPageParam: 1,
     ...options,
   });
 };

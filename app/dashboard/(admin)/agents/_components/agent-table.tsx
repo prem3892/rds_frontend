@@ -14,6 +14,7 @@ import { createAgentColumns } from "./agent-columns";
 import CellAction from "./cell-actions";
 import { useState } from "react";
 import { BlockAgentDialog } from "./block-agent-dialog";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 // Helper function to get the full image URL
 const getFullImageUrl = (imagePath: string) => {
@@ -336,6 +337,16 @@ const AgentTable = (props: Props) => {
           skeletonRows={8}
         />
       </div>
+
+      {/* {meta && meta.totalPages > 1 && (
+        <div className="mt-6">
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={meta.totalPages}
+            onPageChange={onPageChange}
+          />
+        </div>
+      )} */}
     </div>
   );
 };
