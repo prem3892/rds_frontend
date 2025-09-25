@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn, getColorFromString } from "@/lib/utils";
 import { useGetContactsByCustomer } from "@/lib/contact.api";
+import { useBlockCustomerMutation } from "@/lib/blocked-customer.api";
 import { ChatSession } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -20,11 +21,15 @@ import {
   Mail,
   Phone,
   User,
-  Calendar
+  Calendar,
+  ShieldX
 } from "lucide-react";
 import { useState } from "react";
 import { HistoryGuestInfoSkeleton } from "./history-guest-info-skeleton";
 import { format, parseISO } from "date-fns";
+import { toast } from "sonner";
+import BlockCustomerDialog from "@/app/dashboard/chat/components/BlockCustomerDialog";
+import { Badge } from "@/components/ui/badge";
 
 interface HistoryGuestInfoProps {
   session: ChatSession;
@@ -33,6 +38,7 @@ interface HistoryGuestInfoProps {
 
 export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInfoProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
 
   // Fetch contact information for this customer
   const {
@@ -45,6 +51,21 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
 
   // Get the first contact if any exist
   const existingContact = existingContacts && existingContacts.length > 0 ? existingContacts[0] : null;
+
+  // Block customer mutation
+  const blockCustomerMutation = useBlockCustomerMutation({
+    onSuccess: () => {
+      toast.success("Customer Blocked", {
+        description: "The customer has been successfully blocked from accessing the chat widget.",
+      });
+      setIsBlockDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error("Failed to Block Customer", {
+        description: error.message || "An error occurred while blocking the customer.",
+      });
+    },
+  });
 
   if (isLoading) {
     return <HistoryGuestInfoSkeleton />;
@@ -98,48 +119,72 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
     }
   };
 
+  const handleBlockCustomer = () => {
+    setIsBlockDialogOpen(true);
+  };
+
+  const handleConfirmBlockCustomer = () => {
+    if (session?.customerId?._id) {
+      blockCustomerMutation.mutate({
+        customerId: session.customerId._id,
+      });
+    }
+  };
+
   return (
     <div className="w-full">
       {/* Compact Guest Info Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={undefined} />
-            <AvatarFallback className={cn(
-              "text-white font-medium",
-              getColorFromString(getCustomerName())
-            )}>
-              {getCustomerInitial()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="font-semibold text-base">{getCustomerName()}</h3>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <span>
-                {
-                  session.customerId?.metadata?.ipInfo.city || ""
-                }, {
-                  session.customerId?.metadata?.ipInfo.country || ""
-                }
-              </span>
-              <span>•</span>
-              <span>{getLastSeen()}</span>
+      <div className="space-y-3">
+        {/* Top row - Avatar, Name, and Actions */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <Avatar className="h-10 w-10 flex-shrink-0">
+              <AvatarImage src={undefined} />
+              <AvatarFallback className={cn(
+                "text-white font-medium",
+                getColorFromString(getCustomerName())
+              )}>
+                {getCustomerInitial()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-base truncate">{getCustomerName()}</h3>
             </div>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <div className={`px-2 py-1 flex flex-wrap text-wrap truncate rounded-full text-xs border ${getStatusColor(session.status)}`}>
-            {session.status.replace(/_/g, " ")}
+          
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBlockCustomer}
+              className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 h-8"
+            >
+              <ShieldX className="h-3 w-3 mr-1" />
+              <span className="hidden sm:inline">Block</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-8 w-8 p-0 flex items-center justify-center"
+            >
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="h-8 w-8 p-0 flex items-center justify-center"
-          >
-            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
+        </div>
+
+        {/* Bottom row - Location, Last seen, and Status */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-gray-600">
+          <div className="flex items-center gap-2">
+            <span>
+              {session.customerId?.metadata?.ipInfo.city || ""}, {session.customerId?.metadata?.ipInfo.country || ""}
+            </span>
+            <span>•</span>
+            <span>{getLastSeen()}</span>
+          </div>
+          <Badge variant="outline" className={`${getStatusColor(session.status)} text-xs w-fit`}>
+            {session.status.replace(/_/g, " ")}
+          </Badge>
         </div>
       </div>
 
@@ -151,7 +196,7 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="mt-4 overflow-hidden max-h-96 overflow-y-auto"
+            className="mt-4 overflow-hidden max-h-[60vh] sm:max-h-96 overflow-y-auto"
           >
             <div className="space-y-4 pt-4 border-t border-gray-200">
               {/* Contact Details */}
@@ -228,7 +273,18 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
               {/* Guest Details */}
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">Guest Details</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold">Guest Details</CardTitle>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBlockCustomer}
+                      className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 h-7"
+                    >
+                      <ShieldX className="h-3 w-3 mr-1" />
+                      Block Guest
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2 text-xs">
@@ -300,6 +356,15 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Block Customer Dialog */}
+      <BlockCustomerDialog
+        open={isBlockDialogOpen}
+        onOpenChange={setIsBlockDialogOpen}
+        onConfirm={handleConfirmBlockCustomer}
+        customerName={getCustomerName()}
+        isLoading={blockCustomerMutation.isPending}
+      />
     </div>
   );
 }

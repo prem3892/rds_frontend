@@ -333,16 +333,20 @@ export default function HistoryNewPage() {
                         <div className="h-full flex flex-col">
                           {/* Back Button and Guest Info */}
                           <div className="p-3 sm:p-4 md:p-3 border-b flex-shrink-0">
-                            <div className="flex items-center gap-3">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleBackToList}
-                                className="p-2 h-auto flex-shrink-0"
-                              >
-                                <ArrowLeft className="h-4 w-4" />
-                              </Button>
-                              <div className="flex-1 min-w-0">
+                            <div className="space-y-3">
+                              {/* Back Button - Fixed position */}
+                              <div className="flex items-center">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={handleBackToList}
+                                  className="p-2 h-auto flex-shrink-0"
+                                >
+                                  <ArrowLeft className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              {/* Guest Info - Separate container */}
+                              <div className="w-full">
                                 <HistoryGuestInfo session={selectedSession} />
                               </div>
                             </div>
