@@ -126,10 +126,14 @@ export function useSocketInitializer() {
             } else {
               // Error case: Show error message and don't update status
               console.error('Failed to update online status:', data.error);
+             
               
               // Only show error toast if this was a local change
               // Don't show error toast for changes from other devices
               if (isLocalStatusChangeActive()) {
+                console.log('Status update failed', {
+                  description: data.error || 'Failed to update online status',
+                });
                 toast.error('Status update failed', {
                   description: data.error || 'Failed to update online status',
                 });

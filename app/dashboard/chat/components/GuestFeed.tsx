@@ -210,7 +210,7 @@ export function GuestFeed({
         <Button
           variant="ghost"
           size="sm"
-          className="text-green-600 text-xs font-medium p-0 h-auto hover:bg-transparent cursor-pointer flex items-center gap-1"
+          className="text-green-600  font-medium p-0 h-auto hover:bg-transparent cursor-pointer flex items-center gap-1"
           onClick={() => onInitiateChat?.(visitorId)}
           disabled={isInitiating}
         >
@@ -276,7 +276,7 @@ export function GuestFeed({
             <TabsList className="grid w-full grid-cols-2 bg-transparent h-auto p-0 gap-1">
               <TabsTrigger 
                 value="guests" 
-                className="text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=inactive]:bg-gray-200 data-[state=inactive]:text-gray-600 hover:bg-white/50 transition-all duration-200 rounded-md px-3 py-2 border-0 data-[state=active]:shadow-sm"
+                className="text-lg font-medium data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=inactive]:bg-gray-200 data-[state=inactive]:text-gray-600 hover:bg-white/50 transition-all duration-200 rounded-md px-3 py-2 border-0 data-[state=active]:shadow-sm"
               >
                 <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full mr-2">
                   {onlineCount}
@@ -285,7 +285,7 @@ export function GuestFeed({
               </TabsTrigger>
               <TabsTrigger 
                 value="chats" 
-                className="text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=inactive]:bg-gray-200 data-[state=inactive]:text-gray-600 hover:bg-white/50 transition-all duration-200 rounded-md px-3 py-2 border-0 data-[state=active]:shadow-sm"
+                className="text-lg font-medium data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=inactive]:bg-gray-200 data-[state=inactive]:text-gray-600 hover:bg-white/50 transition-all duration-200 rounded-md px-3 py-2 border-0 data-[state=active]:shadow-sm"
               >
                 <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full mr-2">
                   {activeChatsCount}
