@@ -9,6 +9,7 @@ import { customFetch } from "./api";
 import { ApiErrorResponse, User } from "@/types";
 import { AgentShift } from "@/types/agent";
 import { useAuthStore } from "@/stores/auth";
+import { PaginationMeta } from "@/types/shared";
 
 // Register DTO for creating agents
 export interface RegisterAgentDto {
@@ -91,10 +92,28 @@ export interface BlockAgentDto {
   isBlocked: boolean;
 }
 
+// Agent filters for pagination
+export interface AgentFilters {
+  search?: string;
+  departmentIds?: string[];
+  isOnline?: boolean;
+  isBlocked?: boolean;
+  page: number;
+  limit: number;
+  sortBy?: "createdAt" | "firstName" | "lastName" | "email";
+  sortOrder?: "asc" | "desc";
+}
+
+// Paginated response interface
+export interface PaginatedAgentResponse {
+  items: AgentProfile[];
+  meta: PaginationMeta;
+}
+
 // Query key constants
 export const AGENTS_QUERY_KEY = "agents";
 
-// Fetch all agents (admin only)
+// Fetch all agents (admin only) - Legacy function
 export const useGetAllAgents = (
   options?: Omit<
     UseQueryOptions<AgentProfile[], ApiErrorResponse>,
@@ -104,6 +123,38 @@ export const useGetAllAgents = (
   return useQuery<AgentProfile[], ApiErrorResponse>({
     queryKey: [AGENTS_QUERY_KEY],
     queryFn: () => customFetch<AgentProfile[]>("/agents"),
+    ...options,
+  });
+};
+
+// Fetch agents with pagination and filtering (admin only)
+export const useGetAgents = (
+  filters?: AgentFilters,
+  options?: Omit<
+    UseQueryOptions<PaginatedAgentResponse, ApiErrorResponse, PaginatedAgentResponse, [string, AgentFilters | undefined]>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<PaginatedAgentResponse, ApiErrorResponse, PaginatedAgentResponse, [string, AgentFilters | undefined]>({
+    queryKey: [AGENTS_QUERY_KEY, filters],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (filters?.search) params.append("search", filters.search);
+      if (filters?.departmentIds && filters.departmentIds.length > 0) {
+        params.append("departmentIds", filters.departmentIds.join(","));
+      }
+      if (filters?.isOnline !== undefined) params.append("isOnline", filters.isOnline.toString());
+      if (filters?.isBlocked !== undefined) params.append("isBlocked", filters.isBlocked.toString());
+      if (filters?.page) params.append("page", filters.page.toString());
+      if (filters?.limit) params.append("limit", filters.limit.toString());
+      if (filters?.sortBy) params.append("sortBy", filters.sortBy);
+      if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+      
+      const queryString = params.toString();
+      const url = queryString ? `/agents?${queryString}` : "/agents";
+      
+      return customFetch<PaginatedAgentResponse>(url);
+    },
     ...options,
   });
 };

@@ -6,12 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Filter, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
-interface AgentFilters {
-  search: string;
-  department: string;
-  status: string;
-}
+import { AgentFilters } from "@/lib/agent.api";
 
 interface SearchFiltersProps {
   filters: AgentFilters;
@@ -27,22 +22,37 @@ const SearchFilters = ({ filters, onFiltersChange, departments }: SearchFiltersP
   };
 
   const handleDepartmentChange = (value: string) => {
-    onFiltersChange({ ...filters, department: value });
+    const departmentIds = value === "all" ? [] : [value];
+    onFiltersChange({ ...filters, departmentIds });
   };
 
-  const handleStatusChange = (value: string) => {
-    onFiltersChange({ ...filters, status: value });
+  const handleOnlineStatusChange = (value: string) => {
+    const isOnline = value === "all" ? undefined : value === "online";
+    onFiltersChange({ ...filters, isOnline });
+  };
+
+  const handleBlockedStatusChange = (value: string) => {
+    const isBlocked = value === "all" ? undefined : value === "blocked";
+    onFiltersChange({ ...filters, isBlocked });
   };
 
   const clearFilters = () => {
     onFiltersChange({
       search: "",
-      department: "all",
-      status: "all",
+      departmentIds: [],
+      isOnline: undefined,
+      isBlocked: undefined,
+      page: 1,
+      limit: 10,
+      sortBy: "createdAt",
+      sortOrder: "desc",
     });
   };
 
-  const hasActiveFilters = filters.search || (filters.department && filters.department !== "all") || (filters.status && filters.status !== "all");
+  const hasActiveFilters = filters.search || 
+    (filters.departmentIds && filters.departmentIds.length > 0) || 
+    filters.isOnline !== undefined || 
+    filters.isBlocked !== undefined;
 
   return (
     <div className="space-y-3 sm:space-y-4 w-full overflow-hidden">
@@ -52,7 +62,7 @@ const SearchFilters = ({ filters, onFiltersChange, departments }: SearchFiltersP
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             placeholder="Search agents by name or email..."
-            value={filters.search}
+            value={filters.search || ""}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10 w-full"
           />
@@ -81,11 +91,14 @@ const SearchFilters = ({ filters, onFiltersChange, departments }: SearchFiltersP
 
       {/* Advanced Filters */}
       {isExpanded && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
           {/* Department Filter */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Department</label>
-            <Select value={filters.department} onValueChange={handleDepartmentChange}>
+            <Select 
+              value={filters.departmentIds && filters.departmentIds.length > 0 ? filters.departmentIds[0] : "all"} 
+              onValueChange={handleDepartmentChange}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="All Departments" />
               </SelectTrigger>
@@ -100,17 +113,38 @@ const SearchFilters = ({ filters, onFiltersChange, departments }: SearchFiltersP
             </Select>
           </div>
 
-          {/* Status Filter */}
+          {/* Online Status Filter */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Status</label>
-            <Select value={filters.status} onValueChange={handleStatusChange}>
+            <label className="text-sm font-medium text-gray-700">Online Status</label>
+            <Select 
+              value={filters.isOnline === undefined ? "all" : filters.isOnline ? "online" : "offline"} 
+              onValueChange={handleOnlineStatusChange}
+            >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Status" />
+                <SelectValue placeholder="All Online Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="online">Online</SelectItem>
                 <SelectItem value="offline">Offline</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Blocked Status Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Blocked Status</label>
+            <Select 
+              value={filters.isBlocked === undefined ? "all" : filters.isBlocked ? "blocked" : "unblocked"} 
+              onValueChange={handleBlockedStatusChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Blocked Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="blocked">Blocked</SelectItem>
+                <SelectItem value="unblocked">Unblocked</SelectItem>
               </SelectContent>
             </Select>
           </div>

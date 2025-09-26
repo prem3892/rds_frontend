@@ -10,8 +10,10 @@ import {
   AGENTS_QUERY_KEY,
   AgentProfile,
   useGetAllAgents,
+  useGetAgents,
   useSetAgentStatusMutation,
   useBlockAgentMutation,
+  AgentFilters,
 } from "@/lib/agent.api";
 import { useGetAllDepartments } from "@/lib/department.api";
 import { cn } from "@/lib/utils";
@@ -35,11 +37,7 @@ import {
   createDepartmentColumns,
 } from "./_components";
 
-interface AgentFilters {
-  search: string;
-  department: string;
-  status: string;
-}
+// Remove the local AgentFilters interface since we're importing it from the API
 
 interface DepartmentFilters {
   search: string;
@@ -57,8 +55,13 @@ export default function AgentsPage() {
   const [blockLoadingAgentId, setBlockLoadingAgentId] = useState<string | null>(null);
   const [agentFilters, setAgentFilters] = useState<AgentFilters>({
     search: "",
-    department: "all",
-    status: "all",
+    departmentIds: [],
+    isOnline: undefined,
+    isBlocked: undefined,
+    page: 1,
+    limit: 10,
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
 
   // Department states
@@ -82,12 +85,14 @@ export default function AgentsPage() {
   const [departmentPageSize] = useState(10);
 
   const {
-    data: agents,
+    data: agentData,
     isLoading: isLoadingAgents,
     error: agentsError,
-  } = useGetAllAgents({
+  } = useGetAgents(agentFilters, {
     enabled: currentUser?.role === "ADMIN",
   });
+
+  const agents = agentData?.items || [];
 
   const { data: departments, isLoading: isLoadingDepartments } =
     useGetAllDepartments({
@@ -127,34 +132,10 @@ export default function AgentsPage() {
     },
   });
 
-  // Filter agents based on search and filters
-  const filteredAgents =
-    agents?.filter((agent) => {
-      const matchesSearch =
-        !agentFilters.search ||
-        agent.user.firstName
-          .toLowerCase()
-          .includes(agentFilters.search.toLowerCase()) ||
-        agent.user.lastName
-          .toLowerCase()
-          .includes(agentFilters.search.toLowerCase()) ||
-        agent.user.email
-          .toLowerCase()
-          .includes(agentFilters.search.toLowerCase());
-
-      const matchesDepartment =
-        !agentFilters.department ||
-        agentFilters.department === "all" ||
-        agent.departmentIds.includes(agentFilters.department);
-
-      const matchesStatus =
-        !agentFilters.status ||
-        agentFilters.status === "all" ||
-        (agentFilters.status === "online" && agent.isOnline) ||
-        (agentFilters.status === "offline" && !agent.isOnline);
-
-      return matchesSearch && matchesDepartment && matchesStatus;
-    }) || [];
+  // Handle page change for agents
+  const handleAgentPageChange = (page: number) => {
+    setAgentFilters((prev) => ({ ...prev, page }));
+  };
 
   // Filter departments based on search
   const filteredDepartments =
@@ -207,6 +188,11 @@ export default function AgentsPage() {
   const handleDepartmentPageChange = (page: number) => {
     setCurrentDepartmentPage(page);
   };
+
+  // Reset agent page when filters change
+  useEffect(() => {
+    setAgentFilters((prev) => ({ ...prev, page: 1 }));
+  }, [agentFilters.search, agentFilters.departmentIds, agentFilters.isOnline, agentFilters.isBlocked]);
 
   // Reset department page when filters change
   useEffect(() => {
@@ -300,11 +286,11 @@ export default function AgentsPage() {
             </div>
 
             <AgentTable
-              agentData={filteredAgents}
+              agentData={agentData || null}
               isLoadingAgents={isLoadingAgents}
               agentsError={agentsError || null}
-              currentPage={1}
-              onPageChange={() => {}}
+              currentPage={agentFilters.page || 1}
+              onPageChange={handleAgentPageChange}
               departments={departments || []}
               onEdit={handleEditAgent}
               onToggleStatus={handleToggleStatus}

@@ -6,15 +6,15 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable } from "@/components/ui/data-table";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ApiErrorResponse, Department } from "@/types";
-import { AgentProfile } from "@/lib/agent.api";
+import { AgentProfile, PaginatedAgentResponse } from "@/lib/agent.api";
 import { Row } from "@tanstack/react-table";
 import { Edit, Trash2, Shield, ShieldCheck, ToggleLeft } from "lucide-react";
 import { createAgentColumns } from "./agent-columns";
 import CellAction from "./cell-actions";
 import { useState } from "react";
 import { BlockAgentDialog } from "./block-agent-dialog";
-import { PaginationControls } from "@/components/ui/pagination-controls";
 
 // Helper function to get the full image URL
 const getFullImageUrl = (imagePath: string) => {
@@ -31,7 +31,7 @@ const getFullImageUrl = (imagePath: string) => {
 };
 
 type Props = {
-  agentData: AgentProfile[] | null;
+  agentData: PaginatedAgentResponse | null;
   isLoadingAgents: boolean;
   agentsError: ApiErrorResponse | null;
   currentPage: number;
@@ -227,6 +227,8 @@ const AgentTable = (props: Props) => {
     agentData, 
     isLoadingAgents, 
     agentsError, 
+    currentPage,
+    onPageChange,
     departments,
     onEdit,
     onToggleStatus,
@@ -235,7 +237,8 @@ const AgentTable = (props: Props) => {
     statusLoadingAgentId
   } = props;
   
-  const agents = agentData || [];
+  const agents = agentData?.items || [];
+  const meta = agentData?.meta;
 
   if (agentsError) {
     return (
@@ -338,15 +341,16 @@ const AgentTable = (props: Props) => {
         />
       </div>
 
-      {/* {meta && meta.totalPages > 1 && (
-        <div className="mt-6">
+      {/* Pagination Controls */}
+      {meta && meta.totalPages > 1 && (
+        <div className="mt-4 sm:mt-6 overflow-hidden">
           <PaginationControls
             currentPage={currentPage}
             totalPages={meta.totalPages}
             onPageChange={onPageChange}
           />
         </div>
-      )} */}
+      )}
     </div>
   );
 };
