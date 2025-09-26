@@ -134,28 +134,9 @@ export default function DashboardLayout({
             </div>
           </header>
 
-          {/* Main Content Skeleton */}
+          {/* Main Content Skeleton - Show page-specific content based on current route */}
           <main className="flex-1 overflow-auto bg-white p-2 sm:p-3 md:p-4 lg:p-5 mobile-no-overflow">
-            <div className="space-y-6">
-              {/* Page Title Skeleton */}
-              <div className="space-y-2">
-                <div className="h-8 w-64 bg-gray-200 animate-pulse rounded" />
-                <div className="h-4 w-96 bg-gray-200 animate-pulse rounded" />
-              </div>
-
-              {/* Content Grid Skeleton */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="space-y-3">
-                    <div className="h-48 w-full bg-gray-200 animate-pulse rounded-lg" />
-                    <div className="space-y-2">
-                      <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded" />
-                      <div className="h-3 w-1/2 bg-gray-200 animate-pulse rounded" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {children}
           </main>
         </div>
       </div>

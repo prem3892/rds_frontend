@@ -75,3 +75,11 @@ export function getColorFromString(str: string): string {
 
   return colors[Math.abs(hash) % colors.length];
 }
+
+/**
+ * Convert literal \n characters to actual line breaks for display
+ */
+export function formatCannedMessageContent(content: string): string {
+  if (!content) return content;
+  return content.replace(/\\n/g, '\n');
+}

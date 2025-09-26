@@ -1,9 +1,9 @@
 // hooks/useNotifications.ts
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { notificationService } from "@/services/notificationService";
 import { ChatMessage, ChatSession } from "@/types";
-import { useChatActions } from "@/stores/chat";
+import { useChatActions, useSelectedChatSessionId } from "@/stores/chat";
 
 interface UseNotificationsReturn {
   isSupported: boolean;
@@ -16,6 +16,8 @@ interface UseNotificationsReturn {
 
 export function useNotifications(): UseNotificationsReturn {
   const router = useRouter();
+  const pathname = usePathname();
+  const selectedSessionId = useSelectedChatSessionId();
   const chatActions = useChatActions();
   const [permission, setPermission] = useState<NotificationPermission>(
     notificationService.notificationPermission
@@ -44,6 +46,24 @@ export function useNotifications(): UseNotificationsReturn {
     setPermission(result);
     return result;
   }, []);
+
+  const shouldShowNotification = useCallback(
+    (sessionId: string) => {
+      // Show notification if user is NOT on chat page
+      if (!pathname.includes("/dashboard/chat")) {
+        return true;
+      }
+
+      // Show notification if user IS on chat page but viewing a different session
+      if (selectedSessionId !== sessionId) {
+        return true;
+      }
+
+      // Don't show notification if user is viewing the same session
+      return false;
+    },
+    [pathname, selectedSessionId]
+  );
 
   const handleNotificationClick = useCallback(
     (sessionId: string) => {
@@ -76,23 +96,33 @@ export function useNotifications(): UseNotificationsReturn {
         return;
       }
 
+      // Only show if user should see the notification
+      if (!shouldShowNotification(session._id)) {
+        return;
+      }
+
       await notificationService.showMessageNotification(
         message,
         session,
         handleNotificationClick
       );
     },
-    [handleNotificationClick]
+    [handleNotificationClick, shouldShowNotification]
   );
 
   const showChatRequestNotification = useCallback(
     async (session: ChatSession) => {
+      // Only show if user should see the notification
+      if (!shouldShowNotification(session._id)) {
+        return;
+      }
+
       await notificationService.showChatRequestNotification(
         session,
         handleNotificationClick
       );
     },
-    [handleNotificationClick]
+    [handleNotificationClick, shouldShowNotification]
   );
 
   return {

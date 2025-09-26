@@ -94,7 +94,7 @@ export function useSocketInitializer() {
             break;
           case "chatAlreadyAccepted":
             // Show toast to inform the agent the chat was already accepted elsewhere
-            toast.info('Chat already accepted', {
+            toast.warning('Chat already accepted', {
               description: `Chat is already accepted by ${data?.acceptedByAgentName || 'another agent'}`,
             });
             // Immediately remove from pending requests without requiring a refresh
