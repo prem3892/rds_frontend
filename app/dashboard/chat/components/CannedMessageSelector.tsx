@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGetCannedMessagesInfinite } from "@/lib/canned.api";
-import { cn } from "@/lib/utils";
+import { cn, formatCannedMessageContent } from "@/lib/utils";
 import { MessageSquare, Tag, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
 
@@ -251,7 +251,7 @@ const CannedMessageSelector = ({
         case "Enter":
           e.preventDefault();
           if (uniqueMessages[selectedIndex]) {
-            onSelectMessage(uniqueMessages[selectedIndex].content);
+            onSelectMessage(formatCannedMessageContent(uniqueMessages[selectedIndex].content));
           }
           break;
         case "Escape":
@@ -337,7 +337,7 @@ const CannedMessageSelector = ({
                       "p-3 cursor-pointer transition-colors hover:bg-blue-50",
                       selectedIndex === index && "bg-blue-100 border-l-4 border-blue-500"
                     )}
-                    onClick={() => onSelectMessage(message.content)}
+                    onClick={() => onSelectMessage(formatCannedMessageContent(message.content))}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -351,8 +351,8 @@ const CannedMessageSelector = ({
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {message.content}
+                        <p className="text-sm text-gray-600 line-clamp-2 whitespace-pre-wrap">
+                          {formatCannedMessageContent(message.content)}
                         </p>
                         {message.tags.length > 0 && (
                           <div className="flex items-center gap-1 mt-2">

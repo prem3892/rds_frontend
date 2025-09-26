@@ -4,7 +4,7 @@ import { CannedMessage } from "@/types/canned-message";
 import { ColumnDef } from "@tanstack/react-table";
 import { Calendar, Globe, Keyboard, MessageCircle, MoreHorizontal, Tag, User, Users } from "lucide-react";
 import CellAction from "./cell-actions";
-import { cn } from "@/lib/utils";
+import { cn, formatCannedMessageContent } from "@/lib/utils";
 
 
 export const columns: ColumnDef<CannedMessage>[] = [
@@ -58,9 +58,9 @@ export const columns: ColumnDef<CannedMessage>[] = [
     },
     cell: ({ row }) => {
       return (
-        <div className="text-sm text-muted-foreground max-w-xs truncate">
+        <div className="text-sm text-muted-foreground max-w-xs truncate ">
         
-          {row.original.content}
+          {formatCannedMessageContent(row.original.content)}
         </div>
       );
     },

@@ -5,7 +5,7 @@ import { useCurrentUser } from "@/stores/auth";
 import { Check, CheckCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useChatStore } from "@/stores/chat";
-import { cn, getColorFromString } from "@/lib/utils";
+import { cn, getColorFromString, formatCannedMessageContent } from "@/lib/utils";
 import Image from "next/image";
 
 interface MessageBubbleProps {
@@ -77,8 +77,8 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
   if (isSystem) {
     return (
       <div className="my-2 text-center">
-        <span className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-muted-foreground rounded-full">
-          {message.content.text || "System Notification"}
+        <span className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-muted-foreground rounded-full whitespace-pre-wrap">
+          {formatCannedMessageContent(message.content.text || "System Notification")}
         
         </span>
       </div>
@@ -179,7 +179,7 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
             </div>
           ) : (
             <p className="text-sm whitespace-pre-wrap">
-              {message.content.text || JSON.stringify(message.content)}
+              {formatCannedMessageContent(message.content.text || JSON.stringify(message.content))}
             </p>
           )}
           
