@@ -105,17 +105,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
     setConnected: (isConnected) => set({ isConnected }),
 
     loadActiveSessions: (sessions) => {
-      const newActiveSessions: Record<string, ActiveChat> = {};
-      sessions.forEach((session) => {
-        newActiveSessions[session._id] = {
-          ...session,
-          messages: [],
-          hasUnread: false, // Determine this based on lastReadTimestamp vs lastMessageTimestamp
-          isLoadingMessages: false,
-          hasMoreMessages: true, // Assume has more initially
-        };
+      set((state) => {
+        const newActiveSessions: Record<string, ActiveChat> = {};
+        sessions.forEach((session) => {
+          // Preserve existing messages and other state when updating sessions
+          const existingSession = state.activeSessions[session._id];
+          newActiveSessions[session._id] = {
+            ...session,
+            messages: existingSession?.messages || [],
+            hasUnread: existingSession?.hasUnread || false,
+            isLoadingMessages: existingSession?.isLoadingMessages || false,
+            hasMoreMessages: existingSession?.hasMoreMessages ?? true,
+            typing: existingSession?.typing,
+          };
+        });
+        return { activeSessions: newActiveSessions };
       });
-      set({ activeSessions: newActiveSessions });
     },
     addActiveSession: (session) =>
       set((state) => ({
