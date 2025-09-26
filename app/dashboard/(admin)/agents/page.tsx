@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AGENTS_QUERY_KEY,
   AgentProfile,
-  useGetAllAgents,
   useGetAgents,
   useSetAgentStatusMutation,
   useBlockAgentMutation,

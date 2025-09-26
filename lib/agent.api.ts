@@ -113,7 +113,7 @@ export interface PaginatedAgentResponse {
 // Query key constants
 export const AGENTS_QUERY_KEY = "agents";
 
-// Fetch all agents (admin only) - Legacy function
+// Fetch all agents (admin only) - For filtering purposes (no pagination)
 export const useGetAllAgents = (
   options?: Omit<
     UseQueryOptions<AgentProfile[], ApiErrorResponse>,
@@ -121,8 +121,12 @@ export const useGetAllAgents = (
   >
 ) => {
   return useQuery<AgentProfile[], ApiErrorResponse>({
-    queryKey: [AGENTS_QUERY_KEY],
-    queryFn: () => customFetch<AgentProfile[]>("/agents"),
+    queryKey: [AGENTS_QUERY_KEY, "all"],
+    queryFn: async () => {
+      // Fetch all agents by using a large limit
+      const response = await customFetch<PaginatedAgentResponse>("/agents?limit=50");
+      return response.items;
+    },
     ...options,
   });
 };
