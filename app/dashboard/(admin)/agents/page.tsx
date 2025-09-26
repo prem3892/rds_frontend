@@ -245,7 +245,7 @@ export default function AgentsPage() {
             >
               <Users className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="font-medium truncate">
-                {agents?.length || 0} Agents
+                {agentData?.meta.total} Agents
               </span>
             </TabsTrigger>
             <TabsTrigger
