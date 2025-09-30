@@ -272,7 +272,7 @@ export function GuestFeed({
           </div>
 
           {/* Tabs */}
-          <div className="bg-gray-200 rounded-lg p-1 shadow-inner">
+          <div className="bg-gray-200 w-fit rounded-lg p-1 shadow-inner">
             <TabsList className="grid w-full grid-cols-2 bg-transparent h-auto p-0 gap-1">
               <TabsTrigger 
                 value="guests" 

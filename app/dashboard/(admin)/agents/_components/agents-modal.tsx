@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 // import { Card, CardContent } from "@/components/ui/card"
 import { Building } from "lucide-react"
 
@@ -70,7 +71,7 @@ export function AgentsModal({ departmentName, agents, isOpen, onClose }: AgentsC
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <ScrollArea className="flex-1 p-6">
             <div
               role="list"
               className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
@@ -112,7 +113,7 @@ export function AgentsModal({ departmentName, agents, isOpen, onClose }: AgentsC
                 </div>
               </div>
             )}
-          </div>
+          </ScrollArea>
         </div>
       </DialogContent>
     </Dialog>

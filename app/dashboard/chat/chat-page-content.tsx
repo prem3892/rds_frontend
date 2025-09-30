@@ -11,6 +11,7 @@ import {
   useInitiateChatMutation,
   queryClient,
   MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY,
+  PENDING_CHAT_SESSIONS_QUERY_KEY,
 } from "@/lib/api";
 import { useBlockCustomerMutation } from "@/lib/blocked-customer.api";
 import {
@@ -139,8 +140,12 @@ export default function MyChatsPage() {
 
   // Load initial active sessions from API into Zustand store
   useEffect(() => {
-    if (initialActiveSessionsData) {
+    if (Array.isArray(initialActiveSessionsData)) {
       chatStoreActions.loadActiveSessions(initialActiveSessionsData);
+      // If nothing is active anymore, ensure selection is cleared
+      if (initialActiveSessionsData.length === 0 && selectedSessionId) {
+        chatStoreActions.setSelectedSessionId(null);
+      }
     }
   }, [initialActiveSessionsData]);
 
@@ -286,6 +291,11 @@ export default function MyChatsPage() {
     params.delete("sessionId");
     const queryString = params.toString();
     router.push(`/dashboard/chat${queryString ? `?${queryString}` : ""}`);
+    // Invalidate queries separately to ensure both are refetched
+    queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY] });
+    queryClient.invalidateQueries({ queryKey: [PENDING_CHAT_SESSIONS_QUERY_KEY] });
+
+
   }, [router, searchParams]);
 
   const handleShowGuestInfo = useCallback(() => {
