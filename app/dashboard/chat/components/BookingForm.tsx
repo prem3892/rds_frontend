@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
+import { useGetMyAgentProfile } from "@/lib/agent.api";
 
 interface BookingFormProps {
   isOpen: boolean;
@@ -32,23 +33,37 @@ const BookingForm: React.FC<BookingFormProps> = ({
   isOpen,
   onClose,
   onSubmit,
-
+  chatSessionId,
   isLoading = false,
 }) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState<string>("10:00");
   const [notes, setNotes] = useState<string>("");
 
+  // Get agent profile to access timezone information
+  const { data: agentProfile } = useGetMyAgentProfile();
+
   const handleSubmit = () => {
     if (!date) return;
+
+    // Get agent's timezone or default to UTC
+    const agentTimezone = agentProfile?.timezone || 'UTC';
 
     // Combine date and time into a single Date object
     const [hours, minutes] = time.split(":").map(Number);
     const combinedDateTime = new Date(date);
     combinedDateTime.setHours(hours, minutes, 0, 0);
 
-    // Format the date as ISO string for the server
-    const formattedDate = combinedDateTime.toISOString();
+    // Create a date string that represents the local time in the agent's timezone
+    // We'll format it as a local datetime string without timezone info
+    // The backend should interpret this in the agent's timezone context
+    const year = combinedDateTime.getFullYear();
+    const month = String(combinedDateTime.getMonth() + 1).padStart(2, '0');
+    const day = String(combinedDateTime.getDate()).padStart(2, '0');
+    const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+    
+    // Create ISO string without timezone info - this represents the local time in agent's timezone
+    const formattedDate = `${year}-${month}-${day}T${timeString}`;
 
     onSubmit({
       date: formattedDate,
@@ -61,6 +76,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Book Appointment</DialogTitle>
+          {agentProfile?.timezone && (
+            <p className="text-sm text-muted-foreground">
+              Times are in your timezone: <span className="font-medium">{agentProfile.timezone}</span>
+            </p>
+          )}
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
@@ -89,7 +109,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     selected={date}
                     onSelect={setDate}
                     initialFocus
-                    disabled={(date) => date < new Date()}
+                    disabled={(date) => {
+                      // Disable dates before today in the agent's timezone
+                      const today = new Date();
+                      const todayInAgentTz = new Date(today.toLocaleString("en-US", { timeZone: agentProfile?.timezone || 'UTC' }));
+                      const dateInAgentTz = new Date(date.toLocaleString("en-US", { timeZone: agentProfile?.timezone || 'UTC' }));
+                      return dateInAgentTz < todayInAgentTz;
+                    }}
                   />
                 </PopoverContent>
               </Popover>

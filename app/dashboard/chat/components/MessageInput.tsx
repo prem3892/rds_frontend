@@ -68,10 +68,34 @@ const MessageInput = ({
   };
 
   const handleCannedMessageSelect = (content: string) => {
-    setMessage(content);
+    const currentMessage = message;
+    const hashIndex = currentMessage.lastIndexOf("#");
+    
+    let newMessage: string;
+    let cursorPosition: number;
+    
+    if (hashIndex !== -1) {
+      // Replace the # trigger text with the canned message content
+      const beforeHash = currentMessage.slice(0, hashIndex);
+      newMessage = beforeHash + content;
+      cursorPosition = newMessage.length;
+    } else {
+      // If no # found, just append the content
+      newMessage = currentMessage + (currentMessage ? " " : "") + content;
+      cursorPosition = newMessage.length;
+    }
+    
+    setMessage(newMessage);
     setShowCannedMessages(false);
     setCannedMessageQuery("");
-    textareaRef.current?.focus();
+    
+    // Set cursor position after the component re-renders
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    }, 0);
   };
 
   const handleCannedMessageClose = () => {

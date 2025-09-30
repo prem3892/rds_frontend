@@ -112,7 +112,7 @@ export function useToastNotifications(): UseToastNotificationsReturn {
             ? `This chat has been waiting for a while and needs immediate attention!` 
             : `New message from ${customerName}`,
           icon: createElement(User, { size: 18 , className: "text-white" }),
-          duration: isPriorityChat ? 10000 : 5000, // Longer duration for priority chats
+          duration: isPriorityChat ? 6000 : 5000, // Longer duration for priority chats
           action: {
             label: "Accept Chat",
             onClick: () => handleToastClick(session._id),
