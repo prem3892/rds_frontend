@@ -187,7 +187,7 @@ export default function HistoryNewPage() {
   });
 
   useEffect(() => {
-    if (currentUser?.role === "AGENT" || currentUser?.role === "MANAGER") {
+    if (currentUser?.role === "AGENT") {
       setFilters((prev) => ({
         ...prev,
         agentId: currentUser.id,
@@ -240,7 +240,7 @@ export default function HistoryNewPage() {
     const clearedFilters: HistoryFilters = {
       search: "",
       status: "all",
-      agentId: (currentUser?.role === "AGENT" || currentUser?.role === "MANAGER") ? currentUser.id : "all",
+      agentId: currentUser?.role === "AGENT" ? currentUser.id : "all",
       departmentId: "all",
       customerName: "",
       customerEmail: "",
