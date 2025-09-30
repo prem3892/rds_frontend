@@ -105,6 +105,9 @@ export const useGetMyActiveChatSessions = (
   return useQuery<ChatSession[], ApiErrorResponse, ChatSession[], [string]>({
     queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY],
     queryFn: () => customFetch<ChatSession[]>("/chat/sessions/my-active"),
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    staleTime: 0,
     ...options,
   });
 };
@@ -121,6 +124,9 @@ export const useGetPendingChatSessions = (
   return useQuery<ChatSession[], ApiErrorResponse, ChatSession[], [string]>({
     queryKey: [PENDING_CHAT_SESSIONS_QUERY_KEY],
     queryFn: () => customFetch<ChatSession[]>("/chat/sessions/pending"),
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    staleTime: 0,
     ...options,
   });
 };

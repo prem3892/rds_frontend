@@ -28,7 +28,17 @@ export default function DepartmentMobileCard({
 }: DepartmentMobileCardProps) {
   // Helper function to get agents for a specific department
   const getAgentsForDepartment = (departmentId: string) => {
-    return agents.filter(agent => agent.departmentIds.includes(departmentId));
+    return agents.filter((agent) => {
+      const ids = agent.departmentIds || [];
+      return ids.some((dep) => {
+        if (!dep) return false;
+        if (typeof dep === "string") return dep === departmentId;
+        // handle object form: {_id: string} or full department objects
+        // @ts-expect-error backend may return a populated object
+        const maybeId = dep?._id ?? dep?.id;
+        return maybeId === departmentId;
+      });
+    });
   };
 
   const departmentAgents = getAgentsForDepartment(department._id);
