@@ -20,7 +20,7 @@ export type NavItem = {
   title: string;
   href: string;
   icon: React.ElementType;
-  role?: "ADMIN" | "AGENT"; // If undefined, visible to all authenticated users within dashboard
+  role?: "ADMIN" | "AGENT" | "MANAGER"; // If undefined, visible to all authenticated users within dashboard
   isExternal?: boolean;
   label?: string;
   children?: NavItem[]; // For nested navigation if needed in future

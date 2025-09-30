@@ -179,11 +179,11 @@ export default function HistoryNewPage() {
 
   // Get agents and departments for filters
   const { data: agents } = useGetAllAgents({
-    enabled: currentUser?.role === "ADMIN",
+    enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
   });
 
   const { data: departments } = useGetAllDepartments({
-    enabled: currentUser?.role === "ADMIN",
+    enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
   });
 
   useEffect(() => {

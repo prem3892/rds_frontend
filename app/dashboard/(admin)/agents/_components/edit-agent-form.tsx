@@ -16,13 +16,12 @@ import {
   FormControl,
   FormDescription,
   FormField,
-  FormItem,
-  FormLabel,
   FormMessage,
+    FormItem,
+  FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  AgentProfile,
+import {  
   AGENTS_QUERY_KEY,
   UpdateAgentProfileDto,
   useGetAgentById,
@@ -30,7 +29,7 @@ import {
   useUploadProfilePictureMutation
 } from "@/lib/agent.api";
 import { Department } from "@/types";
-import { AgentShift, TimeSlot } from "@/types/agent";
+import { AgentShift } from "@/types/agent";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -44,6 +43,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { AgentShiftsForm } from "./agent-shifts-form";
 import { ProfilePictureUpload } from "./profile-picture-upload";
+import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Zod schema for time slots
 const timeSlotSchema = z.object({
@@ -84,6 +84,7 @@ const agentFormSchema = z.object({
   shifts: z.array(agentShiftSchema).optional(),
   timezone: z.string().optional(),
   profilePicture: z.string().optional(),
+  role: z.enum(["AGENT", "MANAGER"]).optional(),
 });
 
 type AgentFormValues = z.infer<typeof agentFormSchema>;
@@ -256,6 +257,7 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
       shifts: [],
       timezone: "America/New_York",
       profilePicture: "",
+      role: undefined, // Don't set a default role initially
     },
   });
 
@@ -319,6 +321,7 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
         // Only include optional fields if they have values
         ...(values.phoneNo && values.phoneNo.trim() && { phoneNo: values.phoneNo.trim() }),
         ...(values.website && values.website.trim() && { website: values.website.trim() }),
+        ...(values.role && { role: values.role }),
         shifts: values.shifts || [],
         ...(values.timezone && { timezone: values.timezone }),
         // Always include profilePicture - either new URL, existing URL, or empty string
@@ -356,6 +359,7 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
         shifts: [],
         timezone: "America/New_York",
         profilePicture: "",
+        role: undefined, // Don't set a default role
       });
       setProfilePictureFile(null);
       setProfilePictureUrl(null);
@@ -370,6 +374,9 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
   // Update form when agent changes
   React.useEffect(() => {
     if (agent && open) {
+      console.log("Agent data loaded:", agent);
+      console.log("Agent role:", agent.user.role);
+      
       // Process departmentIds based on whether they are objects or strings
       let deptIds = agent.departmentIds || [];
       if (deptIds.length > 0 && typeof deptIds[0] === "object") {
@@ -377,8 +384,7 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
         deptIds = deptIds.map((dept: any) => dept._id);
       }
 
-
-      form.reset({
+      const formData = {
         firstName: agent.user.firstName || "",
         lastName: agent.user.lastName || "",
         email: agent.user.email || "",
@@ -390,7 +396,17 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
         shifts: agent.shifts || [],
         timezone: agent.timezone || "America/New_York",
         profilePicture: agent.profilePicture || "",
-      });
+        role: agent.user.role! as "AGENT" | "MANAGER",
+      };
+      
+      console.log("Form data being set:", formData);
+      form.reset(formData);
+      
+      // Explicitly set the role field to ensure it updates properly
+      setTimeout(() => {
+        form.setValue("role", agent.user.role! as "AGENT" | "MANAGER");
+        console.log("Role explicitly set to:", agent.user.role);
+      }, 0);
 
       // Set the profile picture URL for display
       setProfilePictureUrl(agent.profilePicture || null);
@@ -553,6 +569,39 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
                 }}
               />
             </div>
+
+              <FormField
+                name="role"
+                control={form.control}
+                render={({ field }) => {
+                  console.log("Role field value:", field.value);
+                  return (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <FormControl>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value || ""}
+                          key={field.value || "empty"} // Force re-render when value changes
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="AGENT">Agent</SelectItem>
+                            <SelectItem value="MANAGER">Manager</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormDescription>
+                        Select the role for this user.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+
 
             {/* Agent Settings Section */}
             <div className="space-y-4">

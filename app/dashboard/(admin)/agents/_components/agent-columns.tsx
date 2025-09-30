@@ -11,11 +11,11 @@ import {
   Edit,
   Globe,
   Mail,
-  MessageSquare,
   MoreHorizontal,
   Settings,
   ToggleLeft,
-  User
+  User,
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CellAction from "./cell-actions";
@@ -206,21 +206,23 @@ export const createAgentColumns = ({
   //   },
   // },
   {
-    accessorKey: "maxConcurrentChats",
-      header: () => {
+    accessorKey: "role",
+    header: () => {
       return (
         <div className="flex items-center gap-2">
-          <MessageSquare className="size-5 stroke-1" />
-          <span>Max Chats</span>
+          <Shield className="size-5 stroke-1" />
+          <span>Role</span>
         </div>
       )
     },
     cell: ({ row }) => {
       const agent = row.original;
+      const role = agent.user?.role || "AGENT";
+      const formatted = role.charAt(0) + role.slice(1).toLowerCase();
       return (
         <div className="flex items-center justify-start space-x-2">
           <Badge variant="outline">
-            {agent.maxConcurrentChats}
+            {formatted}
           </Badge>
         </div>
       );

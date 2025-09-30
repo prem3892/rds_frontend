@@ -88,14 +88,14 @@ export default function AgentsPage() {
     isLoading: isLoadingAgents,
     error: agentsError,
   } = useGetAgents(agentFilters, {
-    enabled: currentUser?.role === "ADMIN",
+    enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
   });
 
   const agents = agentData?.items || [];
 
   const { data: departments, isLoading: isLoadingDepartments } =
     useGetAllDepartments({
-      enabled: currentUser?.role === "ADMIN",
+      enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
     });
 
   const setAgentStatusMutation = useSetAgentStatusMutation({
@@ -198,7 +198,7 @@ export default function AgentsPage() {
     setCurrentDepartmentPage(1);
   }, [departmentFilters.search]);
 
-  if (currentUser?.role !== "ADMIN") {
+  if (currentUser?.role !== "ADMIN" && currentUser?.role !== "MANAGER") {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}

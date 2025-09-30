@@ -159,7 +159,7 @@ export function getRedirectUrl(
   }
   
   // If user is authenticated but trying to access admin-only routes
-  if (requestedPath && matchesRoute(requestedPath, ROUTES.ADMIN_ONLY) && userRole !== 'ADMIN') {
+  if (requestedPath && matchesRoute(requestedPath, ROUTES.ADMIN_ONLY) && userRole !== 'ADMIN' && userRole !== 'MANAGER') {
     return REDIRECTS.UNAUTHORIZED;
   }
   

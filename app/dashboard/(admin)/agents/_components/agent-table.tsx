@@ -130,6 +130,14 @@ const AgentCard = ({
                 <span className="text-xs sm:text-sm text-gray-700 break-all">{agent.user.email}</span>
               </div>
 
+              {/* Role */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <span className="text-xs sm:text-sm text-gray-500 font-medium">Role:</span>
+                <Badge variant="outline" className="text-xs">
+                  {(agent.user?.role || "AGENT").charAt(0) + (agent.user?.role || "AGENT").slice(1).toLowerCase()}
+                </Badge>
+              </div>
+
               {/* Departments as badges */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                 <span className="text-xs sm:text-sm text-gray-500 font-medium flex-shrink-0">Departments:</span>

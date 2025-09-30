@@ -17,7 +17,7 @@ export interface RegisterAgentDto {
   password: string;
   firstName: string;
   lastName: string;
-  role: "AGENT";
+  role: "AGENT" | "MANAGER";
   phoneNo?: string;
   website?: string;
   shifts?: AgentShift[];
@@ -48,7 +48,7 @@ export interface AgentProfile {
     email: string;
     firstName: string;
     lastName: string;
-    role: "ADMIN" | "AGENT";
+    role: "ADMIN" | "AGENT" | "MANAGER";
   };
 }
 
@@ -59,6 +59,7 @@ export interface UpdateAgentProfileDto {
   maxConcurrentChats?: number;
   firstName?: string;
   lastName?: string;
+  role?: "AGENT" | "MANAGER" ;
   // email?: string;
   // password?: string;
   phoneNo?: string;
