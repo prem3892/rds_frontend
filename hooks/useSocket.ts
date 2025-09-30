@@ -21,6 +21,8 @@ export function useSocketInitializer() {
   const activeSessions = useActiveChatSessions();
   const { showMessageNotification, showChatRequestNotification } = useNotifications();
   const { showMessageToast, showChatRequestToast } = useToastNotifications();
+  // Suppression window to avoid showing status toast right after refresh/connect/auth
+  let suppressStatusToastUntil = 0;
 
   useEffect(() => {
     if (
@@ -37,12 +39,16 @@ export function useSocketInitializer() {
         switch (event) {
           case "connected":
             chatActions.setConnected(data);
+            // Start a brief suppression window on initial connect
+            suppressStatusToastUntil = Date.now() + 2500;
             break;
           case "authenticated":
             // Authentication successful - no automatic status restoration
             // The user's online Zstatus will remain as stored in ustand
             // They can manually change it if needed without triggering server notifications
             console.log("Socket authenticated successfully");
+            // Extend suppression slightly after auth
+            suppressStatusToastUntil = Date.now() + 2500;
             break;
           case "authFailed":
             // Handle auth failed (could show toast here)
@@ -125,10 +131,13 @@ export function useSocketInitializer() {
                   description: `Your status has been changed to ${data.isOnline ? 'Online' : 'Offline'}`,
                 });
               } else {
-                // This was from another device or admin - show info toast
-                toast.info('Status updated', {
-                  description: 'Your status has been changed to ' + (data.isOnline ? 'Online' : 'Offline') + ' from another device or by Admin',
-                });
+                // If within suppression window (e.g., page refresh), do not show info toast
+                if (Date.now() > suppressStatusToastUntil) {
+                  // This was from another device or admin - show info toast
+                  toast.info('Status updated', {
+                    description: 'Your status has been changed to ' + (data.isOnline ? 'Online' : 'Offline') + ' from another device or by Admin',
+                  });
+                }
               }
             } else {
               // Error case: Show error message and don't update status

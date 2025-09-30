@@ -13,6 +13,7 @@ type AgentProfile = {
   user: {
     firstName?: string
     lastName?: string
+    role?: "AGENT" | "ADMIN" | "MANAGER"
   }
   profilePicture?: string
 }
