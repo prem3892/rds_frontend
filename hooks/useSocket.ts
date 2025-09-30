@@ -1,5 +1,5 @@
 // hooks/useSocket.ts
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, createElement } from "react";
 import { socketService } from "@/services/socketService";
 import { useAuthStore } from "@/stores/auth";
 import { useChatActions, useActiveChatSessions } from "@/stores/chat";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { isLocalStatusChangeActive } from "@/lib/status-change-tracker";
 import { AGENTS_QUERY_KEY, queryClient, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY, PENDING_CHAT_SESSIONS_QUERY_KEY, CHAT_SESSIONS_QUERY_KEY_PREFIX, CHAT_SESSIONS_INFINITE_QUERY_KEY_PREFIX } from "@/lib/api";
 import { customerInactivityEvents, chatEndedEvents } from "@/lib/customer-inactivity-events";
+import { CheckCircle } from "lucide-react";
 
 // Hook for initializing the socket only once
 export function useSocketInitializer() {
@@ -94,9 +95,15 @@ export function useSocketInitializer() {
             break;
           case "chatAlreadyAccepted":
             // Show toast to inform the agent the chat was already accepted elsewhere
-            toast.warning('Chat already accepted', {
+            // toast.('Chat already accepted', {
+            //   description: `Chat is already accepted by ${data?.acceptedByAgentName || 'another agent'}`,
+            // });
+            toast( 'Chat already accepted',{
               description: `Chat is already accepted by ${data?.acceptedByAgentName || 'another agent'}`,
+              icon: createElement(CheckCircle, { size: 18 , className: "text-white" }),
+              duration: 3000,
             });
+            
             // Immediately remove from pending requests without requiring a refresh
             chatActions.removePendingRequest(data.chatSessionId);
             queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY,PENDING_CHAT_SESSIONS_QUERY_KEY] });
