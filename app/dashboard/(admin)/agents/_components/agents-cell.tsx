@@ -32,9 +32,17 @@ const getFullImageUrl = (imagePath: string) => {
 
 export function AgentsCell({ department, agents }: AgentsCellProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const departmentAgents = agents.filter(agent => 
-    agent.departmentIds.includes(department._id)
-  );
+  const departmentAgents = agents.filter((agent) => {
+    const ids = agent.departmentIds || [];
+    return ids.some((dep) => {
+      if (!dep) return false;
+      if (typeof dep === "string") return dep === department._id;
+      // handle object form: {_id: string} or full department objects
+      // @ts-expect-error backend may return a populated object
+      const maybeId = dep?._id ?? dep?.id;
+      return maybeId === department._id;
+    });
+  });
 
   return (
     <>
