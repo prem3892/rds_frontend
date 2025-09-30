@@ -17,7 +17,7 @@ export interface RegisterAgentDto {
   password: string;
   firstName: string;
   lastName: string;
-  role: "AGENT";
+  role: "AGENT" | "MANAGER";
   phoneNo?: string;
   website?: string;
   shifts?: AgentShift[];

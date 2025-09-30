@@ -193,56 +193,56 @@ export function MainLayoutWrapper({
       label: "Dashboard",
       href: "/dashboard/chat",
       active: pathname.includes("/chat"),
-      roles: ["ADMIN", "AGENT"], // Available to both roles
+      roles: ["ADMIN", "AGENT", "MANAGER"], // Available to all roles
     },
     {
       icon: Users,
       label: "Contacts",
       href: "/dashboard/contacts",
       active: pathname.includes("/contacts"),
-      roles: ["ADMIN", "AGENT"], // Available to both roles
+      roles: ["ADMIN", "AGENT", "MANAGER"], // Available to all roles
     },
     {
       icon: MessageSquare,
       label: "Chat History",
       href: "/dashboard/history",
       active: pathname.includes("/history"),
-      roles: ["ADMIN", "AGENT"], // Available to both roles
+      roles: ["ADMIN", "AGENT", "MANAGER"], // Available to all roles
     },
     {
       icon: UserCheck,
       label: "Agents",
       href: "/dashboard/agents",
       active: pathname.includes("/agents"),
-      roles: ["ADMIN"], // Admin only
+      roles: ["ADMIN", "MANAGER"], // Admin only
     },
     {
       icon: Globe,
       label: "Domains",
       href: "/dashboard/widgets",
       active: pathname.includes("/widgets"),
-      roles: ["ADMIN"], // Admin only
+      roles: ["ADMIN" , "MANAGER"], // Admin only
     },
     {
       icon: Mail,
       label: "Canned Messages",
       href: "/dashboard/canned-messages",
       active: pathname.includes("/canned-messages"),
-      roles: ["ADMIN", "AGENT"], // Available to both roles
+      roles: ["ADMIN", "AGENT", "MANAGER"], // Available to all roles
     },
     {
       icon: MessageCircle,
       label: "Auto Message",
       href: "/dashboard/auto-messages",
       active: pathname.includes("/auto-messages"),
-      roles: ["ADMIN"], // Available to only Admins
+      roles: ["ADMIN", "MANAGER"], // Available to only Admins
     },
     {
       icon: UserX,
       label: "Blocked Guests",
       href: "/dashboard/blocked-customers",
       active: pathname.includes("/blocked-customers"),
-      roles: ["ADMIN", "AGENT"], // Available to both roles
+      roles: ["ADMIN", "AGENT", "MANAGER"], // Available to all roles
     },
   ];
 

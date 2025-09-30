@@ -159,7 +159,7 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
       </ScrollArea>
 
       <div className="mt-auto border-t p-4">
-        {currentUser.role === "AGENT" || currentUser.role === "ADMIN" ? (
+        {(currentUser.role === "AGENT" || currentUser.role === "ADMIN" || currentUser.role === "MANAGER") ? (
           <div className="mb-4">
             {sidebarExpanded ? (
               <div className="flex items-center space-x-2 p-2 rounded-md border">

@@ -9,7 +9,7 @@ const JWT_SECRET = new TextEncoder().encode(
 export interface JWTPayload {
   sub: string; // User ID (matches your backend JWT payload)
   email: string;
-  role: 'ADMIN' | 'AGENT';
+  role: 'ADMIN' | 'AGENT' | 'MANAGER';
   iat?: number;
   exp?: number;
 }

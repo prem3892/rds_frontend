@@ -179,15 +179,15 @@ export default function HistoryNewPage() {
 
   // Get agents and departments for filters
   const { data: agents } = useGetAllAgents({
-    enabled: currentUser?.role === "ADMIN",
+    enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
   });
 
   const { data: departments } = useGetAllDepartments({
-    enabled: currentUser?.role === "ADMIN",
+    enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
   });
 
   useEffect(() => {
-    if (currentUser?.role === "AGENT") {
+    if (currentUser?.role === "AGENT" || currentUser?.role === "MANAGER") {
       setFilters((prev) => ({
         ...prev,
         agentId: currentUser.id,
@@ -240,7 +240,7 @@ export default function HistoryNewPage() {
     const clearedFilters: HistoryFilters = {
       search: "",
       status: "all",
-      agentId: currentUser?.role === "AGENT" ? currentUser.id : "all",
+      agentId: (currentUser?.role === "AGENT" || currentUser?.role === "MANAGER") ? currentUser.id : "all",
       departmentId: "all",
       customerName: "",
       customerEmail: "",

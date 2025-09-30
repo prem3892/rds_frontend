@@ -697,7 +697,7 @@ export default function NewWidgetPage() {
   // Get departments for the form
   const { data: departments, isLoading: isLoadingDepartments } =
     useGetAllDepartments({
-      enabled: currentUser?.role === "ADMIN",
+      enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
     });
 
   const form = useForm<WidgetFormValues>({
@@ -772,7 +772,7 @@ export default function NewWidgetPage() {
     createWidgetMutation.mutate(processedValues as CreateWidgetDto);
   };
 
-  if (currentUser?.role !== "ADMIN") {
+  if (currentUser?.role !== "ADMIN" && currentUser?.role !== "MANAGER") {
     return (
       <Alert variant="destructive" className="m-4">
         <AlertTriangle className="h-4 w-4" />

@@ -83,7 +83,7 @@ export default function DepartmentsPage() {
     isLoading: isLoadingDepartments,
     error: departmentsError,
   } = useGetAllDepartments({
-    enabled: currentUser?.role === "ADMIN", // Only load if admin
+    enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER", // Only load if admin or manager
   });
 
   const form = useForm<DepartmentFormValues>({
@@ -169,7 +169,7 @@ export default function DepartmentsPage() {
     }
   };
 
-  if (currentUser?.role !== "ADMIN") {
+  if (currentUser?.role !== "ADMIN" && currentUser?.role !== "MANAGER") {
     return (
       <Alert variant="destructive" className="m-4">
         <AlertTriangle className="h-4 w-4" />

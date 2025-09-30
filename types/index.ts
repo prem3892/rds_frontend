@@ -14,7 +14,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: "ADMIN" | "AGENT";
+  role: "ADMIN" | "AGENT" | "MANAGER";
   phoneNo?: string; // User's phone number
   website?: string; // User's website
   isEmailVerified?: boolean; // Email verification status
@@ -70,7 +70,7 @@ export interface AdminSignupSuccessResponse {
     email: string;
     firstName: string;
     lastName: string;
-    role: "ADMIN";
+    role: "ADMIN" | "AGENT" | "MANAGER";
     phoneNo?: string;
     website: string;
     isEmailVerified: boolean;

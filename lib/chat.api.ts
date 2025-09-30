@@ -50,7 +50,7 @@ export const useGetAllChatSessions = (
   if (
     stableParams.forCurrentAgent &&
     currentUser &&
-    (currentUser.role === "AGENT" || currentUser.role === "ADMIN")
+    (currentUser.role === "AGENT" || currentUser.role === "ADMIN" || currentUser.role === "MANAGER")
   ) {
     stableParams.agentId = currentUser.id;
   }
@@ -183,7 +183,7 @@ export const useGetAllChatSessionsInfinite = (
   if (
     stableParams.forCurrentAgent &&
     currentUser &&
-    (currentUser.role === "AGENT" || currentUser.role === "ADMIN")
+    (currentUser.role === "AGENT" || currentUser.role === "ADMIN" || currentUser.role === "MANAGER")
   ) {
     stableParams.agentId = currentUser.id;
   }

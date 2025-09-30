@@ -22,14 +22,14 @@ export default function WidgetsPage() {
     isLoading: isLoadingWidgets,
     error: widgetsError,
   } = useGetAllWidgets(currentPage, pageSize, {
-    enabled: currentUser?.role === "ADMIN",
+    enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
   });
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  if (currentUser?.role !== "ADMIN") {
+  if (currentUser?.role !== "ADMIN" && currentUser?.role !== "MANAGER") {
     return (
       <motion.div 
       initial={{ opacity: 0, y: 20 }}

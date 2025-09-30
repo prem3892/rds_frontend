@@ -21,7 +21,7 @@ export async function getServerUser() {
     console.log(headersList, "headersList from getServerUser");
     const userId = headersList.get(HEADERS.USER_ID);
     const userEmail = headersList.get(HEADERS.USER_EMAIL);
-    const userRole = headersList.get(HEADERS.USER_ROLE) as 'ADMIN' | 'AGENT' | null;
+    const userRole = headersList.get(HEADERS.USER_ROLE) as 'ADMIN' | 'AGENT' | 'MANAGER' | null;
 
     if (!userId || !userEmail || !userRole) {
       return null;
@@ -44,7 +44,7 @@ export async function getServerUser() {
  */
 export async function isServerUserAdmin(): Promise<boolean> {
   const user = await getServerUser();
-  return user?.role === 'ADMIN';
+  return user?.role === 'ADMIN' || user?.role === 'MANAGER';
 }
 
 /**
@@ -53,5 +53,5 @@ export async function isServerUserAdmin(): Promise<boolean> {
  */
 export async function isServerUserAgent(): Promise<boolean> {
   const user = await getServerUser();
-  return user?.role === 'AGENT';
+  return user?.role === 'AGENT' 
 }

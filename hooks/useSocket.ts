@@ -25,7 +25,7 @@ export function useSocketInitializer() {
     if (
       accessToken &&
       user &&
-      (user.role === "AGENT" || user.role === "ADMIN")
+      (user.role === "AGENT" || user.role === "ADMIN" || user.role === "MANAGER")
     ) {
       // Initialize socket
       const socket = socketService.initialize(accessToken);

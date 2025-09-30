@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AGENTS_QUERY_KEY, RegisterAgentDto, useRegisterAgentMutation, useUploadProfilePictureMutation } from "@/lib/agent.api";
 import { Department } from "@/types";
 import { AgentShift } from "@/types/agent";
@@ -62,7 +63,7 @@ const createAgentFormSchema = z.object({
   phoneNo: z.string().optional(),
   website: z.string().url().optional().or(z.literal("")),
   departmentIds: z.array(z.string()),
-  role: z.enum(["AGENT"]),
+  role: z.enum(["AGENT", "MANAGER"]),
   shifts: z.array(agentShiftSchema).optional(),
   timezone: z.string().optional(),
   profilePicture: z.string().optional(),
@@ -108,8 +109,8 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
 
   const registerAgentMutation = useRegisterAgentMutation({
     onSuccess: () => {
-      toast.success("Agent Created", {
-        description: "The new agent has been successfully created.",
+      toast.success("User Created", {
+        description: "The new user has been successfully created.",
       });
       queryClient.invalidateQueries({ queryKey: [AGENTS_QUERY_KEY] });
       onOpenChange(false);
@@ -118,7 +119,7 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
       setProfilePictureUrl(null);
     },
     onError: (error) => {
-      toast.error("Failed to create agent", {
+      toast.error("Failed to create user", {
         description: error.message,
       });
     },
@@ -139,7 +140,7 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
         lastName: values.lastName,
         email: values.email,
         password: values.password,
-        role: "AGENT",
+        role: values.role,
         // Only include optional fields if they have values
         ...(values.phoneNo && values.phoneNo.trim() && { phoneNo: values.phoneNo.trim() }),
         ...(values.website && values.website.trim() && { website: values.website.trim() }),
@@ -173,9 +174,9 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Agent</DialogTitle>
+          <DialogTitle>Create New User</DialogTitle>
           <DialogDescription>
-            Add a new agent to handle customer chat requests.
+            Add a new user with Agent or Manager role to handle customer chat requests.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -254,6 +255,32 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
                   </FormControl>
                   <FormDescription>
                     Password must be at least 8 characters.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Role Selection */}
+            <FormField
+              name="role"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="AGENT">Agent</SelectItem>
+                      <SelectItem value="MANAGER">Manager</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Select the role for this user. Agent is selected by default.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -374,7 +401,7 @@ const CreateAgentDialog = ({ open, onOpenChange, departments }: CreateAgentDialo
                 {(registerAgentMutation.isPending || uploadProfilePictureMutation.isPending) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Create Agent
+                Create User
               </Button>
             </DialogFooter>
           </form>

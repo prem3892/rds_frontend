@@ -155,7 +155,7 @@ export async function middleware(request: NextRequest) {
     
     // Check for admin-only routes
     if (matchesRoute(pathname, ROUTES.ADMIN_ONLY)) {
-      if (validation.user.role !== 'ADMIN') {
+      if (validation.user.role !== 'ADMIN' && validation.user.role !== 'MANAGER') {
         return createRedirectResponse(REDIRECTS.UNAUTHORIZED, request);
       }
     }
