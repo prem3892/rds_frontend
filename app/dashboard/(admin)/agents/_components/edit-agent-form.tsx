@@ -257,7 +257,7 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
       shifts: [],
       timezone: "America/New_York",
       profilePicture: "",
-      role: "AGENT" as "AGENT" | "MANAGER", // Default to AGENT instead of undefined
+      role: undefined, // Don't set a default role initially
     },
   });
 
@@ -359,7 +359,7 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
         shifts: [],
         timezone: "America/New_York",
         profilePicture: "",
-        role: "AGENT" as "AGENT" | "MANAGER", // Default to AGENT instead of undefined
+        role: undefined, // Don't set a default role
       });
       setProfilePictureFile(null);
       setProfilePictureUrl(null);
@@ -401,6 +401,12 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
       
       console.log("Form data being set:", formData);
       form.reset(formData);
+      
+      // Explicitly set the role field to ensure it updates properly
+      setTimeout(() => {
+        form.setValue("role", agent.user.role! as "AGENT" | "MANAGER");
+        console.log("Role explicitly set to:", agent.user.role);
+      }, 0);
 
       // Set the profile picture URL for display
       setProfilePictureUrl(agent.profilePicture || null);
@@ -573,7 +579,11 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
                     <FormItem>
                       <FormLabel>Role</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value || ""}
+                          key={field.value || "empty"} // Force re-render when value changes
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select a role" />
                           </SelectTrigger>
@@ -584,7 +594,7 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
                         </Select>
                       </FormControl>
                       <FormDescription>
-                        Select the role for this user. Agent is selected by default.
+                        Select the role for this user.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
