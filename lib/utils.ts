@@ -83,3 +83,23 @@ export function formatCannedMessageContent(content: string): string {
   if (!content) return content;
   return content.replace(/\\n/g, '\n');
 }
+
+/**
+ * Format appointment date without timezone conversion
+ * Handles datetime strings in format "YYYY-MM-DDTHH:mm:ss"
+ */
+export function formatAppointmentDate(dateString: string, format: string = "MMM dd, yyyy 'at' h:mm a"): string {
+  if (!dateString) return "Date pending";
+  
+  try {
+    // Parse the datetime string as local time (no timezone conversion)
+    const date = new Date(dateString);
+    
+    // Format using date-fns format function
+    const { format: dateFnsFormat } = require('date-fns');
+    return dateFnsFormat(date, format);
+  } catch (error) {
+    console.error('Error formatting appointment date:', error);
+    return "Invalid date";
+  }
+}

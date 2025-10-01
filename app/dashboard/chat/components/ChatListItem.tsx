@@ -1,5 +1,6 @@
 import React from "react";
 import { parseISO, format } from "date-fns";
+import { formatAppointmentDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
@@ -192,13 +193,12 @@ const ChatListItem = React.memo(
                 <Calendar className="w-3 h-3" />
                 <span className="font-medium">Appointment Booked</span>
               </div>
-              {session.appointmentData?.date ? (
-                <div className="text-xs text-green-600 mt-1">
-                  {format(parseISO(session.appointmentData.date), "MMM dd, yyyy 'at' h:mm a")}
-                </div>
-              ) : (
-                <div className="text-xs text-green-600 mt-1">Date pending</div>
-              )}
+              <div className="text-xs text-green-600 mt-1">
+                {formatAppointmentDate(session.appointmentData?.date || "", "MMM dd, yyyy 'at' h:mm a")}
+              </div>
+              {/* <div className="text-xs text-green-600 mt-1">
+                {session.appointmentData?.date }
+              </div> */}
               {session.appointmentData?.notes && (
                 <div className="text-xs text-green-600 mt-1 truncate">
                   Note: {session.appointmentData.notes}

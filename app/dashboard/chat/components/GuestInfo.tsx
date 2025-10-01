@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
+import { formatAppointmentDate } from "@/lib/utils";
 
 interface GuestInfoProps {
   session: ChatSession | null;
@@ -417,7 +418,7 @@ export function GuestInfo({
                           <Calendar className="w-4 h-4 text-green-500" />
                           <span className="text-gray-600">Date & Time:</span>
                           <span className="font-medium text-green-700">
-                            {format(parseISO(session.appointmentData.date), "EEEE, MMMM dd, yyyy 'at' h:mm a")}
+                            {formatAppointmentDate(session.appointmentData.date, "EEEE, MMMM dd, yyyy 'at' h:mm a")}
                           </span>
                         </div>
                         {session.appointmentData.notes && (

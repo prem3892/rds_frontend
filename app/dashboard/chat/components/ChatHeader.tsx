@@ -9,6 +9,7 @@ import BookingForm from "./BookingForm";
 import ChatStatusIndicator from "./ChatStatusIndicator";
 import { cn, getColorFromString } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
+import { formatAppointmentDate } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface ChatHeaderProps {
@@ -230,16 +231,9 @@ const ChatHeader = ({
               <Calendar className="w-4 h-4" />
               <span>Appointment Booked</span>
             </div>
-            {session.appointmentData?.date ? (
-              <div className="text-sm text-green-700 mt-1">
-                {format(
-                  parseISO(session.appointmentData.date),
-                  "EEEE, MMMM dd, yyyy 'at' h:mm a"
-                )}
-              </div>
-            ) : (
-              <div className="text-sm text-green-700 mt-1">Date pending</div>
-            )}
+            <div className="text-sm text-green-700 mt-1">
+              {formatAppointmentDate(session.appointmentData?.date || "", "EEEE, MMMM dd, yyyy 'at' h:mm a")}
+            </div>
             {session.appointmentData.notes && (
               <div className="text-sm text-green-600 mt-1">
                 Note: {session.appointmentData.notes}
