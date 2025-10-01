@@ -289,6 +289,60 @@ export const useBlockAgentMutation = (
   });
 };
 
+// Agent metrics types
+export interface AgentMetricsItem {
+  _id: string;
+  domain: string;
+  acceptedChats: number;
+  respondedChats: number;
+  proactiveChats: number;
+  avgResponseTime: string;
+}
+
+export interface AgentMetricsResponse {
+  items: AgentMetricsItem[];
+  meta: PaginationMeta;
+}
+
+export interface AgentMetricsFilters {
+  timeFilter: string;
+  domain?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+}
+
+// Get agent metrics
+export const useGetAgentMetrics = (
+  agentId: string,
+  filters?: AgentMetricsFilters,
+  options?: Omit<
+    UseQueryOptions<AgentMetricsResponse, ApiErrorResponse, AgentMetricsResponse, [string, string, string, AgentMetricsFilters | undefined]>,
+    "queryKey" | "queryFn"
+  >
+) => {
+  return useQuery<AgentMetricsResponse, ApiErrorResponse, AgentMetricsResponse, [string, string, string, AgentMetricsFilters | undefined]>({
+    queryKey: [AGENTS_QUERY_KEY, "metrics", agentId, filters],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (filters?.timeFilter) params.append("timeFilter", filters.timeFilter);
+      if (filters?.domain) params.append("domain", filters.domain);
+      if (filters?.page) params.append("page", filters.page.toString());
+      if (filters?.limit) params.append("limit", filters.limit.toString());
+      if (filters?.sortBy) params.append("sortBy", filters.sortBy);
+      if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+      
+      const queryString = params.toString();
+      const url = queryString ? `/agents/${agentId}/metrics?${queryString}` : `/agents/${agentId}/metrics`;
+      
+      return customFetch<AgentMetricsResponse>(url);
+    },
+    enabled: !!agentId,
+    ...options,
+  });
+};
+
 // Upload profile picture
 export const useUploadProfilePictureMutation = (
   options?: UseMutationOptions<{ profilePictureUrl: string; message: string }, ApiErrorResponse, File>

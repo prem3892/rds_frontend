@@ -3,6 +3,7 @@ export { default as AgentTable } from "./agent-table";
 export { default as CreateAgentDialog } from "./create-agent-dialog";
 export { default as EditAgentForm } from "./edit-agent-form";
 export { default as SearchFilters } from "./search-filters";
+export { AgentMetricsModal } from "./agent-metrics-modal";
 
 // Department components
 export { default as DepartmentTable } from "./department-table";

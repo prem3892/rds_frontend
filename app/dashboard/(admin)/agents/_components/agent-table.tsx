@@ -10,7 +10,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ApiErrorResponse, Department } from "@/types";
 import { AgentProfile, PaginatedAgentResponse } from "@/lib/agent.api";
 import { Row } from "@tanstack/react-table";
-import { Edit, Trash2, Shield, ShieldCheck, ToggleLeft } from "lucide-react";
+import { Edit, Trash2, Shield, ShieldCheck, ToggleLeft, BarChart3 } from "lucide-react";
 import { createAgentColumns } from "./agent-columns";
 import CellAction from "./cell-actions";
 import { useState } from "react";
@@ -40,6 +40,7 @@ type Props = {
   onEdit: (agent: AgentProfile) => void;
   onToggleStatus: (agent: AgentProfile) => void;
   onBlockAgent: (agent: AgentProfile, isBlocked: boolean) => void;
+  onMetrics?: (agent: AgentProfile) => void;
   blockLoadingAgentId?: string | null;
   statusLoadingAgentId?: string | null;
 };
@@ -51,6 +52,7 @@ const AgentCard = ({
   onEdit,
   onToggleStatus,
   onBlockAgent,
+  onMetrics,
   blockLoadingAgentId,
   statusLoadingAgentId
 }: { 
@@ -59,6 +61,7 @@ const AgentCard = ({
   onEdit: (agent: AgentProfile) => void;
   onToggleStatus: (agent: AgentProfile) => void;
   onBlockAgent: (agent: AgentProfile, isBlocked: boolean) => void;
+  onMetrics?: (agent: AgentProfile) => void;
   blockLoadingAgentId?: string | null;
   statusLoadingAgentId?: string | null;
 }) => {
@@ -163,58 +166,71 @@ const AgentCard = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 pt-3 mt-3 border-t border-gray-100">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(agent)}
-              className="flex-1 h-8 text-xs"
-            >
-              <Edit className="h-3 w-3 mr-1" />
-              Edit
-            </Button>
-            <Button
-              variant={agent.isOnline ? "destructive" : "default"}
-              size="sm"
-              onClick={() => onToggleStatus(agent)}
-              disabled={isStatusLoading}
-              className="flex-1 h-8 text-xs"
-            >
-              {isStatusLoading ? (
-                <>
-                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
-                  {agent.isOnline ? "Going Offline..." : "Going Online..."}
-                </>
-              ) : (
-                <>
-                  <ToggleLeft className="h-3 w-3 mr-1" />
-                  {agent.isOnline ? "Go Offline" : "Go Online"}
-                </>
+          <div className="pt-3 mt-3 border-t border-gray-100">
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(agent)}
+                className="h-8 text-xs"
+              >
+                <Edit className="h-3 w-3 mr-1" />
+                Edit
+              </Button>
+              {onMetrics && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onMetrics(agent)}
+                  className="h-8 text-xs"
+                >
+                  <BarChart3 className="h-3 w-3 mr-1" />
+                  Metrics
+                </Button>
               )}
-            </Button>
-            <Button
-              variant={agent.isBlocked ? "default" : "destructive"}
-              size="sm"
-              onClick={handleBlockToggle}
-              disabled={isBlockLoading}
-              className="flex-1 h-8 text-xs"
-            >
-              {isBlockLoading ? (
-                <>
-                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
-                  {agent.isBlocked ? "Unblocking..." : "Blocking..."}
-                </>
-              ) : (
-                <>
-                  {agent.isBlocked ? (
-                    <ShieldCheck className="h-3 w-3 mr-1" />
-                  ) : (
-                    <Shield className="h-3 w-3 mr-1" />
-                  )}
-                  {agent.isBlocked ? "Unblock" : "Block"}
-                </>
-              )}
-            </Button>
+              <Button
+                variant={agent.isOnline ? "destructive" : "default"}
+                size="sm"
+                onClick={() => onToggleStatus(agent)}
+                disabled={isStatusLoading}
+                className="h-8 text-xs"
+              >
+                {isStatusLoading ? (
+                  <>
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                    {agent.isOnline ? "Going Offline..." : "Going Online..."}
+                  </>
+                ) : (
+                  <>
+                    <ToggleLeft className="h-3 w-3 mr-1" />
+                    {agent.isOnline ? "Go Offline" : "Go Online"}
+                  </>
+                )}
+              </Button>
+              <Button
+                variant={agent.isBlocked ? "default" : "destructive"}
+                size="sm"
+                onClick={handleBlockToggle}
+                disabled={isBlockLoading}
+                className="h-8 text-xs"
+              >
+                {isBlockLoading ? (
+                  <>
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
+                    {agent.isBlocked ? "Unblocking..." : "Blocking..."}
+                  </>
+                ) : (
+                  <>
+                    {agent.isBlocked ? (
+                      <ShieldCheck className="h-3 w-3 mr-1" />
+                    ) : (
+                      <Shield className="h-3 w-3 mr-1" />
+                    )}
+                    {agent.isBlocked ? "Unblock" : "Block"}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -241,6 +257,7 @@ const AgentTable = (props: Props) => {
     onEdit,
     onToggleStatus,
     onBlockAgent,
+    onMetrics,
     blockLoadingAgentId,
     statusLoadingAgentId
   } = props;
@@ -268,7 +285,7 @@ const AgentTable = (props: Props) => {
     );
   }
 
-  const columns = createAgentColumns({ departments, onEdit, onToggleStatus, onBlockAgent, blockLoadingAgentId, statusLoadingAgentId });
+  const columns = createAgentColumns({ departments, onEdit, onToggleStatus, onBlockAgent, onMetrics, blockLoadingAgentId, statusLoadingAgentId });
 
   return (
     <div className="bg-white p-2 sm:p-3 md:p-4 rounded-xl mt-3 sm:mt-4 overflow-hidden">
@@ -331,6 +348,7 @@ const AgentTable = (props: Props) => {
                 onEdit={onEdit}
                 onToggleStatus={onToggleStatus}
                 onBlockAgent={onBlockAgent}
+                onMetrics={onMetrics}
                 blockLoadingAgentId={blockLoadingAgentId}
                 statusLoadingAgentId={statusLoadingAgentId}
               />
