@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
 import { parseISO, format } from "date-fns";
+import { formatAppointmentDate } from "@/lib/utils";
 import { 
   Clock, 
   Globe, 
@@ -229,7 +230,7 @@ const HistoryChatListItem = React.memo(
                 <span className="font-medium">Appointment Booked</span>
               </div>
               <div className="text-xs text-green-600 mt-1">
-                {format(parseISO(session.appointmentData.date), "MMM dd, yyyy 'at' h:mm a")}
+                {formatAppointmentDate(session.appointmentData.date, "MMM dd, yyyy 'at' h:mm a")}
               </div>
               {session.appointmentData.notes && (
                 <div className="text-xs text-green-600 mt-1 truncate">

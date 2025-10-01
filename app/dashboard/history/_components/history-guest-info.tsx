@@ -27,6 +27,7 @@ import {
 import { useState } from "react";
 import { HistoryGuestInfoSkeleton } from "./history-guest-info-skeleton";
 import { format, parseISO } from "date-fns";
+import { formatAppointmentDate } from "@/lib/utils";
 import { toast } from "sonner";
 import BlockCustomerDialog from "@/app/dashboard/chat/components/BlockCustomerDialog";
 import { Badge } from "@/components/ui/badge";
@@ -333,7 +334,7 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
                       <Calendar className="w-3 h-3 text-green-500" />
                       <span className="text-gray-600">Date & Time:</span>
                       <span className="font-medium text-green-700">
-                        {format(parseISO(session.appointmentData.date), "MMM dd, yyyy 'at' h:mm a")}
+                        {formatAppointmentDate(session.appointmentData.date, "MMM dd, yyyy 'at' h:mm a")}
                       </span>
                     </div>
                     {session.appointmentData.notes && (
