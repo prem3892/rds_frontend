@@ -34,6 +34,7 @@ import {
   EditDepartmentForm,
   SearchFilters,
   createDepartmentColumns,
+  AgentMetricsModal,
 } from "./_components";
 
 // Remove the local AgentFilters interface since we're importing it from the API
@@ -49,7 +50,9 @@ export default function AgentsPage() {
   // Agent states
   const [isCreateAgentDialogOpen, setIsCreateAgentDialogOpen] = useState(false);
   const [isEditAgentDialogOpen, setIsEditAgentDialogOpen] = useState(false);
+  const [isMetricsModalOpen, setIsMetricsModalOpen] = useState(false);
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
+  const [selectedAgentForMetrics, setSelectedAgentForMetrics] = useState<AgentProfile | null>(null);
   const [statusLoadingAgentId, setStatusLoadingAgentId] = useState<string | null>(null);
   const [blockLoadingAgentId, setBlockLoadingAgentId] = useState<string | null>(null);
   const [agentFilters, setAgentFilters] = useState<AgentFilters>({
@@ -156,6 +159,11 @@ export default function AgentsPage() {
   const handleEditAgent = (agent: AgentProfile) => {
     setEditingAgentId(agent._id);
     setIsEditAgentDialogOpen(true);
+  };
+
+  const handleViewMetrics = (agent: AgentProfile) => {
+    setSelectedAgentForMetrics(agent);
+    setIsMetricsModalOpen(true);
   };
 
   const handleToggleStatus = (agent: AgentProfile) => {
@@ -294,6 +302,7 @@ export default function AgentsPage() {
               onEdit={handleEditAgent}
               onToggleStatus={handleToggleStatus}
               onBlockAgent={handleBlockAgent}
+              onMetrics={handleViewMetrics}
               blockLoadingAgentId={blockLoadingAgentId}
               statusLoadingAgentId={statusLoadingAgentId}
             />
@@ -430,6 +439,16 @@ export default function AgentsPage() {
         open={isDeleteDepartmentDialogOpen}
         onOpenChange={setIsDeleteDepartmentDialogOpen}
         department={deletingDepartment}
+      />
+
+      {/* Agent Metrics Modal */}
+      <AgentMetricsModal
+        isOpen={isMetricsModalOpen}
+        onClose={() => {
+          setIsMetricsModalOpen(false);
+          setSelectedAgentForMetrics(null);
+        }}
+        agent={selectedAgentForMetrics}
       />
     </motion.div>
   );

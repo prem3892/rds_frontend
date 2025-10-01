@@ -4,7 +4,7 @@ import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { AgentProfile } from "@/lib/agent.api";
-import { Edit, ToggleLeft, ToggleRight } from "lucide-react";
+import { Edit, ToggleLeft, ToggleRight, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { BlockAgentDialog } from "./block-agent-dialog";
 import { cn } from "@/lib/utils";
@@ -14,11 +14,12 @@ interface CellActionProps {
   onEdit: (agent: AgentProfile) => void;
   onToggleStatus: (agent: AgentProfile) => void;
   onBlockAgent: (agent: AgentProfile, isBlocked: boolean) => void;
+  onMetrics?: (agent: AgentProfile) => void;
   blockLoadingAgentId?: string | null;
   statusLoadingAgentId?: string | null;
 }
 
-const CellAction = ({ row, onEdit, onToggleStatus, onBlockAgent, blockLoadingAgentId, statusLoadingAgentId }: CellActionProps) => {
+const CellAction = ({ row, onEdit, onToggleStatus, onBlockAgent, onMetrics, blockLoadingAgentId, statusLoadingAgentId }: CellActionProps) => {
   const agent = row.original;
   const [showBlockDialog, setShowBlockDialog] = useState(false);
 
@@ -45,6 +46,17 @@ const CellAction = ({ row, onEdit, onToggleStatus, onBlockAgent, blockLoadingAge
         >
           <Edit className="h-4 w-4" />
         </Button>
+        {onMetrics && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => onMetrics(agent)}
+            className="h-8 w-8"
+            title="View Metrics"
+          >
+            <BarChart3 className="h-4 w-4" />
+          </Button>
+        )}
         <Button
 
           size="icon"

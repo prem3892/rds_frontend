@@ -25,6 +25,7 @@ interface AgentColumnsProps {
   onEdit: (agent: AgentProfile) => void;
   onToggleStatus: (agent: AgentProfile) => void;
   onBlockAgent: (agent: AgentProfile, isBlocked: boolean) => void;
+  onMetrics?: (agent: AgentProfile) => void;
   blockLoadingAgentId?: string | null;
   statusLoadingAgentId?: string | null;
 }
@@ -48,6 +49,7 @@ export const createAgentColumns = ({
   onEdit,
   onToggleStatus,
   onBlockAgent,
+  onMetrics,
   blockLoadingAgentId,
   statusLoadingAgentId 
 }: AgentColumnsProps): ColumnDef<AgentProfile>[] => [
@@ -245,6 +247,7 @@ export const createAgentColumns = ({
           onEdit={onEdit}
           onToggleStatus={onToggleStatus}
           onBlockAgent={onBlockAgent}
+          onMetrics={onMetrics}
           blockLoadingAgentId={blockLoadingAgentId}
           statusLoadingAgentId={statusLoadingAgentId}
         />
