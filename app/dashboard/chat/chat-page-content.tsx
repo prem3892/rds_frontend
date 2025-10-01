@@ -126,6 +126,20 @@ export default function MyChatsPage() {
   
   // Use ref to track loaded sessions to prevent infinite loading loops
   const loadedMessagesRef = useRef<Set<string>>(new Set());
+  
+  // Periodic cleanup to handle missed socket events
+  useEffect(() => {
+    const cleanupInterval = setInterval(() => {
+      // Only run cleanup if we have active sessions in state but API might be empty
+      const activeSessionsArray = Object.values(activeSessionsMap);
+      if (activeSessionsArray.length > 0 && !isLoadingInitialSessions) {
+        // Trigger a refetch to sync with server state
+        queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY] });
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(cleanupInterval);
+  }, [activeSessionsMap, isLoadingInitialSessions, queryClient]);
 
   // Check for mobile view
   useEffect(() => {
@@ -142,12 +156,23 @@ export default function MyChatsPage() {
   useEffect(() => {
     if (Array.isArray(initialActiveSessionsData)) {
       chatStoreActions.loadActiveSessions(initialActiveSessionsData);
-      // If nothing is active anymore, ensure selection is cleared
+      
+      // Additional safety check: If API returns empty array, ensure selection is cleared
       if (initialActiveSessionsData.length === 0 && selectedSessionId) {
+        console.log('API returned empty active sessions, clearing selected session:', selectedSessionId);
         chatStoreActions.setSelectedSessionId(null);
       }
+      
+      // Validate that selected session still exists in API response
+      if (selectedSessionId && initialActiveSessionsData.length > 0) {
+        const sessionExists = initialActiveSessionsData.some(session => session._id === selectedSessionId);
+        if (!sessionExists) {
+          console.warn('Selected session no longer exists in API response, clearing selection:', selectedSessionId);
+          chatStoreActions.setSelectedSessionId(null);
+        }
+      }
     }
-  }, [initialActiveSessionsData]);
+  }, [initialActiveSessionsData, selectedSessionId, chatStoreActions]);
 
   // Load initial pending sessions from API into Zustand store
   useEffect(() => {

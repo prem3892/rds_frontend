@@ -79,8 +79,9 @@ interface ChatState {
       timestamp: string
     ) => void;
 
-    // TODO: Add more actions for sending messages, accepting chats via WebSocket
-    // clearChatState: () => void; // For logout or re-initialization
+    // Utility functions
+    clearStuckSessions: (validSessionIds: string[]) => void; // Manual cleanup of stuck sessions
+    clearChatState: () => void; // For logout or re-initialization
   };
 }
 
@@ -107,6 +108,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     loadActiveSessions: (sessions) => {
       set((state) => {
         const newActiveSessions: Record<string, ActiveChat> = {};
+        
+        // Process sessions from API response
         sessions.forEach((session) => {
           // Preserve existing messages and other state when updating sessions
           const existingSession = state.activeSessions[session._id];
@@ -119,7 +122,32 @@ export const useChatStore = create<ChatState>((set, get) => ({
             typing: existingSession?.typing,
           };
         });
-        return { activeSessions: newActiveSessions };
+
+        // CRITICAL FIX: Check for sessions that exist in state but not in API response
+        // These are "stuck" sessions that need to be removed
+        const apiSessionIds = new Set(sessions.map(s => s._id));
+        const stuckSessions: string[] = [];
+        
+        Object.keys(state.activeSessions).forEach(sessionId => {
+          if (!apiSessionIds.has(sessionId)) {
+            stuckSessions.push(sessionId);
+          }
+        });
+
+        // Log stuck sessions for debugging
+        if (stuckSessions.length > 0) {
+          console.warn('Removing stuck sessions that are no longer in API response:', stuckSessions);
+        }
+
+        // Clear selected session if it's one of the stuck sessions
+        const newSelectedSessionId = stuckSessions.includes(state.selectedSessionId || '') 
+          ? null 
+          : state.selectedSessionId;
+
+        return { 
+          activeSessions: newActiveSessions,
+          selectedSessionId: newSelectedSessionId
+        };
       });
     },
     addActiveSession: (session) =>
@@ -401,7 +429,42 @@ export const useChatStore = create<ChatState>((set, get) => ({
         };
       }),
 
-    // clearChatState: () => set(initialState),
+    clearStuckSessions: (validSessionIds) =>
+      set((state) => {
+        const validIdsSet = new Set(validSessionIds);
+        const stuckSessions: string[] = [];
+        
+        // Find sessions that are not in the valid list
+        Object.keys(state.activeSessions).forEach(sessionId => {
+          if (!validIdsSet.has(sessionId)) {
+            stuckSessions.push(sessionId);
+          }
+        });
+
+        if (stuckSessions.length > 0) {
+          console.log('Manually clearing stuck sessions:', stuckSessions);
+          
+          // Remove stuck sessions
+          const newActiveSessions = { ...state.activeSessions };
+          stuckSessions.forEach(sessionId => {
+            delete newActiveSessions[sessionId];
+          });
+
+          // Clear selected session if it's stuck
+          const newSelectedSessionId = stuckSessions.includes(state.selectedSessionId || '') 
+            ? null 
+            : state.selectedSessionId;
+
+          return {
+            activeSessions: newActiveSessions,
+            selectedSessionId: newSelectedSessionId
+          };
+        }
+
+        return state; // No changes needed
+      }),
+
+    clearChatState: () => set(initialState),
   },
 }));
 
