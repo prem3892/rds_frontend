@@ -258,6 +258,11 @@ export function useSocketInitializer() {
             // Invalidate active chat sessions API to refresh the data
             queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY] });
             
+            // Additional safety: Force a refetch after a short delay to ensure consistency
+            setTimeout(() => {
+              queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY] });
+            }, 1000);
+            
             // Show toast notification about customer inactivity
             // toast.info('Chat Session Ended', {
             //   description: data.message,
@@ -281,6 +286,11 @@ export function useSocketInitializer() {
             
             // Invalidate active chat sessions API to refresh the data
             queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY] });
+            
+            // Additional safety: Force a refetch after a short delay to ensure consistency
+            setTimeout(() => {
+              queryClient.invalidateQueries({ queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY] });
+            }, 1000);
             
             // Show toast notification about chat ending
             // toast.error('Chat Session Ended', {
