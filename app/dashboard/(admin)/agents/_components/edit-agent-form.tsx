@@ -321,7 +321,8 @@ const EditAgentForm = ({ open, onOpenChange, agentId, departments }: EditAgentFo
         // Only include optional fields if they have values
         ...(values.phoneNo && values.phoneNo.trim() && { phoneNo: values.phoneNo.trim() }),
         ...(values.website && values.website.trim() && { website: values.website.trim() }),
-        ...(values.role && { role: values.role }),
+        // Only include role if it has changed from the original value
+        ...(values.role && values.role !== agent.user.role && { role: values.role }),
         shifts: values.shifts || [],
         ...(values.timezone && { timezone: values.timezone }),
         // Always include profilePicture - either new URL, existing URL, or empty string
