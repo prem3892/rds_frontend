@@ -346,7 +346,7 @@ export function MainLayoutWrapper({
             {/* Online/Offline Toggle */}
             <div className="hidden sm:flex bg-gray-100 rounded-full p-1 flex-shrink-0">
               <Button
-                onClick={() => handleStatusChange(true)}
+                onClick={() => handleStatusChange(!isOnline)}
                 disabled={isStatusLoading}
                 variant={"ghost"}
                 className={cn(
@@ -361,7 +361,7 @@ export function MainLayoutWrapper({
                 Online
               </Button>
               <Button
-                onClick={() => handleStatusChange(false)}
+                onClick={() => handleStatusChange(!isOnline)}
                 disabled={isStatusLoading}
                 variant={"ghost"}
                 className={cn(
