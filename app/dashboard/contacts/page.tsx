@@ -29,6 +29,9 @@ export default function ContactsPage() {
   const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, page }));
   };
+  const handlePageSizeChange = (size: number) => {
+    setFilters(prev => ({ ...prev, limit: size, page: 1 }));
+  };
 
   return (
     <motion.div 
@@ -63,6 +66,8 @@ export default function ContactsPage() {
           contactsError={contactsError || null}
           currentPage={filters.page || 1}
           onPageChange={handlePageChange}
+          pageSize={filters.limit}
+          onPageSizeChange={handlePageSizeChange}
         />
       </div>
     </motion.div>

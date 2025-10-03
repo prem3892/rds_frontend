@@ -36,6 +36,8 @@ type Props = {
   agentsError: ApiErrorResponse | null;
   currentPage: number;
   onPageChange: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
   departments: Department[];
   onEdit: (agent: AgentProfile) => void;
   onToggleStatus: (agent: AgentProfile) => void;
@@ -253,6 +255,8 @@ const AgentTable = (props: Props) => {
     agentsError, 
     currentPage,
     onPageChange,
+    pageSize,
+    onPageSizeChange,
     departments,
     onEdit,
     onToggleStatus,
@@ -368,12 +372,15 @@ const AgentTable = (props: Props) => {
       </div>
 
       {/* Pagination Controls */}
-      {meta && meta.totalPages > 1 && (
+      {meta && (
         <div className="mt-4 sm:mt-6 overflow-hidden">
           <PaginationControls
             currentPage={currentPage}
             totalPages={meta.totalPages}
             onPageChange={onPageChange}
+            pageSize={pageSize}
+            onPageSizeChange={onPageSizeChange}
+            alwaysShow
           />
         </div>
       )}

@@ -37,6 +37,9 @@ export default function AutoMessagesPage() {
   const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, page }));
   };
+  const handlePageSizeChange = (size: number) => {
+    setFilters(prev => ({ ...prev, limit: size, page: 1 }));
+  };
 
   // Extract unique domains and widgets for filters
   const availableDomains = useMemo(() => {
@@ -94,6 +97,8 @@ export default function AutoMessagesPage() {
           currentPage={filters.page || 1}
           onPageChange={handlePageChange}
           widgets={availableWidgets}
+          pageSize={filters.limit}
+          onPageSizeChange={handlePageSizeChange}
         />
       </div>
 

@@ -84,7 +84,7 @@ export default function AgentsPage() {
     }
   );
   const [currentDepartmentPage, setCurrentDepartmentPage] = useState(1);
-  const [departmentPageSize] = useState(10);
+  const [departmentPageSize, setDepartmentPageSize] = useState(10);
 
   const {
     data: agentData,
@@ -195,6 +195,10 @@ export default function AgentsPage() {
   const handleDepartmentPageChange = (page: number) => {
     setCurrentDepartmentPage(page);
   };
+  const handleDepartmentPageSizeChange = (size: number) => {
+    setDepartmentPageSize(size);
+    setCurrentDepartmentPage(1);
+  };
 
   // Reset agent page when filters change
   useEffect(() => {
@@ -298,6 +302,10 @@ export default function AgentsPage() {
               agentsError={agentsError || null}
               currentPage={agentFilters.page || 1}
               onPageChange={handleAgentPageChange}
+              pageSize={agentFilters.limit}
+              onPageSizeChange={(size) =>
+                setAgentFilters((prev) => ({ ...prev, limit: size, page: 1 }))
+              }
               departments={departments || []}
               onEdit={handleEditAgent}
               onToggleStatus={handleToggleStatus}
@@ -390,7 +398,7 @@ export default function AgentsPage() {
               </div>
 
               {/* Pagination Controls */}
-              {filteredDepartments.length > departmentPageSize && (
+              {(
                 <div className="mt-4 sm:mt-6 overflow-hidden">
                   <PaginationControls
                     currentPage={currentDepartmentPage}
@@ -398,6 +406,9 @@ export default function AgentsPage() {
                       filteredDepartments.length / departmentPageSize
                     )}
                     onPageChange={handleDepartmentPageChange}
+                    pageSize={departmentPageSize}
+                    onPageSizeChange={handleDepartmentPageSizeChange}
+                    alwaysShow
                   />
                 </div>
               )}

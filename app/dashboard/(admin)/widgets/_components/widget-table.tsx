@@ -23,6 +23,8 @@ type Props = {
   widgetsError: ApiErrorResponse | null;
   currentPage: number;
   onPageChange: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
 };
 
 // Widget Card Component for mobile view
@@ -120,6 +122,8 @@ const WidgetTable = (props: Props) => {
     widgetsError,
     currentPage,
     onPageChange,
+    pageSize,
+    onPageSizeChange,
   } = props;
   const widgets = widgetData?.items || [];
   const meta = widgetData?.meta;
@@ -238,12 +242,15 @@ const WidgetTable = (props: Props) => {
       </div>
 
       {/* Pagination Controls */}
-      {meta && meta.totalPages > 1 && (
+      {meta && (
         <div className="mt-6">
           <PaginationControls
             currentPage={currentPage}
             totalPages={meta.totalPages}
             onPageChange={onPageChange}
+            pageSize={pageSize}
+            onPageSizeChange={onPageSizeChange}
+            alwaysShow
           />
         </div>
       )}
