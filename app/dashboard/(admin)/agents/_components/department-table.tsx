@@ -10,9 +10,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Department } from "@/types";
+import { Department, DepartmentAgent } from "@/types";
 import { AgentProfile } from "@/lib/agent.api";
 import { Edit, Trash2, Users } from "lucide-react";
+import { useState } from "react";
+import { AgentsModal } from "./agents-modal";
 
 // Helper function to get the full image URL
 const getFullImageUrl = (imagePath: string) => {
@@ -30,7 +32,7 @@ const getFullImageUrl = (imagePath: string) => {
 
 interface DepartmentTableProps {
   departments: Department[];
-  agents: AgentProfile[];
+  agents?: AgentProfile[]; // Made optional since we now use department.agents
   isLoading: boolean;
   onEdit: (department: Department) => void;
   onDelete: (department: Department) => void;
@@ -43,9 +45,25 @@ export default function DepartmentTable({
   onEdit,
   onDelete,
 }: DepartmentTableProps) {
+  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   // Helper function to get agents for a specific department
-  const getAgentsForDepartment = (departmentId: string) => {
-    return agents.filter(agent => agent.departmentIds.includes(departmentId));
+  const getAgentsForDepartment = (department: Department) => {
+    // Use agents from department.agents if available, otherwise fall back to filtering from agents prop
+    if (department.agents && department.agents.length > 0) {
+      return department.agents.map((agent: DepartmentAgent) => ({
+        _id: agent._id,
+        user: {
+          firstName: agent.firstName,
+          lastName: agent.lastName,
+        },
+        profilePicture: agent.profilePicture,
+        departmentIds: [department._id], // For compatibility with existing modal
+      }));
+    }
+    
+    return agents?.filter(agent => agent.departmentIds.includes(department._id)) || [];
   };
 
   if (isLoading) {
@@ -83,7 +101,7 @@ export default function DepartmentTable({
   return (
     <div className="space-y-4">
       {departments.map((department) => {
-        const departmentAgents = getAgentsForDepartment(department._id);
+        const departmentAgents = getAgentsForDepartment(department);
         
         return (
           <Card key={department._id} className="shadow-sm border-gray-200">
@@ -153,9 +171,17 @@ export default function DepartmentTable({
                     ))}
                   </div>
                   {departmentAgents.length > 5 && (
-                    <Badge variant="outline" className="text-xs font-medium">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedDepartment(department);
+                        setIsModalOpen(true);
+                      }}
+                      className="text-xs font-medium h-6 px-2 hover:bg-blue-50 hover:border-blue-200 cursor-pointer"
+                    >
                       +{departmentAgents.length - 5} more
-                    </Badge>
+                    </Button>
                   )}
                   {departmentAgents.length === 0 && (
                     <span className="text-sm text-gray-500 italic">No agents assigned</span>
@@ -166,6 +192,18 @@ export default function DepartmentTable({
           </Card>
         );
       })}
+      
+      {selectedDepartment && (
+        <AgentsModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedDepartment(null);
+          }}
+          departmentName={selectedDepartment.name}
+          agents={getAgentsForDepartment(selectedDepartment)}
+        />
+      )}
     </div>
   );
 }

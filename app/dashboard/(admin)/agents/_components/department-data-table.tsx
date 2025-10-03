@@ -27,7 +27,7 @@ import { createDepartmentColumns } from "./department-columns";
 
 interface DepartmentDataTableProps {
   departments: Department[];
-  agents: AgentProfile[];
+  agents?: AgentProfile[]; // Made optional since we now use department.agents
   isLoading: boolean;
   onEdit: (department: Department) => void;
   onDelete: (department: Department) => void;
@@ -45,7 +45,7 @@ export default function DepartmentDataTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const columns = createDepartmentColumns(agents, onEdit, onDelete);
+  const columns = createDepartmentColumns(agents || [], onEdit, onDelete);
 
   const table = useReactTable({
     data: departments,

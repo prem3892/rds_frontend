@@ -9,6 +9,13 @@ import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
 
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -68,6 +75,19 @@ const departmentFormSchema = z.object({
 });
 
 type DepartmentFormValues = z.infer<typeof departmentFormSchema>;
+
+const getFullImageUrl = (imagePath: string) => {
+  if (!imagePath) return undefined;
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the API base URL
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/";
+  return `${API_BASE_URL}${imagePath}`;
+};
 
 export default function DepartmentsPage() {
   const currentUser = useCurrentUser();
@@ -339,6 +359,7 @@ export default function DepartmentsPage() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Description</TableHead>
+                  <TableHead>Agents</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -357,6 +378,40 @@ export default function DepartmentsPage() {
                           No description
                         </span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex -space-x-2">
+                          {department.agents.slice(0, 5).map((agent) => (
+                            <TooltipProvider key={agent._id}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Avatar className="h-8 w-8 border-2 border-white rounded-full bg-gray-100 hover:z-10 transition-transform hover:scale-110">
+                                    <AvatarImage
+                                      src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined}
+                                      alt={`${agent.firstName} ${agent.lastName}`}
+                                    />
+                                    <AvatarFallback className="text-xs bg-blue-100 text-blue-600 font-medium">
+                                      {agent.firstName[0]}{agent.lastName[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{agent.firstName} {agent.lastName}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ))}
+                        </div>
+                        {department.agents.length > 5 && (
+                          <span className="text-xs text-muted-foreground">
+                            +{department.agents.length - 5} more
+                          </span>
+                        )}
+                        {department.agents.length === 0 && (
+                          <span className="text-sm text-muted-foreground italic">No agents assigned</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       {format(parseISO(department.createdAt), "PPP")}
