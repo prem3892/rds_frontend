@@ -8,13 +8,13 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AgentProfile, Department } from "@/types";
+import { AgentProfile, Department, DepartmentAgent } from "@/types";
 import { useState } from "react";
 import { AgentsModal } from "./agents-modal";
 
 interface AgentsCellProps {
   department: Department;
-  agents: AgentProfile[];
+  agents?: AgentProfile[]; // Made optional since we now use department.agents
 }
 
 const getFullImageUrl = (imagePath: string) => {
@@ -32,17 +32,29 @@ const getFullImageUrl = (imagePath: string) => {
 
 export function AgentsCell({ department, agents }: AgentsCellProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const departmentAgents = agents.filter((agent) => {
-    const ids = agent.departmentIds || [];
-    return ids.some((dep) => {
-      if (!dep) return false;
-      if (typeof dep === "string") return dep === department._id;
-      // handle object form: {_id: string} or full department objects
-      // @ts-expect-error backend may return a populated object
-      const maybeId = dep?._id ?? dep?.id;
-      return maybeId === department._id;
-    });
-  });
+  
+  // Use agents from department.agents if available, otherwise fall back to filtering from agents prop
+  const departmentAgents = department.agents && department.agents.length > 0 
+    ? department.agents.map((agent: DepartmentAgent) => ({
+        _id: agent._id,
+        user: {
+          firstName: agent.firstName,
+          lastName: agent.lastName,
+        },
+        profilePicture: agent.profilePicture,
+        departmentIds: [department._id], // For compatibility with existing modal
+      }))
+    : agents?.filter((agent) => {
+        const ids = agent.departmentIds || [];
+        return ids.some((dep) => {
+          if (!dep) return false;
+          if (typeof dep === "string") return dep === department._id;
+          // handle object form: {_id: string} or full department objects
+          // @ts-expect-error backend may return a populated object
+          const maybeId = dep?._id ?? dep?.id;
+          return maybeId === department._id;
+        });
+      }) || [];
 
   return (
     <>

@@ -22,6 +22,8 @@ type Props = {
   currentPage: number;
   onPageChange: (page: number) => void;
   widgets: Widget[];
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
 };
 
 // Auto Message Card Component for mobile view
@@ -171,6 +173,8 @@ export default function AutoMessageTable({
   currentPage,
   onPageChange,
   widgets,
+  pageSize,
+  onPageSizeChange,
 }: Props) {
   if (isLoadingMessages) {
     return (
@@ -247,12 +251,15 @@ export default function AutoMessageTable({
       </div>
 
       {/* Pagination */}
-      {messageData.meta.totalPages > 1 && (
+      {messageData.meta.totalPages >= 1 && (
         <div className="mt-6">
           <PaginationControls
             currentPage={currentPage}
             totalPages={messageData.meta.totalPages}
             onPageChange={onPageChange}
+            pageSize={pageSize}
+            onPageSizeChange={onPageSizeChange}
+            alwaysShow
           />
         </div>
       )}

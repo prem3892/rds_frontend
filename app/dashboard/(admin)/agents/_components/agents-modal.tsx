@@ -59,23 +59,23 @@ export function AgentsModal({ departmentName, agents, isOpen, onClose }: AgentsC
         if (!open) onClose()
       }}
     >
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden p-0">
-        <div className="flex flex-col h-[80vh]">
-          <DialogHeader className="px-6 py-4 border-b">
-            <DialogTitle className="flex items-center gap-2 text-pretty">
-              <Building className="h-5 w-5" aria-hidden="true" />
-              <span className="font-semibold">{departmentName}</span>
-              <span className="text-muted-foreground">— Agents</span>
-              <Badge variant="secondary" className="ml-1">
-                {count}
-              </Badge>
-            </DialogTitle>
-          </DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] sm:max-h-[85vh] p-0 flex flex-col">
+        <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b flex-shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-pretty text-sm sm:text-base">
+            <Building className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+            <span className="font-semibold">{departmentName}</span>
+            <span className="text-muted-foreground hidden sm:inline">— Agents</span>
+            <Badge variant="secondary" className="ml-1 text-xs">
+              {count}
+            </Badge>
+          </DialogTitle>
+        </DialogHeader>
 
-          <ScrollArea className="flex-1 p-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6">
             <div
               role="list"
-              className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+              className="grid gap-3 sm:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
             >
               {list.map((agent) => {
                 const first = agent.user?.firstName ?? ""
@@ -85,10 +85,10 @@ export function AgentsModal({ departmentName, agents, isOpen, onClose }: AgentsC
                     key={agent._id}
                     role="listitem"
                     aria-label={`${first} ${last}`.trim()}
-                    className="group h-full rounded-md transition-colors p-3 hover:bg-muted/50"
+                    className="group h-full rounded-md transition-colors p-2 sm:p-3 hover:bg-muted/50"
                   >
-                    <div className="flex flex-col items-center text-center gap-2">
-                      <Avatar className="h-9 w-9 ring-1 ring-blue-100 dark:ring-blue-300/20">
+                    <div className="flex flex-col items-center text-center gap-1 sm:gap-2">
+                      <Avatar className="h-8 w-8 sm:h-9 sm:w-9 ring-1 ring-blue-100 dark:ring-blue-300/20">
                         <AvatarFallback className="text-xs bg-blue-100 text-blue-700 font-medium">
                           {getInitials(first, last)}
                         </AvatarFallback>
@@ -97,7 +97,7 @@ export function AgentsModal({ departmentName, agents, isOpen, onClose }: AgentsC
                           alt={`${agent.user.firstName} ${agent.user.lastName}`}
                         />
                       </Avatar>
-                      <h3 className="text-xs font-medium text-foreground">
+                      <h3 className="text-xs font-medium text-foreground leading-tight">
                         {(first || "").trim()} {(last || "").trim()}
                       </h3>
                     </div>
@@ -107,14 +107,14 @@ export function AgentsModal({ departmentName, agents, isOpen, onClose }: AgentsC
             </div>
 
             {count === 0 && (
-              <div className="mt-10">
-                <div className="mx-auto max-w-md rounded-lg border border-dashed p-10 text-center">
-                  <Building className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" aria-hidden="true" />
+              <div className="mt-8 sm:mt-10">
+                <div className="mx-auto max-w-md rounded-lg border border-dashed p-8 sm:p-10 text-center">
+                  <Building className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-3 text-muted-foreground/50" aria-hidden="true" />
                   <p className="text-sm text-muted-foreground">No agents assigned to this department.</p>
                 </div>
               </div>
             )}
-          </ScrollArea>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

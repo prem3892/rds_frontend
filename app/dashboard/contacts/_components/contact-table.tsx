@@ -17,6 +17,8 @@ interface ContactTableProps {
   contactsError: ApiErrorResponse | null;
   currentPage: number;
   onPageChange: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
 }
 
 export default function ContactTable({
@@ -25,6 +27,8 @@ export default function ContactTable({
   contactsError,
   currentPage,
   onPageChange,
+  pageSize,
+  onPageSizeChange,
 }: ContactTableProps) {
   const columns = createColumns();
   const contacts = contactData?.items || [];
@@ -95,12 +99,15 @@ export default function ContactTable({
       </div>
 
       {/* Pagination */}
-      {contactData.meta.totalPages > 1 && (
+      {contactData.meta.totalPages >= 1 && (
         <div className="mt-6">
           <PaginationControls
             currentPage={currentPage}
             totalPages={contactData.meta.totalPages}
             onPageChange={onPageChange}
+            pageSize={pageSize}
+            onPageSizeChange={onPageSizeChange}
+            alwaysShow
           />
         </div>
       )}

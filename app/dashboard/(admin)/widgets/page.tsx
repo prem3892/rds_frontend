@@ -15,7 +15,7 @@ export default function WidgetsPage() {
   const currentUser = useCurrentUser();
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
 
   const {
     data: widgetData,
@@ -27,6 +27,10 @@ export default function WidgetsPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
   };
 
   if (currentUser?.role !== "ADMIN" && currentUser?.role !== "MANAGER") {
@@ -84,6 +88,8 @@ export default function WidgetsPage() {
         widgetsError={widgetsError || null}
         currentPage={currentPage}
         onPageChange={handlePageChange}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
       />
     </div>
     </motion.div>

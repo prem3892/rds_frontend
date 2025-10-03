@@ -1,10 +1,10 @@
 "use client";
 
-import { Department, AgentProfile } from "@/types";
+import { Department, AgentProfile, DepartmentAgent } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit, Trash2, Users } from "lucide-react";
 import {
   Tooltip,
@@ -12,13 +12,28 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useState } from "react";
+import { AgentsModal } from "./agents-modal";
 
 interface DepartmentMobileCardProps {
   department: Department;
-  agents: AgentProfile[];
+  agents?: AgentProfile[]; // Made optional since we now use department.agents
   onEdit: (department: Department) => void;
   onDelete: (department: Department) => void;
 }
+
+const getFullImageUrl = (imagePath: string) => {
+  if (!imagePath) return undefined;
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the API base URL
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/";
+  return `${API_BASE_URL}${imagePath}`;
+};
 
 export default function DepartmentMobileCard({
   department,
@@ -26,22 +41,30 @@ export default function DepartmentMobileCard({
   onEdit,
   onDelete,
 }: DepartmentMobileCardProps) {
-  // Helper function to get agents for a specific department
-  const getAgentsForDepartment = (departmentId: string) => {
-    return agents.filter((agent) => {
-      const ids = agent.departmentIds || [];
-      return ids.some((dep) => {
-        if (!dep) return false;
-        if (typeof dep === "string") return dep === departmentId;
-        // handle object form: {_id: string} or full department objects
-        // @ts-expect-error backend may return a populated object
-        const maybeId = dep?._id ?? dep?.id;
-        return maybeId === departmentId;
-      });
-    });
-  };
-
-  const departmentAgents = getAgentsForDepartment(department._id);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Use agents from department.agents if available, otherwise fall back to filtering from agents prop
+  const departmentAgents = department.agents && department.agents.length > 0 
+    ? department.agents.map((agent: DepartmentAgent) => ({
+        _id: agent._id,
+        user: {
+          firstName: agent.firstName,
+          lastName: agent.lastName,
+        },
+        profilePicture: agent.profilePicture,
+        departmentIds: [department._id], // For compatibility with existing modal
+      }))
+    : agents?.filter((agent) => {
+        const ids = agent.departmentIds || [];
+        return ids.some((dep) => {
+          if (!dep) return false;
+          if (typeof dep === "string") return dep === department._id;
+          // handle object form: {_id: string} or full department objects
+          // @ts-expect-error backend may return a populated object
+          const maybeId = dep?._id ?? dep?.id;
+          return maybeId === department._id;
+        });
+      }) || [];
 
   return (
     <Card className="mb-4 shadow-sm hover:shadow-md transition-shadow">
@@ -99,6 +122,10 @@ export default function DepartmentMobileCard({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Avatar className="h-8 w-8 border-2 border-white rounded-full bg-gray-100 hover:z-10 transition-transform hover:scale-110">
+                              <AvatarImage
+                                src={agent.profilePicture ? getFullImageUrl(agent.profilePicture) : undefined}
+                                alt={`${agent.user.firstName} ${agent.user.lastName}`}
+                              />
                               <AvatarFallback className="text-xs bg-blue-100 text-blue-600 font-medium">
                                 {agent.user.firstName[0]}{agent.user.lastName[0]}
                               </AvatarFallback>
@@ -112,9 +139,14 @@ export default function DepartmentMobileCard({
                     ))}
                   </div>
                   {departmentAgents.length > 5 && (
-                    <Badge variant="outline" className="text-xs font-medium">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsModalOpen(true)}
+                      className="text-xs font-medium h-6 px-2 hover:bg-blue-50 hover:border-blue-200 cursor-pointer"
+                    >
                       +{departmentAgents.length - 5} more
-                    </Badge>
+                    </Button>
                   )}
                 </>
               ) : (
@@ -124,6 +156,13 @@ export default function DepartmentMobileCard({
           </div>
         </div>
       </CardContent>
+      
+      <AgentsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        departmentName={department.name}
+        agents={departmentAgents}
+      />
     </Card>
   );
 }

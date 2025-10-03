@@ -33,6 +33,8 @@ type Props = {
   blockedCustomersError: ApiErrorResponse | null;
   currentPage: number;
   onPageChange: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
 };
 
 // Blocked Customer Card Component for mobile view
@@ -196,6 +198,8 @@ export default function BlockedCustomerTable({
   blockedCustomersError,
   currentPage,
   onPageChange,
+  pageSize,
+  onPageSizeChange,
 }: Props) {
   if (isLoadingBlockedCustomers) {
     return (
@@ -272,12 +276,15 @@ export default function BlockedCustomerTable({
       </div>
 
       {/* Pagination */}
-      {blockedCustomerData.meta.totalPages > 1 && (
+      {blockedCustomerData.meta.totalPages >= 1 && (
         <div className="mt-6">
           <PaginationControls
             currentPage={currentPage}
             totalPages={blockedCustomerData.meta.totalPages}
             onPageChange={onPageChange}
+            pageSize={pageSize}
+            onPageSizeChange={onPageSizeChange}
+            alwaysShow
           />
         </div>
       )}

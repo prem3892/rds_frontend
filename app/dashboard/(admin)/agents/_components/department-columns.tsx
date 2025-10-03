@@ -13,7 +13,7 @@ import { AgentsCell } from "./agents-cell";
 // }
 
 export const createDepartmentColumns = (
-  agents: AgentProfile[],
+  agents: AgentProfile[] = [],
   onEdit: (department: Department) => void,
   onDelete: (department: Department) => void
 ): ColumnDef<Department>[] => [

@@ -152,8 +152,7 @@ export const useGetAgents = (
       if (filters?.isBlocked !== undefined) params.append("isBlocked", filters.isBlocked.toString());
       if (filters?.page) params.append("page", filters.page.toString());
       if (filters?.limit) params.append("limit", filters.limit.toString());
-      if (filters?.sortBy) params.append("sortBy", filters.sortBy);
-      if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
+
       
       const queryString = params.toString();
       const url = queryString ? `/agents?${queryString}` : "/agents";

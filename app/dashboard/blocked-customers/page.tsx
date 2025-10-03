@@ -29,6 +29,9 @@ export default function BlockedCustomersPage() {
   const handlePageChange = (page: number) => {
     setFilters(prev => ({ ...prev, page }));
   };
+  const handlePageSizeChange = (size: number) => {
+    setFilters(prev => ({ ...prev, limit: size, page: 1 }));
+  };
 
   // Extract unique domains and widgets for filters
   const availableDomains = useMemo(() => {
@@ -82,6 +85,8 @@ export default function BlockedCustomersPage() {
           blockedCustomersError={blockedCustomersError || null}
           currentPage={filters.page || 1}
           onPageChange={handlePageChange}
+          pageSize={filters.limit}
+          onPageSizeChange={handlePageSizeChange}
         />
       </div>
     </motion.div>

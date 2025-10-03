@@ -19,6 +19,8 @@ type Props = {
   messagesError: ApiErrorResponse | null;
   currentPage: number;
   onPageChange: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (size: number) => void;
 };
 
 // Canned Message Card Component for mobile view
@@ -133,7 +135,9 @@ const CannedMessageTable = (props: Props) => {
     isLoadingMessages, 
     messagesError, 
     currentPage, 
-    onPageChange 
+    onPageChange,
+    pageSize,
+    onPageSizeChange,
   } = props;
   
   const messages = messageData?.items || [];
@@ -254,12 +258,15 @@ const CannedMessageTable = (props: Props) => {
       </div>
 
       {/* Pagination Controls */}
-      {meta && meta.totalPages > 1 && (
+      {meta && (
         <div className="mt-6">
           <PaginationControls
             currentPage={currentPage}
             totalPages={meta.totalPages}
             onPageChange={onPageChange}
+            pageSize={pageSize}
+            onPageSizeChange={onPageSizeChange}
+            alwaysShow
           />
         </div>
       )}

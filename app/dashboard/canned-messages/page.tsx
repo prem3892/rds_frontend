@@ -37,6 +37,9 @@ export default function CannedMessagesPage() {
   const handlePageChange = (page: number) => {
     setFilters((prev: CannedMessageFilters) => ({ ...prev, page }));
   };
+  const handlePageSizeChange = (size: number) => {
+    setFilters((prev: CannedMessageFilters) => ({ ...prev, limit: size, page: 1 }));
+  };
 
   // Extract unique tags and departments for filters
 
@@ -101,6 +104,8 @@ const availableTags = useMemo(() => {
           messagesError={messagesError || null}
           currentPage={filters.page || 1}
           onPageChange={handlePageChange}
+          pageSize={filters.limit}
+          onPageSizeChange={handlePageSizeChange}
         />
       </div>
 
