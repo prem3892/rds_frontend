@@ -21,7 +21,9 @@ import { rawTimeZones } from "@vvo/tzdb";
 
 import {
   FaChrome,
+  FaFacebook,
   FaFirefox,
+  FaGoogle,
   FaSafari,
   FaEdge,
   FaTablet,
@@ -68,7 +70,7 @@ const ChatListItem = React.memo(
 
       const platformLower = platform.toLowerCase();
       if (platformLower.includes("mac"))
-        return <SiMacos className="w-3 h-4 text-gray-800" />;
+        return <SiApple className="w-3 h-4 text-gray-800" />;
       if (platformLower.includes("win"))
         return <FaWindows className="w-3 h-4 text-blue-600" />;
       if (platformLower.includes("linux"))
@@ -82,6 +84,38 @@ const ChatListItem = React.memo(
       if (platformLower.includes("tablet"))
         return <FaTablet className="w-3 h-4 text-gray-600" />;
       return <FaQuestionCircle className="w-3 h-4 text-gray-500" />;
+    };
+
+    const getSourceIcon = (currentPageUrl?: string) => {
+      if (!currentPageUrl) return null;
+      
+      try {
+        const url = new URL(currentPageUrl);
+        const searchParams = url.searchParams;
+        
+        // Check for Google Ads parameters
+        if (searchParams.has('gad_source') || 
+            searchParams.has('gad_campaignid') || 
+            searchParams.has('gbraid') ||
+            searchParams.get('utm_source')?.toLowerCase().includes('google') ||
+            searchParams.get('utm_medium')?.toLowerCase().includes('cpc') ||
+            searchParams.get('utm_medium')?.toLowerCase().includes('ppc')) {
+          return <FaGoogle className="w-3 h-4 text-blue-500" title="Google Ads" />;
+        }
+        
+        // Check for Facebook parameters
+        if (searchParams.get('utm_medium')?.toLowerCase() === 'fb' ||
+            searchParams.get('utm_source')?.toLowerCase().includes('facebook') ||
+            searchParams.get('utm_source')?.toLowerCase().includes('meta') ||
+            searchParams.has('fbclid')) {
+          return <FaFacebook className="w-3 h-4 text-blue-600" title="Facebook" />;
+        }
+        
+        return null;
+      } catch (error) {
+        // If URL parsing fails, return null
+        return null;
+      }
     };
 
     const getCustomerName = () => {
@@ -161,6 +195,9 @@ const ChatListItem = React.memo(
                 )}
                 {getPlatformIcon(
                   session.customerId?.metadata?.browserInfo?.platform
+                )}
+                {getSourceIcon(
+                  session.customerId?.metadata?.currentPageUrl
                 )}
               </div>
             </div>

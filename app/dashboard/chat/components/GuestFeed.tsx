@@ -34,7 +34,7 @@ import { rawTimeZones } from '@vvo/tzdb';
 import { toast } from "sonner";
 import ChatListItem from "./ChatListItem";
 
-import { FaChrome, FaEdge, FaFirefox, FaOpera, FaQuestionCircle, FaSafari, FaTablet, FaWindows } from 'react-icons/fa';
+import { FaChrome, FaEdge, FaFacebook, FaFirefox, FaGoogle, FaOpera, FaQuestionCircle, FaSafari, FaTablet, FaWindows } from 'react-icons/fa';
 import { SiAndroid, SiApple, SiLinux, SiMacos } from 'react-icons/si'; // Simple Icons for brands
 
 
@@ -224,29 +224,56 @@ export function GuestFeed({
 
 
   const getBrowserIcon = (userAgent?: string) => {
-      if (!userAgent) return <Globe className="w-3 h-4 text-gray-500" />;
+      if (!userAgent) return <Globe className="w-4 h-5 text-gray-500" />;
       
       const ua = userAgent.toLowerCase();
-          if (ua.includes("chrome") && !ua.includes("edg")) return <FaChrome className="w-3 h-4 text-blue-600" />;
-      if (ua.includes("firefox")) return <FaFirefox className="w-3 h-4 text-orange-500" />;
-      if (ua.includes("safari") && !ua.includes("chrome")) return <FaSafari className="w-3 h-4 text-blue-500" />;
-      if (ua.includes("edge")) return <FaEdge className="w-3 h-4 text-blue-700" />;
-      if (ua.includes("opera")) return <FaOpera className="w-3 h-4 text-red-500" />;
-      return <FaQuestionCircle className="w-3 h-4 text-gray-500" />;
+          if (ua.includes("chrome") && !ua.includes("edg")) return <FaChrome className="w-4 h-5 text-blue-600" />;
+      if (ua.includes("firefox")) return <FaFirefox className="w-4 h-5 text-orange-500" />;
+      if (ua.includes("safari") && !ua.includes("chrome")) return <FaSafari className="w-4 h-5 text-blue-500" />;
+      if (ua.includes("edge")) return <FaEdge className="w-4 h-5 text-blue-700" />;
+      if (ua.includes("opera")) return <FaOpera className="w-4 h-5 text-red-500" />;
+      return <FaQuestionCircle className="w-4 h-5 text-gray-500" />;
     };
 
     const getPlatformIcon = (platform?: string) => {
-      if (!platform) return <Monitor className="w-3 h-4 text-gray-500" />;
+      if (!platform) return <Monitor className="w-4 h-5 text-gray-500" />;
       
       const platformLower = platform.toLowerCase();
-      if (platformLower.includes("mac")) return <SiMacos className="w-3 h-4 text-gray-800" />;
-        if (platformLower.includes("win")) return <FaWindows className="w-3 h-4 text-blue-600" />;
-      if (platformLower.includes("linux")) return <SiLinux className="w-3 h-4 text-green-600" />;
-        if (platformLower.includes("ios")) return <SiApple className="w-3 h-4 text-blue-500" />;
-      if (platformLower.includes("android")) return <SiAndroid className="w-3 h-4 text-green-500" />;
-      if (platformLower.includes("mobile")) return <SiAndroid className="w-3 h-4 text-gray-600" />;
-      if (platformLower.includes("tablet")) return <FaTablet className="w-3 h-4 text-gray-600" />;
-      return <FaQuestionCircle className="w-3 h-4 text-gray-500" />;
+      if (platformLower.includes("mac")) return <SiApple className="w-4 h-5 text-gray-800" />;
+        if (platformLower.includes("win")) return <FaWindows className="w-4 h-5 text-blue-600" />;
+      if (platformLower.includes("linux")) return <SiLinux className="w-4 h-5 text-green-600" />;
+        if (platformLower.includes("ios")) return <SiApple className="w-4 h-5 text-blue-500" />;
+      if (platformLower.includes("android")) return <SiAndroid className="w-4 h-5 text-green-500" />;
+      if (platformLower.includes("mobile")) return <SiAndroid className="w-4 h-5 text-gray-600" />;
+      if (platformLower.includes("tablet")) return <FaTablet className="w-4 h-5 text-gray-600" />;
+      return <FaQuestionCircle className="w-4 h-5 text-gray-500" />;
+    };
+
+    const getSourceIcon = (currentPageUrl?: string) => {
+      if (!currentPageUrl) return null;
+      
+      const url = new URL(currentPageUrl);
+      const searchParams = url.searchParams;
+      
+      // Check for Google Ads parameters
+      if (searchParams.has('gad_source') || 
+          searchParams.has('gad_campaignid') || 
+          searchParams.has('gbraid') ||
+          searchParams.get('utm_source')?.toLowerCase().includes('google') ||
+          searchParams.get('utm_medium')?.toLowerCase().includes('cpc') ||
+          searchParams.get('utm_medium')?.toLowerCase().includes('ppc')) {
+        return <FaGoogle className="w-4 h-5 text-blue-500" title="Google Ads" />;
+      }
+      
+      // Check for Facebook parameters
+      if (searchParams.get('utm_medium')?.toLowerCase() === 'fb' ||
+          searchParams.get('utm_source')?.toLowerCase().includes('facebook') ||
+          searchParams.get('utm_source')?.toLowerCase().includes('meta') ||
+          searchParams.has('fbclid')) {
+        return <FaFacebook className="w-4 h-5 text-blue-600" title="Facebook" />;
+      }
+      
+      return null;
     };
 
   return (
@@ -362,6 +389,7 @@ export function GuestFeed({
                               <ReactCountryFlag countryCode={visitor.metadata?.ipInfo?.country || ""} svg style={{ width: '20px', height: '16px' }} />
                                 {getBrowserIcon(visitor.browserInfo.userAgent)}
                                 {getPlatformIcon(visitor.browserInfo.platform)}
+                                {getSourceIcon(visitor.currentPageUrl)}
                               </div>
                             </div>
                             <div className="text-xs text-gray-500 flex-shrink-0 bg-white px-2 py-1 rounded-full border border-gray-200">

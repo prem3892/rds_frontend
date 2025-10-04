@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Loader2, ArrowLeft, User, ShieldX, Calendar, Mail } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ArrowLeft, User, ShieldX, Calendar, Mail, Globe, MapPin } from "lucide-react";
 import { ChatSession } from "@/types";
 import { useIsBookingInProgress, useChatActions } from "@/stores/chat";
 import BookingForm from "./BookingForm";
@@ -11,6 +11,7 @@ import { cn, getColorFromString } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { formatAppointmentDate } from "@/lib/utils";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface ChatHeaderProps {
   session: ChatSession;
@@ -224,8 +225,28 @@ const ChatHeader = ({
           </div>
         </div>
 
+
+        {/* show the link and the Location of the visitor */}
+        {session.customerId?.metadata?.initialDomain && (
+          <div className="mt-3    rounded-none gap-2 flex flex-row">
+            <div className="flex items-center gap-2 text-sm  font-medium">
+              <Badge variant="outline" className="rounded-full">
+                <Globe className="w-4 h-4" />
+                <Link href={session.customerId?.metadata?.currentPageUrl!} className="text-blue-500">  {session.customerId?.metadata?.currentPageUrl?.split("?")[0]}</Link>
+              </Badge>
+
+            </div>
+            <div className="flex items-center gap-2 text-sm  font-medium">
+              <Badge variant="outline" className="rounded-full">
+                <MapPin className="w-4 h-4" />
+                {session.customerId?.metadata?.ipInfo.city} {session.customerId?.metadata?.ipInfo.country}
+              </Badge>
+            </div>
+          </div>
+        )}
+
         {/* Care message or Appointment info */}
-        {session.appointmentBooked && session.appointmentData ? (
+        {session.appointmentBooked && session.appointmentData && (
           <div className="mt-3 p-3 bg-gradient-to-r from-green-100 to-transparent rounded-none">
             <div className="flex items-center gap-2 text-sm text-green-800 font-medium">
               <Calendar className="w-4 h-4" />
@@ -240,13 +261,7 @@ const ChatHeader = ({
               </div>
             )}
           </div>
-        ) : (
-          <div className="mt-3 p-3 bg-gradient-to-r from-blue-100  to-transparent rounded-none">
-            <p className="text-sm text-blue-800 font-medium">
-              While chatting, let&apos;s show them care!
-            </p>
-          </div>
-        )}
+        ) }
       </header>
 
       <BookingForm

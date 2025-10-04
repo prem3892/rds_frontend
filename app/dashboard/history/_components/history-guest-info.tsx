@@ -31,6 +31,7 @@ import { formatAppointmentDate } from "@/lib/utils";
 import { toast } from "sonner";
 import BlockCustomerDialog from "@/app/dashboard/chat/components/BlockCustomerDialog";
 import { Badge } from "@/components/ui/badge";
+import { FaFacebook, FaGoogle } from "react-icons/fa";
 
 interface HistoryGuestInfoProps {
   session: ChatSession;
@@ -132,6 +133,33 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
     }
   };
 
+  const getSourceIcon = (currentPageUrl?: string) => {
+    if (!currentPageUrl) return null;
+    
+    const url = new URL(currentPageUrl);
+    const searchParams = url.searchParams;
+    
+    // Check for Google Ads parameters
+    if (searchParams.has('gad_source') || 
+        searchParams.has('gad_campaignid') || 
+        searchParams.has('gbraid') ||
+        searchParams.get('utm_source')?.toLowerCase().includes('google') ||
+        searchParams.get('utm_medium')?.toLowerCase().includes('cpc') ||
+        searchParams.get('utm_medium')?.toLowerCase().includes('ppc')) {
+      return <FaGoogle className="w-3 h-3 text-blue-500" title="Google Ads" />;
+    }
+    
+    // Check for Facebook parameters
+    if (searchParams.get('utm_medium')?.toLowerCase() === 'fb' ||
+        searchParams.get('utm_source')?.toLowerCase().includes('facebook') ||
+        searchParams.get('utm_source')?.toLowerCase().includes('meta') ||
+        searchParams.has('fbclid')) {
+      return <FaFacebook className="w-3 h-3 text-blue-600" title="Facebook" />;
+    }
+    
+    return null;
+  };
+
   return (
     <div className="w-full">
       {/* Compact Guest Info Header */}
@@ -178,7 +206,7 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-gray-600">
           <div className="flex items-center gap-2">
             <span>
-              {session.customerId?.metadata?.ipInfo.city || ""}, {session.customerId?.metadata?.ipInfo.country || ""}
+              {session.customerId?.metadata?.ipInfo.city || ""} {session.customerId?.metadata?.ipInfo.country || ""}
             </span>
             <span>•</span>
             <span>{getLastSeen()}</span>
@@ -297,14 +325,21 @@ export function HistoryGuestInfo({ session, isLoading = false }: HistoryGuestInf
                   <div className="flex items-center gap-2 text-xs">
                     <MapPin className="w-3 h-3 text-gray-500" />
                     <span className="text-gray-600">Region:</span>
-                    <span className="font-medium">{session.customerId?.metadata?.ipInfo.city || ""}, {session.customerId?.metadata?.ipInfo.country || ""}</span>
+                    <span className="font-medium">{session.customerId?.metadata?.ipInfo.city || ""} {session.customerId?.metadata?.ipInfo.country || ""}</span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-xs">
                     <Globe className="w-3 h-3 text-gray-500" />
                     <span className="text-gray-600">Source:</span>
                     <span className="font-medium">
-                      {session.customerId.metadata?.initialDomain || "No Referrer"}
+                      {session.customerId.metadata?.currentPageUrl?.split("?")[0] || "No Source"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <Globe className="w-3 h-3 text-gray-500" />
+                    <span className="text-gray-600">Referrer:</span>
+                    <span className="font-medium">
+                      {getSourceIcon(session.customerId.metadata?.currentPageUrl) || "No Referrer"}
                     </span>
                   </div>
 
