@@ -232,7 +232,7 @@ const ChatHeader = ({
             <div className="flex items-center gap-2 text-sm  font-medium">
               <Badge variant="outline" className="rounded-full">
                 <Globe className="w-4 h-4" />
-                <Link href={session.customerId?.metadata?.currentPageUrl!} className="text-blue-500">  {session.customerId?.metadata?.currentPageUrl?.split("?")[0]}</Link>
+                <Link href={session?.customerId?.metadata?.currentPageUrl || "#"} className="text-blue-500">  {session?.customerId?.metadata?.currentPageUrl?.split("?")[0] || "N/A"}</Link>
               </Badge>
 
             </div>
