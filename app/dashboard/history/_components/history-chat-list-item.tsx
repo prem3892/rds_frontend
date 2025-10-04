@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import React from "react";
 
-import { FaChrome, FaFirefox, FaSafari, FaEdge, FaOpera, FaQuestionCircle, FaWindows, FaTablet } from 'react-icons/fa';
+import { FaChrome, FaFacebook, FaFirefox, FaGoogle, FaSafari, FaEdge, FaOpera, FaQuestionCircle, FaWindows, FaTablet } from 'react-icons/fa';
 import { SiApple, SiLinux, SiAndroid, SiMacos } from 'react-icons/si';
 import ReactCountryFlag from "react-country-flag";
 import { getTimeZones, TimeZone } from "@vvo/tzdb";
@@ -45,7 +45,7 @@ const HistoryChatListItem = React.memo(
       if (!platform) return <Monitor className="w-3 h-3 text-gray-500" />;
 
       const platformLower = platform.toLowerCase();
-      if (platformLower.includes("mac")) return <SiMacos className="w-3 h-3 text-gray-800" />;
+      if (platformLower.includes("mac")) return <SiApple className="w-3 h-3 text-gray-800" />;
       if (platformLower.includes("win")) return <FaWindows className="w-3 h-3 text-blue-600" />;
       if (platformLower.includes("linux")) return <SiLinux className="w-3 h-3 text-green-600" />;
       if (platformLower.includes("ios")) return <SiApple className="w-3 h-3 text-blue-500" />;
@@ -53,6 +53,38 @@ const HistoryChatListItem = React.memo(
       if (platformLower.includes("mobile")) return <SiAndroid className="w-3 h-3 text-gray-600" />;
       if (platformLower.includes("tablet")) return <FaTablet className="w-3 h-3 text-gray-600" />;
       return <Monitor className="w-3 h-3 text-gray-500" />;
+    };
+
+    const getSourceIcon = (currentPageUrl?: string) => {
+      if (!currentPageUrl) return null;
+      
+      try {
+        const url = new URL(currentPageUrl);
+        const searchParams = url.searchParams;
+        
+        // Check for Google Ads parameters
+        if (searchParams.has('gad_source') || 
+            searchParams.has('gad_campaignid') || 
+            searchParams.has('gbraid') ||
+            searchParams.get('utm_source')?.toLowerCase().includes('google') ||
+            searchParams.get('utm_medium')?.toLowerCase().includes('cpc') ||
+            searchParams.get('utm_medium')?.toLowerCase().includes('ppc')) {
+          return <FaGoogle className="w-3 h-3 text-blue-500" title="Google Ads" />;
+        }
+        
+        // Check for Facebook parameters
+        if (searchParams.get('utm_medium')?.toLowerCase() === 'fb' ||
+            searchParams.get('utm_source')?.toLowerCase().includes('facebook') ||
+            searchParams.get('utm_source')?.toLowerCase().includes('meta') ||
+            searchParams.has('fbclid')) {
+          return <FaFacebook className="w-3 h-3 text-blue-600" title="Facebook" />;
+        }
+        
+        return null;
+      } catch (error) {
+        // If URL parsing fails, return null
+        return null;
+      }
     };
 
     const getCustomerName = () => {
@@ -166,6 +198,7 @@ const HistoryChatListItem = React.memo(
               <div className="flex items-center gap-1 flex-shrink-0">
                 {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}
                 {getPlatformIcon(session.customerId?.metadata?.browserInfo?.platform)}
+                {getSourceIcon(session.customerId?.metadata?.currentPageUrl)}
               </div>
             </div>
             <div className="flex  gap-x-1 justify-center text-xs text-gray-500 flex-shrink-0 ml-2">

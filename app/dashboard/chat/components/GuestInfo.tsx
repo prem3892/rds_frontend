@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { formatAppointmentDate } from "@/lib/utils";
+import { FaFacebook, FaGoogle } from "react-icons/fa";
 
 interface GuestInfoProps {
   session: ChatSession | null;
@@ -98,6 +99,38 @@ export function GuestInfo({
       return `${Math.floor(diffInMinutes / 1440)} day${Math.floor(diffInMinutes / 1440) > 1 ? 's' : ''} ago`;
     }
     return "Unknown";
+  };
+
+  const getSourceIcon = (currentPageUrl?: string) => {
+    if (!currentPageUrl) return null;
+    
+    try {
+      const url = new URL(currentPageUrl);
+      const searchParams = url.searchParams;
+      
+      // Check for Google Ads parameters
+      if (searchParams.has('gad_source') || 
+          searchParams.has('gad_campaignid') || 
+          searchParams.has('gbraid') ||
+          searchParams.get('utm_source')?.toLowerCase().includes('google') ||
+          searchParams.get('utm_medium')?.toLowerCase().includes('cpc') ||
+          searchParams.get('utm_medium')?.toLowerCase().includes('ppc')) {
+        return <FaGoogle className="w-3 h-3 text-blue-500" title="Google Ads" />;
+      }
+      
+      // Check for Facebook parameters
+      if (searchParams.get('utm_medium')?.toLowerCase() === 'fb' ||
+          searchParams.get('utm_source')?.toLowerCase().includes('facebook') ||
+          searchParams.get('utm_source')?.toLowerCase().includes('meta') ||
+          searchParams.has('fbclid')) {
+        return <FaFacebook className="w-3 h-3 text-blue-600" title="Facebook" />;
+      }
+      
+      return null;
+    } catch (error) {
+      // If URL parsing fails, return null
+      return null;
+    }
   };
 
   const handleContactFormChange = (field: string, value: string) => {
@@ -388,19 +421,21 @@ export function GuestInfo({
                        <span className="font-medium">{session.customerId.metadata?.ipInfo.city }</span>}
                       </div>
                       
-                      {/* <div className="flex items-center gap-2 text-sm">
-                        <Globe className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-600">Last Visited Pages:</span>
-                        <span className="font-medium truncate">
-                          &gt;&gt; At: {session.initialMessage || "testing-chat-app-theta.vercel.app/"}
-                        </span>
-                      </div> */}
-                      
-                      <Link href={`https://${session.customerId.metadata?.initialDomain || "N/A"}`} className="flex items-center gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-sm">
                         <Globe className="w-4 h-4 text-gray-500" />
                         <span className="text-gray-600">Source:</span>
-                        <Badge className="font-medium truncate text-[10px] " variant={"outline"}>{session.customerId.metadata?.initialDomain || "N/A"}</Badge>
-                      </Link>
+                        <span className="font-medium">
+                          {session.customerId.metadata?.currentPageUrl?.split("?")[0] || "No Source"}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-sm">
+                        <Globe className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-600">Referrer:</span>
+                        <span className="font-medium">
+                          {getSourceIcon(session.customerId.metadata?.currentPageUrl) || "No Referrer"}
+                        </span>
+                      </div>
                     </CardContent>
                   </Card>
 
