@@ -13,6 +13,15 @@ import {
 import { useQuery, useInfiniteQuery, useMutation, UseQueryOptions, UseInfiniteQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 import { customFetch } from "./api";
 
+// Utility: filter out sessions with empty/auto system initial message
+function isValidInitialMessage(session: ChatSession): boolean {
+  const msg = session?.initialMessage || "";
+  if (msg === "") return false;
+  if (msg.includes("Auto-message shown:")) return false;
+  // if (msg.includes("asdf")) return false;
+  return true;
+}
+
 // 1. Get All Chat Sessions (Admin / Filtered for Agent History) - Now fetches all
 export const CHAT_SESSIONS_QUERY_KEY_PREFIX = "chatSessions";
 
@@ -104,7 +113,11 @@ export const useGetMyActiveChatSessions = (
 ) => {
   return useQuery<ChatSession[], ApiErrorResponse, ChatSession[], [string]>({
     queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY],
-    queryFn: () => customFetch<ChatSession[]>("/chat/sessions/my-active"),
+    queryFn: async () => {
+      const sessions = await customFetch<ChatSession[]>("/chat/sessions/my-active");
+      // Exclude sessions with empty or auto system initial messages
+      return sessions.filter(isValidInitialMessage);
+    },
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     staleTime: 0,
@@ -123,7 +136,11 @@ export const useGetPendingChatSessions = (
 ) => {
   return useQuery<ChatSession[], ApiErrorResponse, ChatSession[], [string]>({
     queryKey: [PENDING_CHAT_SESSIONS_QUERY_KEY],
-    queryFn: () => customFetch<ChatSession[]>("/chat/sessions/pending"),
+    queryFn: async () => {
+      const sessions = await customFetch<ChatSession[]>("/chat/sessions/pending");
+      // Exclude sessions with empty or auto system initial messages
+      return sessions.filter(isValidInitialMessage);
+    },
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     staleTime: 0,
