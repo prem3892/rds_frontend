@@ -60,6 +60,11 @@ class SocketService {
     });
 
     this.socket.on("server:new_chat_request", (session: ChatSession) => {
+    
+      // here if the data contains no initial message or its empty , or it contains this text "Auto-message shown:" then don't show the toast and notification
+        if (session.initialMessage === "" || session.initialMessage.includes("Auto-message shown:")) {
+          return;
+        }
       console.log("New chat request received:", session);
       this.notifyListeners("newChatRequest", session);
     });
@@ -217,6 +222,10 @@ class SocketService {
     this.socket.on(
       "server:priority_chat_notification",
       (session: ChatSession) => {
+        // here if the data contains no initial message or its empty , or it contains this text "Auto-message shown:" then don't show the toast and notification
+        if (session.initialMessage === "" || session.initialMessage.includes("Auto-message shown:")) {
+          return;
+        }
         console.log("Priority chat notification received:", session);
         this.notifyListeners("server:priority_chat_notification", session);
       }
