@@ -71,7 +71,7 @@ export function useSocketInitializer() {
           case "newChatRequest":
          
             // here if the data contains no initial message or its empty , or it contains this text "Auto-message shown:" then don't show the toast and notification
-            if (data.initialMessage === "" || data.initialMessage.includes("Auto-message shown:")) {
+            if ( data.initialMessage.includes("Auto-message shown:")) {
               break;
             }
             console.log("New chat request received:", data);
