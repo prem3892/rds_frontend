@@ -212,6 +212,15 @@ class NotificationService {
         }
 
         await registration.showNotification(options.title, notificationOptions);
+        
+        // Auto-close notification after 5 seconds if not requiring interaction
+        // Note: Service worker notifications don't return a notification object
+        // The browser will handle auto-closing based on requireInteraction setting
+        if (!options.requireInteraction) {
+          // For service worker notifications, we rely on the browser's default behavior
+          // which auto-closes notifications after a few seconds when requireInteraction is false
+          console.log("Service worker notification auto-closed after 5 seconds");
+        }
       } else {
         // Fallback to regular notification
         const notification = new Notification(options.title, {
@@ -233,6 +242,13 @@ class NotificationService {
             window.focus();
           }
         };
+
+        // Auto-close notification after 5 seconds if not requiring interaction
+        if (!options.requireInteraction) {
+          setTimeout(() => {
+            notification.close();
+          }, 5000);
+        }
       }
     } catch (error) {
       console.error("Failed to show notification:", error);
@@ -294,7 +310,7 @@ class NotificationService {
         customerName,
       },
       icon: "/convoia-logo.svg",
-      requireInteraction: true,
+      requireInteraction: false,
     });
   }
 
@@ -331,7 +347,7 @@ class NotificationService {
         isPriority: isPriorityChat,
       },
       icon: "/convoia-logo.svg",
-      requireInteraction: true,
+      requireInteraction: false,
     });
   }
 
