@@ -16,7 +16,7 @@ import { customFetch } from "./api";
 // Utility: filter out sessions with empty/auto system initial message
 function isValidInitialMessage(session: ChatSession): boolean {
   const msg = session?.initialMessage || "";
-  if (msg === "") return false;
+
   if (msg.includes("Auto-message shown:")) return false;
   // if (msg.includes("asdf")) return false;
   return true;
