@@ -193,23 +193,9 @@ class NotificationService {
         };
 
         // Add actions if supported (not all browsers support actions)
-        if (options.actions) {
+        if (options.actions && notificationOptions.requireInteraction) {
           (notificationOptions as any).actions = options.actions;
-        } else {
-          // Default actions for chat notifications
-          // (notificationOptions as any).actions = [
-          //   {
-          //     action: "open",
-          //     title: "Open Chat",
-          //     icon: "/convoia-logo.svg",
-          //   },
-          //   {
-          //     action: "dismiss",
-          //     title: "Dismiss",
-          //     icon: "/convoia-logo.svg",
-          //   },
-          // ];
-        }
+        } 
 
         await registration.showNotification(options.title, notificationOptions);
         

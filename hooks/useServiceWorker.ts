@@ -18,7 +18,7 @@ export function useServiceWorker() {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('Service Worker registered successfully:', registration);
+          console.log('Service Worker registered successfully:', registration)
           
           // Handle updates
           registration.addEventListener('updatefound', () => {
