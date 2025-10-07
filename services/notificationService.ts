@@ -190,6 +190,9 @@ class NotificationService {
           tag: options.tag,
           data: options.data,
           requireInteraction: options.requireInteraction || false,
+          sound: '/chatsound.mp3', 
+          // Explicitly state the notification should not be silent (some platforms default to silent)
+          silent: false, 
         };
 
         // Add actions if supported (not all browsers support actions)
