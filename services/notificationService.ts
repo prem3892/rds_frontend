@@ -173,9 +173,9 @@ class NotificationService {
       const isPageHidden = document.hidden;
       
       // Only show notification if page is hidden or user specifically requested it
-      if (!isPageHidden && !options.requireInteraction) {
-        return; // Don't spam notifications when user is actively using the app
-      }
+      // if (!isPageHidden && !options.requireInteraction) {
+      //   return; // Don't spam notifications when user is actively using the app
+      // }
 
       // Play notification sound
       await this.playNotificationSound();
