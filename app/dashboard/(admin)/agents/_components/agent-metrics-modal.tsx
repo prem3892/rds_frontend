@@ -210,13 +210,13 @@ export const AgentMetricsModal = ({ isOpen, onClose, agent }: AgentMetricsModalP
                     ))
                   ) : error ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-red-600 py-8">
+                      <TableCell colSpan={6} className="text-center text-red-600 py-8">
                         Error loading metrics: {error.message}
                       </TableCell>
                     </TableRow>
                   ) : !metricsData?.items.length ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-gray-500 py-8">
+                      <TableCell colSpan={6} className="text-center text-gray-500 py-8">
                         No metrics data available for the selected period
                       </TableCell>
                     </TableRow>
