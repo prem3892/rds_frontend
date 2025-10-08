@@ -187,12 +187,13 @@ export const AgentMetricsModal = ({ isOpen, onClose, agent }: AgentMetricsModalP
             <div className="h-full border rounded-lg overflow-hidden">
               <Table className="w-full">
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="text-xs">
                     <TableHead className="w-[30%]">Domains</TableHead>
                     <TableHead className="w-[17.5%]">Accepted Chats</TableHead>
                     <TableHead className="w-[17.5%]">Responded Chats</TableHead>
                     <TableHead className="w-[17.5%]">Avg Response Time</TableHead>
                     <TableHead className="w-[17.5%]">Proactive Chats</TableHead>
+                    <TableHead className="w-[17.5%]">Total Bookings</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -203,6 +204,7 @@ export const AgentMetricsModal = ({ isOpen, onClose, agent }: AgentMetricsModalP
                         <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                       </TableRow>
                     ))
@@ -245,6 +247,11 @@ export const AgentMetricsModal = ({ isOpen, onClose, agent }: AgentMetricsModalP
                         <TableCell>
                           <Badge variant="secondary" className="bg-purple-100 text-purple-800">
                             {item.proactiveChats}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                            {item.totalBookings}
                           </Badge>
                         </TableCell>
                       </TableRow>
