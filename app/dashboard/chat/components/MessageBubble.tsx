@@ -28,6 +28,10 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
   const isSystem = message.senderType === "SYSTEM";
   const isCustomer = message.senderType === "CUSTOMER";
   const isAgent = message.senderType === "AGENT";
+  
+  // For message positioning: customer messages on left, agent messages on right
+  const isFromCustomer = message.senderType === "CUSTOMER";
+  const isFromAgent = message.senderType === "AGENT";
 
   // Get customer info for avatar
   const getCustomerInfo = () => {
@@ -88,39 +92,28 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
   return (
     <div
       className={`flex items-end gap-2 mb-1 ${
-        isOwnMessage ? "justify-end" : "justify-start"
+        isFromAgent ? "justify-end" : "justify-start"
       }`}
     >
-      {/* Customer/Agent Avatar - Left side for customer/other agent, hidden for own messages */}
-      {!isOwnMessage && (
+      {/* Customer/Agent Avatar - Left side for customer messages */}
+      {isFromCustomer && (
         <div className={`flex-shrink-0 ${showAvatar ? 'opacity-100' : 'opacity-0'}`}>
           <Avatar className="h-8 w-8">
-            {isCustomer ? (
-              <>
-                <AvatarImage src={undefined} />
-                <AvatarFallback className={cn(
-                  "text-xs text-white font-medium",
-                  getColorFromString(customerInfo.name)
-                )}>
-                  {customerInfo.initials}
-                </AvatarFallback>
-              </>
-            ) : (
-              <>
-                <AvatarImage src={agentInfo.profilePicture || undefined} />
-                <AvatarFallback className="text-xs bg-blue-100 text-blue-700">
-                  {agentInfo.initials}
-                </AvatarFallback>
-              </>
-            )}
+            <AvatarImage src={undefined} />
+            <AvatarFallback className={cn(
+              "text-xs text-white font-medium",
+              getColorFromString(customerInfo.name)
+            )}>
+              {customerInfo.initials}
+            </AvatarFallback>
           </Avatar>
         </div>
       )}
 
       {/* Message Bubble */}
       <div className="flex flex-col max-w-[70%]">
-        {/* Sender name for first message in group from other agents */}
-        {!isOwnMessage && isAgent && isFirstInGroup && (
+        {/* Sender name for first message in group from agents */}
+        {isFromAgent && isFirstInGroup && (
           <p className="text-xs text-muted-foreground mb-1 ml-2">
             {agentInfo.name}
           </p>
@@ -128,22 +121,22 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
         
         <div
           className={`p-3 rounded-lg  shadow-sm ${
-            isOwnMessage
+            isFromAgent
               ? "bg-blue-600 text-white rounded-br-none"
               : "bg-white border border-gray-200 text-gray-800 rounded-bl-none"
           } ${
             // Adjust border radius based on position in group
-            isOwnMessage
+            isFromAgent
               ? showAvatar
-                ? "rounded-br-md" // First message from own, reduce bottom-right radius
+                ? "rounded-br-md" // First message from agent, reduce bottom-right radius
                 : isLastInGroup 
-                  ? "rounded-br-md" // Last message from own, reduce bottom-right radius
-                  : "rounded-br-md" // Middle message from own
+                  ? "rounded-br-md" // Last message from agent, reduce bottom-right radius
+                  : "rounded-br-md" // Middle message from agent
               : showAvatar
-                ? "rounded-bl-md" // First message from others, reduce bottom-left radius
+                ? "rounded-bl-md" // First message from customer, reduce bottom-left radius
                 : isLastInGroup
-                  ? "rounded-bl-md" // Last message from others, reduce bottom-left radius  
-                  : "rounded-bl-md" // Middle message from others
+                  ? "rounded-bl-md" // Last message from customer, reduce bottom-left radius  
+                  : "rounded-bl-md" // Middle message from customer
           }`}
         >
           {/* Render different content based on message type */}
@@ -188,14 +181,14 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
             <div className="flex items-center justify-end gap-1 mt-1">
               <p
                 className={`text-xs ${
-                  isOwnMessage
+                  isFromAgent
                     ? "text-blue-200"
                     : "text-muted-foreground/80"
                 }`}
               >
                 {format(parseISO(message.timestamp), "HH:mm")}
               </p>
-              {isOwnMessage && (
+              {isFromAgent && (
                 <div className="flex items-center gap-1">
                   {message.readByCustomer ? (
                     <CheckCheck className="w-3 h-3 text-blue-200" />
@@ -212,8 +205,8 @@ const MessageBubble = React.memo(({ message, showAvatar = true, isLastInGroup = 
         </div>
       </div>
 
-      {/* Own Avatar - Right side for own messages */}
-      {isOwnMessage && (
+      {/* Agent Avatar - Right side for agent messages */}
+      {isFromAgent && (
         <div className={`flex-shrink-0 ${showAvatar ? 'opacity-100' : 'opacity-0'}`}>
           <Avatar className="h-8 w-8">
             <AvatarImage src={agentInfo.profilePicture || undefined} />
