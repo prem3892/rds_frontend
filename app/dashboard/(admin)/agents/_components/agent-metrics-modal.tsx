@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { X, BarChart3 } from "lucide-react";
 import { AgentProfile, useGetAgentMetrics, AgentMetricsFilters } from "@/lib/agent.api";
 import { cn } from "@/lib/utils";
@@ -76,6 +77,21 @@ export const AgentMetricsModal = ({ isOpen, onClose, agent }: AgentMetricsModalP
   const handleSearch = () => {
     // The query will automatically refetch when filters change
     // This is just for UI feedback
+  };
+
+  const handlePageChange = (page: number) => {
+    setFilters(prev => ({
+      ...prev,
+      page,
+    }));
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setFilters(prev => ({
+      ...prev,
+      limit: size,
+      page: 1, // Reset to first page when page size changes
+    }));
   };
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -183,16 +199,17 @@ export const AgentMetricsModal = ({ isOpen, onClose, agent }: AgentMetricsModalP
           </div>
 
           {/* Metrics Table */}
-          <div className="flex-1 overflow-hidden">
-            <div className="h-full border rounded-lg overflow-hidden">
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex-1 border rounded-lg overflow-hidden">
               <Table className="w-full">
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="text-xs">
                     <TableHead className="w-[30%]">Domains</TableHead>
                     <TableHead className="w-[17.5%]">Accepted Chats</TableHead>
                     <TableHead className="w-[17.5%]">Responded Chats</TableHead>
                     <TableHead className="w-[17.5%]">Avg Response Time</TableHead>
                     <TableHead className="w-[17.5%]">Proactive Chats</TableHead>
+                    <TableHead className="w-[17.5%]">Total Bookings</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -204,17 +221,18 @@ export const AgentMetricsModal = ({ isOpen, onClose, agent }: AgentMetricsModalP
                         <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                         <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                       </TableRow>
                     ))
                   ) : error ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-red-600 py-8">
+                      <TableCell colSpan={6} className="text-center text-red-600 py-8">
                         Error loading metrics: {error.message}
                       </TableCell>
                     </TableRow>
                   ) : !metricsData?.items.length ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-gray-500 py-8">
+                      <TableCell colSpan={6} className="text-center text-gray-500 py-8">
                         No metrics data available for the selected period
                       </TableCell>
                     </TableRow>
@@ -247,12 +265,31 @@ export const AgentMetricsModal = ({ isOpen, onClose, agent }: AgentMetricsModalP
                             {item.proactiveChats}
                           </Badge>
                         </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                            {item.totalBookings}
+                          </Badge>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
                 </TableBody>
               </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {metricsData?.meta && (
+              <div className="flex-shrink-0 mt-4">
+                <PaginationControls
+                  currentPage={filters.page || 1}
+                  totalPages={metricsData.meta.totalPages}
+                  onPageChange={handlePageChange}
+                  pageSize={filters.limit}
+                  onPageSizeChange={handlePageSizeChange}
+                  alwaysShow
+                />
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

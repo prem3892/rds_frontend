@@ -296,6 +296,7 @@ export interface AgentMetricsItem {
   respondedChats: number;
   proactiveChats: number;
   avgResponseTime: string;
+  totalBookings: number;
 }
 
 export interface AgentMetricsResponse {
