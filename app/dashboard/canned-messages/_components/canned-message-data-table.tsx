@@ -28,6 +28,8 @@ interface CannedMessageDataTableProps<TData, TValue> {
   data: TData[];
   isLoading?: boolean;
   skeletonRows?: number;
+  selectedRows?: string[];
+  onRowSelectionChange?: (selectedIds: string[]) => void;
 }
 
 // Loading skeleton component for the table
@@ -73,6 +75,8 @@ export function CannedMessageDataTable<TData, TValue>({
   data,
   isLoading = false,
   skeletonRows = 5,
+  selectedRows = [],
+  onRowSelectionChange,
 }: CannedMessageDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -81,6 +85,26 @@ export function CannedMessageDataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  
+  // Handle row selection changes and notify parent
+  const handleRowSelectionChange = React.useCallback((updaterOrValue: any) => {
+    setRowSelection(updaterOrValue);
+    
+    if (onRowSelectionChange) {
+      const newSelection = typeof updaterOrValue === 'function' 
+        ? updaterOrValue(rowSelection) 
+        : updaterOrValue;
+      
+      // Convert row selection to array of message IDs
+      const selectedIds = Object.keys(newSelection)
+        .filter(key => newSelection[key])
+        .map(rowIndex => {
+          const row = data[parseInt(rowIndex)];
+          return (row as any)?._id || rowIndex;
+        });
+      onRowSelectionChange(selectedIds);
+    }
+  }, [rowSelection, onRowSelectionChange, data]);
   
   const table = useReactTable({
     data,
@@ -91,7 +115,7 @@ export function CannedMessageDataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: handleRowSelectionChange,
     state: {
       sorting,
       columnFilters,

@@ -21,6 +21,8 @@ type Props = {
   onPageChange: (page: number) => void;
   pageSize?: number;
   onPageSizeChange?: (size: number) => void;
+  selectedRows?: string[];
+  onRowSelectionChange?: (selectedIds: string[]) => void;
 };
 
 // Canned Message Card Component for mobile view
@@ -138,6 +140,8 @@ const CannedMessageTable = (props: Props) => {
     onPageChange,
     pageSize,
     onPageSizeChange,
+    selectedRows = [],
+    onRowSelectionChange,
   } = props;
   
   const messages = messageData?.items || [];
@@ -254,6 +258,8 @@ const CannedMessageTable = (props: Props) => {
           data={messages || []}
           isLoading={isLoadingMessages}
           skeletonRows={8}
+          selectedRows={selectedRows}
+          onRowSelectionChange={onRowSelectionChange}
         />
       </div>
 

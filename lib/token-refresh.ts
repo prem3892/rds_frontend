@@ -161,9 +161,13 @@ export async function fetchWithTokenRefresh(
   
   // Add authorization header if token exists
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   };
+  
+  // Only set Content-Type to application/json if it's not FormData
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
   
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -188,6 +192,11 @@ export async function fetchWithTokenRefresh(
           ...headers,
           'Authorization': `Bearer ${newToken}`,
         };
+        
+        // Don't set Content-Type for FormData in retry
+        if (options.body instanceof FormData) {
+          delete retryHeaders['Content-Type'];
+        }
         
         return fetch(url, {
           ...options,

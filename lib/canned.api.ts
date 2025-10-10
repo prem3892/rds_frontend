@@ -8,6 +8,7 @@ import {
   UseInfiniteQueryOptions,
 } from "@tanstack/react-query";
 import { customFetch } from "./api";
+import { useAuthStore } from "@/stores/auth";
 import { 
    
   CannedMessage, 
@@ -147,6 +148,101 @@ export const useDeleteCannedMessageMutation = (
     mutationFn: (messageId) =>
       customFetch<{ message: string }>(`/agents/canned-messages/${messageId}`, {
         method: "DELETE",
+      }),
+    ...options,
+  });
+};
+
+// 6. Import Canned Messages from Excel
+export const useImportCannedMessagesMutation = (
+  options?: UseMutationOptions<{ 
+    totalProcessed: number;
+    successCount: number;
+    failureCount: number;
+    errors: string[];
+    createdMessageIds: string[];
+    importedAt: string;
+    failedResultsDownloadUrl?: string;
+  }, ApiErrorResponse, File>
+) => {
+  return useMutation<{ 
+    totalProcessed: number;
+    successCount: number;
+    failureCount: number;
+    errors: string[];
+    createdMessageIds: string[];
+    importedAt: string;
+    failedResultsDownloadUrl?: string;
+  }, ApiErrorResponse, File>({
+    mutationFn: async (file) => {
+      console.log('Starting file upload:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      });
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      // Use customFetch but with proper FormData handling
+      return customFetch<{ 
+        totalProcessed: number;
+        successCount: number;
+        failureCount: number;
+        errors: string[];
+        createdMessageIds: string[];
+        importedAt: string;
+        failedResultsDownloadUrl?: string;
+      }>("/agents/canned-messages/import", {
+        method: "POST",
+        body: formData,
+        // Don't set Content-Type header, let browser set it with boundary for multipart/form-data
+        headers: {
+          // Remove Content-Type to let browser set it automatically for FormData
+        },
+      });
+    },
+    ...options,
+  });
+};
+
+// 7. Export Canned Messages to Excel
+export const useExportCannedMessagesMutation = (
+  options?: UseMutationOptions<{ 
+    downloadUrl: string; 
+    totalExported: number; 
+    exportedAt: string; 
+    filename: string; 
+  }, ApiErrorResponse, void>
+) => {
+  return useMutation<{ 
+    downloadUrl: string; 
+    totalExported: number; 
+    exportedAt: string; 
+    filename: string; 
+  }, ApiErrorResponse, void>({
+    mutationFn: () =>
+      customFetch<{ 
+        downloadUrl: string; 
+        totalExported: number; 
+        exportedAt: string; 
+        filename: string; 
+      }>("/agents/canned-messages/export", {
+        method: "GET",
+      }),
+    ...options,
+  });
+};
+
+// 8. Bulk Delete Canned Messages
+export const useBulkDeleteCannedMessagesMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, { messageIds: string[] }>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, { messageIds: string[] }>({
+    mutationFn: (data) =>
+      customFetch<{ message: string }>("/agents/canned-messages/bulk", {
+        method: "DELETE",
+        body: JSON.stringify(data),
       }),
     ...options,
   });
