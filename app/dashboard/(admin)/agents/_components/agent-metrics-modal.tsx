@@ -234,7 +234,11 @@ export const AgentMetricsModal = ({
 
           {/* Metrics Table */}
           <div className="flex-1 overflow-hidden flex flex-col">
-            <div className="flex-1 border rounded-lg overflow-hidden">
+            {/* <div className="flex-1 border rounded-lg overflow-hidden bg-amber-800">
+              
+            </div> */}
+
+            <div className="border overflow-auto rounded-lg">
               <Table className="w-full">
                 <TableHeader>
                   <TableRow className="text-xs">
@@ -245,11 +249,11 @@ export const AgentMetricsModal = ({
                       Avg Response Time
                     </TableHead>
                     <TableHead className="w-[17.5%]">Proactive Chats</TableHead>
-                    <TableHead className="w-[17.5%]">Total Bookings</TableHead>
+                    <TableHead className="w-[17.5%]">Bookings</TableHead>
                     <TableHead className="w-[17.5%]">Missed Chats</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
+                <TableBody className="overflow-y-auto">
                   {isLoading ? (
                     Array.from({ length: 5 }).map((_, index) => (
                       <TableRow key={index}>
@@ -357,7 +361,7 @@ export const AgentMetricsModal = ({
 
             {/* Pagination Controls */}
             {metricsData?.meta && (
-              <div className="flex-shrink-0 mt-4">
+              <div className="flex-shrink-0 mt-1">
                 <PaginationControls
                   currentPage={filters.page || 1}
                   totalPages={metricsData.meta.totalPages}
