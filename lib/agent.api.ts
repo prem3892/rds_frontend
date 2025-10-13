@@ -59,7 +59,7 @@ export interface UpdateAgentProfileDto {
   maxConcurrentChats?: number;
   firstName?: string;
   lastName?: string;
-  role?: "AGENT" | "MANAGER" ;
+  role?: "AGENT" | "MANAGER";
   // email?: string;
   // password?: string;
   phoneNo?: string;
@@ -125,7 +125,9 @@ export const useGetAllAgents = (
     queryKey: [AGENTS_QUERY_KEY, "all"],
     queryFn: async () => {
       // Fetch all agents by using a large limit
-      const response = await customFetch<PaginatedAgentResponse>("/agents?limit=50");
+      const response = await customFetch<PaginatedAgentResponse>(
+        "/agents?limit=50"
+      );
       return response.items;
     },
     ...options,
@@ -136,11 +138,21 @@ export const useGetAllAgents = (
 export const useGetAgents = (
   filters?: AgentFilters,
   options?: Omit<
-    UseQueryOptions<PaginatedAgentResponse, ApiErrorResponse, PaginatedAgentResponse, [string, AgentFilters | undefined]>,
+    UseQueryOptions<
+      PaginatedAgentResponse,
+      ApiErrorResponse,
+      PaginatedAgentResponse,
+      [string, AgentFilters | undefined]
+    >,
     "queryKey" | "queryFn"
   >
 ) => {
-  return useQuery<PaginatedAgentResponse, ApiErrorResponse, PaginatedAgentResponse, [string, AgentFilters | undefined]>({
+  return useQuery<
+    PaginatedAgentResponse,
+    ApiErrorResponse,
+    PaginatedAgentResponse,
+    [string, AgentFilters | undefined]
+  >({
     queryKey: [AGENTS_QUERY_KEY, filters],
     queryFn: () => {
       const params = new URLSearchParams();
@@ -148,15 +160,16 @@ export const useGetAgents = (
       if (filters?.departmentIds && filters.departmentIds.length > 0) {
         params.append("departmentIds", filters.departmentIds.join(","));
       }
-      if (filters?.isOnline !== undefined) params.append("isOnline", filters.isOnline.toString());
-      if (filters?.isBlocked !== undefined) params.append("isBlocked", filters.isBlocked.toString());
+      if (filters?.isOnline !== undefined)
+        params.append("isOnline", filters.isOnline.toString());
+      if (filters?.isBlocked !== undefined)
+        params.append("isBlocked", filters.isBlocked.toString());
       if (filters?.page) params.append("page", filters.page.toString());
       if (filters?.limit) params.append("limit", filters.limit.toString());
 
-      
       const queryString = params.toString();
       const url = queryString ? `/agents?${queryString}` : "/agents";
-      
+
       return customFetch<PaginatedAgentResponse>(url);
     },
     ...options,
@@ -297,6 +310,7 @@ export interface AgentMetricsItem {
   proactiveChats: number;
   avgResponseTime: string;
   totalBookings: number;
+  missedChats: number;
 }
 
 export interface AgentMetricsResponse {
@@ -318,11 +332,21 @@ export const useGetAgentMetrics = (
   agentId: string,
   filters?: AgentMetricsFilters,
   options?: Omit<
-    UseQueryOptions<AgentMetricsResponse, ApiErrorResponse, AgentMetricsResponse, [string, string, string, AgentMetricsFilters | undefined]>,
+    UseQueryOptions<
+      AgentMetricsResponse,
+      ApiErrorResponse,
+      AgentMetricsResponse,
+      [string, string, string, AgentMetricsFilters | undefined]
+    >,
     "queryKey" | "queryFn"
   >
 ) => {
-  return useQuery<AgentMetricsResponse, ApiErrorResponse, AgentMetricsResponse, [string, string, string, AgentMetricsFilters | undefined]>({
+  return useQuery<
+    AgentMetricsResponse,
+    ApiErrorResponse,
+    AgentMetricsResponse,
+    [string, string, string, AgentMetricsFilters | undefined]
+  >({
     queryKey: [AGENTS_QUERY_KEY, "metrics", agentId, filters],
     queryFn: () => {
       const params = new URLSearchParams();
@@ -332,10 +356,12 @@ export const useGetAgentMetrics = (
       if (filters?.limit) params.append("limit", filters.limit.toString());
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);
       if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
-      
+
       const queryString = params.toString();
-      const url = queryString ? `/agents/${agentId}/metrics?${queryString}` : `/agents/${agentId}/metrics`;
-      
+      const url = queryString
+        ? `/agents/${agentId}/metrics?${queryString}`
+        : `/agents/${agentId}/metrics`;
+
       return customFetch<AgentMetricsResponse>(url);
     },
     enabled: !!agentId,
@@ -345,28 +371,40 @@ export const useGetAgentMetrics = (
 
 // Upload profile picture
 export const useUploadProfilePictureMutation = (
-  options?: UseMutationOptions<{ profilePictureUrl: string; message: string }, ApiErrorResponse, File>
+  options?: UseMutationOptions<
+    { profilePictureUrl: string; message: string },
+    ApiErrorResponse,
+    File
+  >
 ) => {
-  return useMutation<{ profilePictureUrl: string; message: string }, ApiErrorResponse, File>({
+  return useMutation<
+    { profilePictureUrl: string; message: string },
+    ApiErrorResponse,
+    File
+  >({
     mutationFn: async (file: File) => {
       const formData = new FormData();
-      formData.append('profilePicture', file);
-      
+      formData.append("profilePicture", file);
+
       // Get the auth token
       const token = useAuthStore.getState().accessToken;
-      
+
       // Make the request directly with fetch to avoid the customFetch wrapper
       // which automatically sets Content-Type: application/json
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
-      
-      const response = await fetch(`${API_BASE_URL}/agents/profile-picture/upload`, {
-        method: "POST",
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-          // Don't set Content-Type - let the browser set it with boundary for FormData
-        },
-        body: formData,
-      });
+      const API_BASE_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+
+      const response = await fetch(
+        `${API_BASE_URL}/agents/profile-picture/upload`,
+        {
+          method: "POST",
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+            // Don't set Content-Type - let the browser set it with boundary for FormData
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         let errorData: ApiErrorResponse;
