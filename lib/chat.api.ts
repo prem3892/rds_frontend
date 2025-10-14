@@ -10,7 +10,14 @@ import {
   InitiateChatRequest,
   InitiateChatResponse,
 } from "@/types";
-import { useQuery, useInfiniteQuery, useMutation, UseQueryOptions, UseInfiniteQueryOptions, UseMutationOptions } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  UseQueryOptions,
+  UseInfiniteQueryOptions,
+  UseMutationOptions,
+} from "@tanstack/react-query";
 import { customFetch } from "./api";
 
 // Utility: filter out sessions with empty/auto system initial message
@@ -45,10 +52,7 @@ export const useGetAllChatSessions = (
       ChatSessionsResponse, // API returns {items, meta}
       ApiErrorResponse,
       ChatSessionsResponse, // Return full response to access meta
-      [
-        string,
-        GetChatSessionsQueryDto
-      ]
+      [string, GetChatSessionsQueryDto]
     >,
     "queryKey" | "queryFn"
   >
@@ -59,7 +63,9 @@ export const useGetAllChatSessions = (
   if (
     stableParams.forCurrentAgent &&
     currentUser &&
-    (currentUser.role === "AGENT" || currentUser.role === "ADMIN" || currentUser.role === "MANAGER")
+    (currentUser.role === "AGENT" ||
+      currentUser.role === "ADMIN" ||
+      currentUser.role === "MANAGER")
   ) {
     stableParams.agentId = currentUser.id;
   }
@@ -75,7 +81,8 @@ export const useGetAllChatSessions = (
     queryFn: () => {
       const queryParams = new URLSearchParams();
       // Include limit and page for pagination
-      if (apiParams.limit) queryParams.append("limit", apiParams.limit.toString());
+      if (apiParams.limit)
+        queryParams.append("limit", apiParams.limit.toString());
       if (apiParams.page) queryParams.append("page", apiParams.page.toString());
       if (apiParams.status) queryParams.append("status", apiParams.status);
       if (apiParams.agentId) queryParams.append("agentId", apiParams.agentId);
@@ -86,13 +93,19 @@ export const useGetAllChatSessions = (
       if (apiParams.customerEmail)
         queryParams.append("customerEmail", apiParams.customerEmail);
       if (apiParams.hasScheduledAppointment !== undefined)
-        queryParams.append("hasScheduledAppointment", apiParams.hasScheduledAppointment.toString());
+        queryParams.append(
+          "hasScheduledAppointment",
+          apiParams.hasScheduledAppointment.toString()
+        );
+      if (apiParams.startDate)
+        queryParams.append("startDate", apiParams.startDate);
+      if (apiParams.endDate) queryParams.append("endDate", apiParams.endDate);
       const queryString = queryParams.toString();
       const url = `/chat/sessions${queryString ? `?${queryString}` : ""}`;
-      
+
       // Debug logging
-      console.log('API URL:', url);
-      console.log('Query params:', queryString);
+      console.log("API URL:", url);
+      console.log("Query params:", queryString);
 
       // API returns {items: ChatSession[], meta: {...}}
       return customFetch<ChatSessionsResponse>(url);
@@ -114,7 +127,9 @@ export const useGetMyActiveChatSessions = (
   return useQuery<ChatSession[], ApiErrorResponse, ChatSession[], [string]>({
     queryKey: [MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY],
     queryFn: async () => {
-      const sessions = await customFetch<ChatSession[]>("/chat/sessions/my-active");
+      const sessions = await customFetch<ChatSession[]>(
+        "/chat/sessions/my-active"
+      );
       // Exclude sessions with empty or auto system initial messages
       return sessions.filter(isValidInitialMessage);
     },
@@ -137,7 +152,9 @@ export const useGetPendingChatSessions = (
   return useQuery<ChatSession[], ApiErrorResponse, ChatSession[], [string]>({
     queryKey: [PENDING_CHAT_SESSIONS_QUERY_KEY],
     queryFn: async () => {
-      const sessions = await customFetch<ChatSession[]>("/chat/sessions/pending");
+      const sessions = await customFetch<ChatSession[]>(
+        "/chat/sessions/pending"
+      );
       // Exclude sessions with empty or auto system initial messages
       return sessions.filter(isValidInitialMessage);
     },
@@ -206,7 +223,9 @@ export const useGetAllChatSessionsInfinite = (
   if (
     stableParams.forCurrentAgent &&
     currentUser &&
-    (currentUser.role === "AGENT" || currentUser.role === "ADMIN" || currentUser.role === "MANAGER")
+    (currentUser.role === "AGENT" ||
+      currentUser.role === "ADMIN" ||
+      currentUser.role === "MANAGER")
   ) {
     stableParams.agentId = currentUser.id;
   }
@@ -223,7 +242,8 @@ export const useGetAllChatSessionsInfinite = (
     queryFn: ({ pageParam = 1 }) => {
       const queryParams = new URLSearchParams();
       queryParams.append("page", pageParam.toString());
-      if (apiParams.limit) queryParams.append("limit", apiParams.limit.toString());
+      if (apiParams.limit)
+        queryParams.append("limit", apiParams.limit.toString());
       if (apiParams.status) queryParams.append("status", apiParams.status);
       if (apiParams.agentId) queryParams.append("agentId", apiParams.agentId);
       if (apiParams.departmentId)
@@ -233,7 +253,13 @@ export const useGetAllChatSessionsInfinite = (
       if (apiParams.customerEmail)
         queryParams.append("customerEmail", apiParams.customerEmail);
       if (apiParams.hasScheduledAppointment !== undefined)
-        queryParams.append("hasScheduledAppointment", apiParams.hasScheduledAppointment.toString());
+        queryParams.append(
+          "hasScheduledAppointment",
+          apiParams.hasScheduledAppointment.toString()
+        );
+      if (apiParams.startDate)
+        queryParams.append("startDate", apiParams.startDate);
+      if (apiParams.endDate) queryParams.append("endDate", apiParams.endDate);
       const queryString = queryParams.toString();
 
       return customFetch<ChatSessionsResponse>(
@@ -246,7 +272,7 @@ export const useGetAllChatSessionsInfinite = (
     initialPageParam: 1,
     select: (data) => {
       // Flatten all pages into a single array
-      return data.pages.flatMap(page => page.items);
+      return data.pages.flatMap((page) => page.items);
     },
     ...options,
   });
@@ -254,9 +280,17 @@ export const useGetAllChatSessionsInfinite = (
 
 // 6. Initiate Chat Mutation
 export const useInitiateChatMutation = (
-  options?: UseMutationOptions<InitiateChatResponse, ApiErrorResponse, InitiateChatRequest>
+  options?: UseMutationOptions<
+    InitiateChatResponse,
+    ApiErrorResponse,
+    InitiateChatRequest
+  >
 ) => {
-  return useMutation<InitiateChatResponse, ApiErrorResponse, InitiateChatRequest>({
+  return useMutation<
+    InitiateChatResponse,
+    ApiErrorResponse,
+    InitiateChatRequest
+  >({
     mutationFn: async (data: InitiateChatRequest) => {
       return customFetch<InitiateChatResponse>("/chat/initiate", {
         method: "POST",
@@ -269,4 +303,3 @@ export const useInitiateChatMutation = (
     ...options,
   });
 };
-
