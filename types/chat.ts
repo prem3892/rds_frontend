@@ -22,15 +22,15 @@ export interface ChatSession {
         timestamp?: string;
       };
       ipInfo: {
-        clientIp: string,        // Actual client IP
-        country?: string,        // Country code (US, GB, etc.)
-        city?: string,          // City name
-        cfRay?: string,         // Cloudflare Ray ID
-        isCloudflare: boolean,  // Whether request came through Cloudflare
-        proxyChain?: string[],  // Full proxy chain if available
-        timestamp: Date,        // When IP was captured
-        isPrivate: boolean      // Whether IP is from private network
-      },      
+        clientIp: string; // Actual client IP
+        country?: string; // Country code (US, GB, etc.)
+        city?: string; // City name
+        cfRay?: string; // Cloudflare Ray ID
+        isCloudflare: boolean; // Whether request came through Cloudflare
+        proxyChain?: string[]; // Full proxy chain if available
+        timestamp: Date; // When IP was captured
+        isPrivate: boolean; // Whether IP is from private network
+      };
       currentPageUrl?: string;
       initialDomain?: string;
     };
@@ -89,6 +89,8 @@ export interface GetChatSessionsQueryDto {
   customerName?: string;
   customerEmail?: string;
   hasScheduledAppointment?: boolean;
+  startDate?: string;
+  endDate?: string;
   // For "Chat History" specific to an agent
   forCurrentAgent?: boolean; // Custom client-side flag to add agentId filter
 }
@@ -140,7 +142,6 @@ export interface ChatMessage {
   updatedAt: string; // ISO 8601 Date string
   __v?: number; // MongoDB version field
   agentInfo?: AgentInfo; // New field for agent messages
-
 }
 
 // For GET /chat/sessions/:sessionId/messages query parameters

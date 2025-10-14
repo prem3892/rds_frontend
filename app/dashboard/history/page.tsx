@@ -1,7 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useCurrentUser } from "@/stores/auth";
-import { useGetAllChatSessionsInfinite, useGetChatMessages } from "@/lib/chat.api";
+import {
+  useGetAllChatSessionsInfinite,
+  useGetChatMessages,
+} from "@/lib/chat.api";
 import { useGetAllAgents } from "@/lib/agent.api";
 import { useGetAllDepartments } from "@/lib/department.api";
 import {
@@ -23,12 +26,13 @@ import HistorySearchFilters from "./_components/history-search-filters";
 
 interface HistoryFilters {
   search: string;
-  status: string | "all";
   agentId: string | "all";
   departmentId: string | "all";
   customerName: string;
   customerEmail: string;
   hasScheduledAppointment: string | "all";
+  startDate: string;
+  endDate: string;
 }
 
 const HistoryPageSkeleton = () => (
@@ -115,7 +119,7 @@ const HistoryPageSkeleton = () => (
                   </div>
                 </div>
               </div>
-              
+
               {/* Chat Messages Skeleton */}
               <div className="flex-1 min-h-0 overflow-hidden">
                 <div className="h-full p-2 sm:p-4 space-y-1 bg-gray-50">
@@ -124,7 +128,7 @@ const HistoryPageSkeleton = () => (
                     <div className="flex items-center justify-center my-3 sm:my-4">
                       <Skeleton className="h-6 w-20 rounded-full" />
                     </div>
-                    
+
                     {/* Message Skeletons */}
                     {Array.from({ length: 6 }).map((_, index) => (
                       <div key={index} className="space-y-2">
@@ -154,16 +158,19 @@ export default function HistoryNewPage() {
   const [isTablet, setIsTablet] = useState(false);
   const [filters, setFilters] = useState<HistoryFilters>({
     search: "",
-    status: "all",
     agentId: "",
     departmentId: "all",
     customerName: "",
     customerEmail: "",
     hasScheduledAppointment: "all",
+    startDate: "",
+    endDate: "",
   });
-  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
+  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(
+    null
+  );
   const [pageSize] = useState(10);
-  const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+  const [mobileView, setMobileView] = useState<"list" | "chat">("list");
 
   // Check for tablet view (768px to 1024px)
   useEffect(() => {
@@ -198,12 +205,23 @@ export default function HistoryNewPage() {
   // Convert filters to API format
   const apiFilters: Omit<GetChatSessionsQueryDto, "page"> = {
     limit: pageSize,
-    status: filters.status && filters.status !== "all" ? (filters.status as ChatSessionStatus) : undefined,
-    agentId: filters.agentId && filters.agentId !== "all" ? filters.agentId : undefined,
-    departmentId: filters.departmentId && filters.departmentId !== "all" ? filters.departmentId : undefined,
+    agentId:
+      filters.agentId && filters.agentId !== "all"
+        ? filters.agentId
+        : undefined,
+    departmentId:
+      filters.departmentId && filters.departmentId !== "all"
+        ? filters.departmentId
+        : undefined,
     customerName: filters.customerName || undefined,
     customerEmail: filters.customerEmail || undefined,
-    hasScheduledAppointment: filters.hasScheduledAppointment && filters.hasScheduledAppointment !== "all" ? filters.hasScheduledAppointment === "true" : undefined,
+    hasScheduledAppointment:
+      filters.hasScheduledAppointment &&
+      filters.hasScheduledAppointment !== "all"
+        ? filters.hasScheduledAppointment === "true"
+        : undefined,
+    startDate: filters.startDate || undefined,
+    endDate: filters.endDate || undefined,
   };
 
   const {
@@ -222,15 +240,18 @@ export default function HistoryNewPage() {
   );
 
   // Filter sessions based on search term (client-side filtering for search)
-  const filteredSessions = sessions?.filter((session) => {
-    if (!filters.search) return true;
-    
-    const searchTerm = filters.search.toLowerCase();
-    const customerName = session.customerId?.name?.toLowerCase() || '';
-    const customerEmail = session.customerId?.email?.toLowerCase() || '';
-    
-    return customerName.includes(searchTerm) || customerEmail.includes(searchTerm);
-  }) || [];
+  const filteredSessions =
+    sessions?.filter((session) => {
+      if (!filters.search) return true;
+
+      const searchTerm = filters.search.toLowerCase();
+      const customerName = session.customerId?.name?.toLowerCase() || "";
+      const customerEmail = session.customerId?.email?.toLowerCase() || "";
+
+      return (
+        customerName.includes(searchTerm) || customerEmail.includes(searchTerm)
+      );
+    }) || [];
 
   const handleFiltersChange = (newFilters: HistoryFilters) => {
     setFilters(newFilters);
@@ -239,12 +260,13 @@ export default function HistoryNewPage() {
   const handleClearFilters = () => {
     const clearedFilters: HistoryFilters = {
       search: "",
-      status: "all",
       agentId: currentUser?.role === "AGENT" ? currentUser.id : "all",
       departmentId: "all",
       customerName: "",
       customerEmail: "",
       hasScheduledAppointment: "all",
+      startDate: "",
+      endDate: "",
     };
     setFilters(clearedFilters);
   };
@@ -252,12 +274,12 @@ export default function HistoryNewPage() {
   const handleSelectSession = (session: ChatSession) => {
     setSelectedSession(session);
     if (isMobile || isTablet) {
-      setMobileView('chat');
+      setMobileView("chat");
     }
   };
 
   const handleBackToList = () => {
-    setMobileView('list');
+    setMobileView("list");
     setSelectedSession(null);
   };
 
@@ -301,19 +323,21 @@ export default function HistoryNewPage() {
         {/* Main Content Area */}
         <div className="mx-2 sm:mx-4 md:mx-3 lg:mx-4">
           {isLoading && <HistoryPageSkeleton />}
-          
+
           {error && (
             <div className="text-center py-8">
-              <p className="text-red-500">Error loading history: {error.message}</p>
+              <p className="text-red-500">
+                Error loading history: {error.message}
+              </p>
             </div>
           )}
 
           {filteredSessions && filteredSessions.length > 0 && (
             <>
               {/* Mobile & Tablet View */}
-              {(isMobile || isTablet) ? (
+              {isMobile || isTablet ? (
                 <div className="h-[calc(100vh-280px)] sm:h-[600px] lg:h-[600px] overflow-hidden">
-                  {mobileView === 'list' ? (
+                  {mobileView === "list" ? (
                     /* Chat List View */
                     <div className="h-full">
                       <HistoryChatSidebar
@@ -351,7 +375,7 @@ export default function HistoryNewPage() {
                               </div>
                             </div>
                           </div>
-                          
+
                           {/* Chat Messages */}
                           <div className="flex-1 min-h-0 overflow-hidden">
                             <HistoryChatMessages
@@ -388,7 +412,7 @@ export default function HistoryNewPage() {
                         <div className="p-4 border-b flex-shrink-0">
                           <HistoryGuestInfo session={selectedSession} />
                         </div>
-                        
+
                         {/* Chat Messages */}
                         <div className="flex-1 min-h-0 overflow-hidden">
                           <HistoryChatMessages
@@ -401,7 +425,9 @@ export default function HistoryNewPage() {
                       <div className="h-full flex items-center justify-center">
                         <div className="text-center text-gray-500">
                           <HistoryIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                          <p className="text-lg font-medium">Select any chat to view conversation history</p>
+                          <p className="text-lg font-medium">
+                            Select any chat to view conversation history
+                          </p>
                         </div>
                       </div>
                     )}
@@ -413,7 +439,9 @@ export default function HistoryNewPage() {
 
           {filteredSessions && filteredSessions.length === 0 && !isLoading && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No chat history found for the selected filters.</p>
+              <p className="text-gray-500">
+                No chat history found for the selected filters.
+              </p>
             </div>
           )}
         </div>
@@ -421,4 +449,3 @@ export default function HistoryNewPage() {
     </motion.div>
   );
 }
-
