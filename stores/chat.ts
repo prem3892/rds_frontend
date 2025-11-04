@@ -18,6 +18,7 @@ interface ChatState {
   activeSessions: Record<string, ActiveChat>; // Keyed by session ID for quick access
   pendingRequests: ChatSession[]; // For agents to see incoming chats
   selectedSessionId: string | null; // ID of the currently viewed chat in "My Chats"
+  bookingInProgress: string[]; // Array of session IDs that are currently booking appointments
 
   actions: {
     setSocket: (socket: Socket | null) => void;
@@ -31,11 +32,16 @@ interface ChatState {
       status: ChatSessionStatus,
       updates?: Partial<ChatSession>
     ) => void;
+    updateActiveSession: (
+      sessionId: string,
+      updates: Partial<ChatSession>
+    ) => void; // For general updates to a session
     removeActiveSession: (sessionId: string) => void; // e.g., when chat ends/resolved
 
     setSelectedSessionId: (sessionId: string | null) => void;
 
     addMessageToSession: (sessionId: string, message: ChatMessage) => void;
+    setUnreadCount: (sessionId: string, unreadCount: number) => void;
     loadMessagesForSession: (
       sessionId: string,
       messages: ChatMessage[]
@@ -48,11 +54,34 @@ interface ChatState {
       isTyping: boolean
     ) => void;
 
+    // Convenience methods for typing indicators
+    setCustomerTypingStatus: (sessionId: string, isTyping: boolean) => void;
+    setAgentTypingStatus: (sessionId: string, isTyping: boolean) => void;
+
+    // Appointment booking states
+    setAppointmentBookingInProgress: (
+      sessionId: string,
+      inProgress: boolean
+    ) => void;
+
+    loadPendingRequests: (sessions: ChatSession[]) => void;
     addPendingRequest: (session: ChatSession) => void;
+    updatePendingRequest: (
+      sessionId: string,
+      updates: Partial<ChatSession>
+    ) => void;
     removePendingRequest: (sessionId: string) => void;
 
-    // TODO: Add more actions for sending messages, accepting chats via WebSocket
-    // clearChatState: () => void; // For logout or re-initialization
+    // Message read status
+    markMessagesAsSeenByAgent: (sessionId: string, timestamp: string) => void;
+    markMessagesAsSeenByCustomer: (
+      sessionId: string,
+      timestamp: string
+    ) => void;
+
+    // Utility functions
+    clearStuckSessions: (validSessionIds: string[]) => void; // Manual cleanup of stuck sessions
+    clearChatState: () => void; // For logout or re-initialization
   };
 }
 
@@ -62,6 +91,7 @@ const initialState = {
   activeSessions: {},
   pendingRequests: [],
   selectedSessionId: null,
+  bookingInProgress: [],
 };
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -76,17 +106,49 @@ export const useChatStore = create<ChatState>((set, get) => ({
     setConnected: (isConnected) => set({ isConnected }),
 
     loadActiveSessions: (sessions) => {
-      const newActiveSessions: Record<string, ActiveChat> = {};
-      sessions.forEach((session) => {
-        newActiveSessions[session._id] = {
-          ...session,
-          messages: [],
-          hasUnread: false, // Determine this based on lastReadTimestamp vs lastMessageTimestamp
-          isLoadingMessages: false,
-          hasMoreMessages: true, // Assume has more initially
+      set((state) => {
+        const newActiveSessions: Record<string, ActiveChat> = {};
+        
+        // Process sessions from API response
+        sessions.forEach((session) => {
+          // Preserve existing messages and other state when updating sessions
+          const existingSession = state.activeSessions[session._id];
+          newActiveSessions[session._id] = {
+            ...session,
+            messages: existingSession?.messages || [],
+            hasUnread: existingSession?.hasUnread || false,
+            isLoadingMessages: existingSession?.isLoadingMessages || false,
+            hasMoreMessages: existingSession?.hasMoreMessages ?? true,
+            typing: existingSession?.typing,
+          };
+        });
+
+        // CRITICAL FIX: Check for sessions that exist in state but not in API response
+        // These are "stuck" sessions that need to be removed
+        const apiSessionIds = new Set(sessions.map(s => s._id));
+        const stuckSessions: string[] = [];
+        
+        Object.keys(state.activeSessions).forEach(sessionId => {
+          if (!apiSessionIds.has(sessionId)) {
+            stuckSessions.push(sessionId);
+          }
+        });
+
+        // Log stuck sessions for debugging
+        if (stuckSessions.length > 0) {
+          console.warn('Removing stuck sessions that are no longer in API response:', stuckSessions);
+        }
+
+        // Clear selected session if it's one of the stuck sessions
+        const newSelectedSessionId = stuckSessions.includes(state.selectedSessionId || '') 
+          ? null 
+          : state.selectedSessionId;
+
+        return { 
+          activeSessions: newActiveSessions,
+          selectedSessionId: newSelectedSessionId
         };
       });
-      set({ activeSessions: newActiveSessions });
     },
     addActiveSession: (session) =>
       set((state) => ({
@@ -110,6 +172,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
             [sessionId]: {
               ...state.activeSessions[sessionId],
               status,
+              ...updates,
+            },
+          },
+        };
+      }),
+    updateActiveSession: (sessionId, updates) =>
+      set((state) => {
+        if (!state.activeSessions[sessionId]) return state;
+        return {
+          activeSessions: {
+            ...state.activeSessions,
+            [sessionId]: {
+              ...state.activeSessions[sessionId],
               ...updates,
             },
           },
@@ -145,6 +220,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
               ),
               lastMessageTimestamp: message.timestamp,
               // TODO: Update unread status if this session is not selectedSessionId
+              hasUnread: true,
+              // If the message payload includes unreadCount, trust it; otherwise increment
+              unreadCount:
+                typeof message.unreadCount === "number"
+                  ? message.unreadCount
+                  : (state.activeSessions[sessionId].unreadCount || 0) +
+                    (message.senderType === "CUSTOMER" ? 1 : 0),
+            },
+          },
+        };
+      }),
+    setUnreadCount: (sessionId, unreadCount) =>
+      set((state) => {
+        if (!state.activeSessions[sessionId]) return state;
+        return {
+          activeSessions: {
+            ...state.activeSessions,
+            [sessionId]: {
+              ...state.activeSessions[sessionId],
+              unreadCount,
+              hasUnread: (unreadCount || 0) > 0,
             },
           },
         };
@@ -174,6 +270,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
               messages: uniqueMessages,
               // hasMoreMessages: hasMore, // REMOVE
               isLoadingMessages: false,
+              hasUnread: true,
             },
           },
         };
@@ -187,6 +284,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
             [sessionId]: {
               ...state.activeSessions[sessionId],
               isLoadingMessages: isLoading,
+              hasUnread: true,
             },
           },
         };
@@ -207,6 +305,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           },
         };
       }),
+    loadPendingRequests: (sessions) => set({ pendingRequests: sessions }),
     addPendingRequest: (session) =>
       set((state) => ({
         pendingRequests: [
@@ -214,13 +313,158 @@ export const useChatStore = create<ChatState>((set, get) => ({
           session,
         ],
       })),
+    updatePendingRequest: (sessionId, updates) =>
+      set((state) => {
+        const existingIndex = state.pendingRequests.findIndex(
+          (session) => session._id === sessionId
+        );
+
+        if (existingIndex !== -1) {
+          // Update existing session
+          const updatedRequests = [...state.pendingRequests];
+          updatedRequests[existingIndex] = {
+            ...updatedRequests[existingIndex],
+            ...updates,
+          };
+          return { pendingRequests: updatedRequests };
+        } else {
+          // Add new session if it doesn't exist
+          // Assuming 'updates' contains the full session data when adding new
+          return {
+            pendingRequests: [...state.pendingRequests, updates as ChatSession],
+          };
+        }
+      }),
     removePendingRequest: (sessionId) =>
       set((state) => ({
         pendingRequests: state.pendingRequests.filter(
           (s) => s._id !== sessionId
         ),
       })),
-    // clearChatState: () => set(initialState),
+
+    // Convenience methods for typing indicators
+    setCustomerTypingStatus: (sessionId, isTyping) => {
+      const { setTypingIndicator } = get().actions;
+      setTypingIndicator(sessionId, "customer", isTyping);
+    },
+
+    setAgentTypingStatus: (sessionId, isTyping) => {
+      const { setTypingIndicator } = get().actions;
+      setTypingIndicator(sessionId, "agent", isTyping);
+    },
+
+    setAppointmentBookingInProgress: (sessionId, inProgress) =>
+      set((state) => {
+        if (inProgress) {
+          // Add the sessionId to the bookingInProgress array if not already there
+          if (!state.bookingInProgress.includes(sessionId)) {
+            return {
+              bookingInProgress: [...state.bookingInProgress, sessionId],
+            };
+          }
+        } else {
+          // Remove the sessionId from the bookingInProgress array
+          return {
+            bookingInProgress: state.bookingInProgress.filter(
+              (id) => id !== sessionId
+            ),
+          };
+        }
+        return state; // No change needed
+      }),
+
+    markMessagesAsSeenByAgent: (sessionId, timestamp) =>
+      set((state) => {
+        if (!state.activeSessions[sessionId]) return state;
+
+        const timestampMs = new Date(timestamp).getTime();
+
+        // Mark all messages before the timestamp as read by agent
+        const updatedMessages = state.activeSessions[sessionId].messages.map(
+          (message) => {
+            const messageTimestampMs = new Date(message.timestamp).getTime();
+            if (messageTimestampMs <= timestampMs) {
+              return { ...message, readByAgent: true };
+            }
+            return message;
+          }
+        );
+
+        return {
+          activeSessions: {
+            ...state.activeSessions,
+            [sessionId]: {
+              ...state.activeSessions[sessionId],
+              messages: updatedMessages,
+            },
+          },
+        };
+      }),
+
+    markMessagesAsSeenByCustomer: (sessionId, timestamp) =>
+      set((state) => {
+        if (!state.activeSessions[sessionId]) return state;
+
+        const timestampMs = new Date(timestamp).getTime();
+
+        // Mark all messages before the timestamp as read by customer
+        const updatedMessages = state.activeSessions[sessionId].messages.map(
+          (message) => {
+            const messageTimestampMs = new Date(message.timestamp).getTime();
+            if (messageTimestampMs <= timestampMs) {
+              return { ...message, readByCustomer: true };
+            }
+            return message;
+          }
+        );
+
+        return {
+          activeSessions: {
+            ...state.activeSessions,
+            [sessionId]: {
+              ...state.activeSessions[sessionId],
+              messages: updatedMessages,
+            },
+          },
+        };
+      }),
+
+    clearStuckSessions: (validSessionIds) =>
+      set((state) => {
+        const validIdsSet = new Set(validSessionIds);
+        const stuckSessions: string[] = [];
+        
+        // Find sessions that are not in the valid list
+        Object.keys(state.activeSessions).forEach(sessionId => {
+          if (!validIdsSet.has(sessionId)) {
+            stuckSessions.push(sessionId);
+          }
+        });
+
+        if (stuckSessions.length > 0) {
+          console.log('Manually clearing stuck sessions:', stuckSessions);
+          
+          // Remove stuck sessions
+          const newActiveSessions = { ...state.activeSessions };
+          stuckSessions.forEach(sessionId => {
+            delete newActiveSessions[sessionId];
+          });
+
+          // Clear selected session if it's stuck
+          const newSelectedSessionId = stuckSessions.includes(state.selectedSessionId || '') 
+            ? null 
+            : state.selectedSessionId;
+
+          return {
+            activeSessions: newActiveSessions,
+            selectedSessionId: newSelectedSessionId
+          };
+        }
+
+        return state; // No changes needed
+      }),
+
+    clearChatState: () => set(initialState),
   },
 }));
 
@@ -228,10 +472,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
 export const useSocketInstance = () => useChatStore((state) => state.socket);
 export const useIsSocketConnected = () =>
   useChatStore((state) => state.isConnected);
+export const useSocketConnectionStatus = () =>
+  useChatStore((state) => ({
+    socket: state.socket,
+    isConnected: state.isConnected,
+    isSocketConnected: state.socket?.connected ?? false,
+  }));
 export const useActiveChatSessions = () =>
   useChatStore((state) => state.activeSessions);
 export const usePendingChatRequests = () =>
   useChatStore((state) => state.pendingRequests);
 export const useSelectedChatSessionId = () =>
   useChatStore((state) => state.selectedSessionId);
+// Memoize actions selector to prevent unnecessary re-renders
 export const useChatActions = () => useChatStore((state) => state.actions);
+export const useIsBookingInProgress = (sessionId: string) =>
+  useChatStore((state) => state.bookingInProgress.includes(sessionId));

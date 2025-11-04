@@ -1,0 +1,85 @@
+import { ChatIcon } from "@/components/icons";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChatSession } from "@/types";
+import { Loader2 } from "lucide-react";
+import ChatListItem from "./ChatListItem";
+import PendingChatRequestCard from "./PendingChatRequestCard";
+
+interface ChatSidebarProps {
+  activeSessions: ChatSession[];
+  pendingSessions: ChatSession[];
+  selectedSessionId: string | null;
+  onSelectSession: (sessionId: string) => void;
+  onAcceptChat: (sessionId: string) => void;
+  isLoading: boolean;
+}
+
+const ChatSidebar = ({
+  activeSessions,
+  pendingSessions,
+  selectedSessionId,
+  onSelectSession,
+  onAcceptChat,
+  isLoading,
+}: ChatSidebarProps) => (
+  <aside className="w-full md:w-1/2 xl:w-1/3 flex rounded-l-3xl flex-col p-2 sm:p-4 h-full">
+    <div className="bg-white rounded-3xl p-3 sm:p-5 h-full shadow-sm flex flex-col overflow-hidden">
+      <div className="p-2 sm:p-4 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="size-10 bg-blue-500 rounded-md flex items-center justify-center">
+            <ChatIcon className="size-7 text-white" />
+          </div>
+          <h2 className="text-lg sm:text-xl font-semibold">Recent Chats</h2>
+        </div>
+      </div>
+
+      {/* Active Chats List */}
+      <div className="flex-1 min-h-0 p-1 sm:p-2 relative z-0">
+        <ScrollArea className="h-full">
+          <div className="space-y-2">
+            {isLoading && activeSessions.length === 0 && (
+              <div className="p-4 text-center text-sm text-muted-foreground flex items-center justify-center">
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Loading active
+                chats...
+              </div>
+            )}
+            {!isLoading &&
+              activeSessions.length === 0 &&
+              pendingSessions.length === 0 && (
+                <p className="p-4 text-center text-sm text-muted-foreground">
+                  No active or pending chats.
+                </p>
+              )}
+            {pendingSessions.length > 0 && (
+              <h3 className="px-1 sm:px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Pending Requests ({pendingSessions.length})
+              </h3>
+            )}
+            <ScrollArea className=" rounded-md ">
+              <div className="space-y-2">
+                {pendingSessions.map((session) => (
+                  <PendingChatRequestCard
+                    key={session._id}
+                    session={session}
+                    onAccept={onAcceptChat}
+                  />
+                ))}
+
+                {activeSessions.map((session) => (
+                  <ChatListItem
+                    key={session._id}
+                    session={session}
+                    isSelected={selectedSessionId === session._id}
+                    onSelect={() => onSelectSession(session._id)}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        </ScrollArea>
+      </div>
+    </div>
+  </aside>
+);
+
+export default ChatSidebar;

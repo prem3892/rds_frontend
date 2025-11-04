@@ -1,0 +1,446 @@
+// services/socketService.ts
+import { io, Socket } from "socket.io-client";
+import { ChatMessage, ChatSession } from "@/types";
+import { CHAT_SESSIONS_QUERY_KEY_PREFIX, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY, PENDING_CHAT_SESSIONS_QUERY_KEY, queryClient } from "@/lib/api";
+
+const SOCKET_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3001";
+
+class SocketService {
+  private socket: Socket | null = null;
+  private listeners: Set<(event: string, data: any) => void> = new Set();
+
+  initialize(token: string) {
+    // If already connected, don't reinitialize
+    if (this.socket && this.socket.connected) return this.socket;
+
+    // Disconnect any existing socket that might be in a bad state
+    if (this.socket) this.socket.disconnect();
+
+    console.log("Initializing global WebSocket connection");
+    this.socket = io(`${SOCKET_URL}/chat`, {
+      reconnectionAttempts: 5,
+      reconnectionDelay: 3000,
+      transports: ["websocket"],
+    });
+
+    // Set up event listeners
+    this.socket.on("connect", () => {
+      console.log("WebSocket connected:", this.socket?.id);
+      this.notifyListeners("connected", true);
+      this.socket?.emit("agent:authenticate", { token });
+    });
+
+    this.socket.on("disconnect", (reason) => {
+      console.log("WebSocket disconnected:", reason);
+      this.notifyListeners("connected", false);
+    });
+
+    this.socket.on("connect_error", (err) => {
+      console.error("WebSocket connection error:", err.message, err);
+      this.notifyListeners("error", err.message);
+    });
+
+    this.socket.on(
+      "server:authenticated",
+      (data: { userId: string; role: string }) => {
+        console.log("WebSocket authenticated:", data);
+        this.notifyListeners("authenticated", data);
+      }
+    );
+
+    this.socket.on("server:auth_failed", (data: { message: string }) => {
+      console.error("WebSocket authentication failed:", data.message);
+      this.notifyListeners("authFailed", data);
+      this.socket?.disconnect();
+    });
+
+    this.socket.on("server:new_message", (message: ChatMessage) => {
+      console.log("Received new message via WebSocket:", message);
+      this.notifyListeners("newMessage", message);
+    });
+
+    this.socket.on("server:new_chat_request", (session: ChatSession) => {
+    
+      // here if the data contains no initial message or its empty , or it contains this text "Auto-message shown:" then don't show the toast and notification
+        if (session.initialMessage.includes("Auto-message shown:")) {
+          return;
+        }
+      console.log("New chat request received:", session);
+      this.notifyListeners("newChatRequest", session);
+    });
+
+    this.socket.on(
+      "server:chat_session_update",
+      (
+        update: Partial<ChatSession> & {
+          chatSessionId: string;
+          status: ChatSession["status"];
+        }
+      ) => {
+        console.log("Chat session update received:", update);
+        this.notifyListeners("chatSessionUpdate", update);
+      }
+    );
+
+    this.socket.on("server:chat_accepted_by_you", (session: ChatSession) => {
+      console.log("Chat accepted by you:", session);
+      this.notifyListeners("chatAcceptedByYou", session);
+    });
+
+    this.socket.on(
+      "server:chat_taken_or_resolved",
+      (data: { chatSessionId: string }) => {
+        console.log(
+          "Chat taken or resolved by another agent:",
+          data.chatSessionId
+        );
+        this.notifyListeners("chatTakenOrResolved", data);
+      }
+    );
+
+    this.socket.on("server:chat_already_accepted", (data: any) => {
+      console.log("Chat already accepted by another agent:", data);
+      this.notifyListeners("chatAlreadyAccepted", data);
+    });
+
+    this.socket.on(
+      "server:online_status_updated",
+      (data: {
+        success: boolean;
+        isOnline?: boolean;
+        error?: string;
+        requestedStatus?: boolean;
+        triggeredBySocket?: string;
+        totalSockets?: number;
+      }) => {
+        console.log("Online status updated by server:", data);
+        this.notifyListeners("onlineStatusUpdated", data);
+      }
+    );
+
+    // Listen for agent pool status updates that might affect online status
+    this.socket.on(
+      "server:agent_pool_status_update",
+      (data: {
+        departmentId: string;
+        domain: string;
+        onlineAgentsCount: number;
+        isAvailable: boolean;
+      }) => {
+        console.log("Agent pool status update received:", data);
+        this.notifyListeners("agentPoolStatusUpdate", data);
+      }
+    );
+
+    this.socket.on(
+      "server:customer_typing_start",
+      (data: { chatSessionId: string }) => {
+        console.log("Customer started typing:", data.chatSessionId);
+        this.notifyListeners("customerTypingStart", data);
+      }
+    );
+
+    this.socket.on(
+      "server:customer_typing_stop",
+      (data: { chatSessionId: string }) => {
+        console.log("Customer stopped typing:", data.chatSessionId);
+        this.notifyListeners("customerTypingStop", data);
+      }
+    );
+
+    this.socket.on(
+      "server:chat_ended_ack",
+      (data: { chatSessionId: string }) => {
+        console.log("Chat ended acknowledgment received:", data.chatSessionId);
+        this.notifyListeners("chatEndedAck", data);
+      }
+    );
+
+    this.socket.on(
+      "server:appointment_booked_ack",
+      (data: { chatSessionId: string; appointment: any }) => {
+        console.log("Appointment booked acknowledgment received:", data);
+        this.notifyListeners("appointmentBookedAck", data);
+      }
+    );
+
+    this.socket.on("server:visitor_activity", (data: any) => {
+      console.log("Visitor activity received:", data);
+      this.notifyListeners("visitorActivity", data);
+    });
+
+    // Visitor cleanup (expired visitors removed by server job)
+    this.socket.on(
+      "server:visitor_cleanup",
+      (data: { customerId: string; widgetId?: string; domain?: string; reason?: string; timestamp?: string }) => {
+        console.log("Visitor cleanup received:", data);
+        this.notifyListeners("visitorCleanup", data);
+      }
+    );
+
+    // Chat session restored
+    this.socket.on("server:chat_session_restored", (session: ChatSession) => {
+      console.log("Chat session restored:", session);
+      this.notifyListeners("chatSessionRestored", session);
+    });
+
+    // Agent disconnection events
+    this.socket.on(
+      "server:agent_disconnected_from_chat",
+      (data: { chatSessionId: string; agentName: string }) => {
+        console.log("Agent disconnected from chat:", data);
+        this.notifyListeners("agentDisconnectedFromChat", data);
+      }
+    );
+
+    this.socket.on(
+      "server:agent_reconnected_to_chat",
+      (data: { chatSessionId: string; agentName: string }) => {
+        console.log("Agent reconnected to chat:", data);
+        this.notifyListeners("agentReconnectedToChat", data);
+      }
+    );
+
+    // Customer disconnection events
+    this.socket.on(
+      "server:customer_disconnected_from_chat",
+      (data: { chatSessionId: string; customerName: string }) => {
+        console.log("Customer disconnected from chat:", data);
+        this.notifyListeners("customerDisconnectedFromChat", data);
+      }
+    );
+
+    this.socket.on(
+      "server:customer_reconnected_to_chat",
+      (data: { chatSessionId: string; customerName: string }) => {
+        console.log("Customer reconnected to chat:", data);
+        this.notifyListeners("customerReconnectedToChat", data);
+      }
+    );
+
+    // Priority chat notification
+    this.socket.on(
+      "server:priority_chat_notification",
+      (session: ChatSession) => {
+        // here if the data contains no initial message or its empty , or it contains this text "Auto-message shown:" then don't show the toast and notification
+        if (session.initialMessage.includes("Auto-message shown:")) {
+          return;
+        }
+        console.log("Priority chat notification received:", session);
+        this.notifyListeners("server:priority_chat_notification", session);
+      }
+    );
+
+    // Message seen by agent events
+    this.socket.on(
+      "server:message_seen_by_agent",
+      (data: {
+        chatSessionId: string;
+        messageId: string;
+        timestamp: string;
+        agentId: string;
+      }) => {
+        console.log("Message seen by agent:", data);
+        this.notifyListeners("server:message_seen_by_agent", data);
+      }
+    );
+
+    this.socket.on(
+      "server:messages_read_ack",
+      (data: {
+        chatSessionId: string;
+        messageId: string;
+        timestamp: string;
+        triggeredBySocket: string;
+        totalAgentSockets: number;
+      }) => {
+        console.log("Messages read acknowledgment:", data);
+        this.notifyListeners("server:messages_read_ack", data);
+      }
+    );
+
+    // Message seen by customer events
+    this.socket.on(
+      "server:message_seen_by_customer",
+      (data: {
+        chatSessionId: string;
+        messageId: string;
+        timestamp: string;
+      }) => {
+        console.log("Message seen by customer:", data);
+        this.notifyListeners("server:message_seen_by_customer", data);
+      }
+    );
+
+    // Customer inactivity event
+    this.socket.on(
+      "server:customer_inactive",
+      (data: {
+        chatSessionId: string;
+        message: string;
+        customerId: string;
+        customerName: string;
+        sessionStatus: string;
+      }) => {
+        console.log("Customer inactive notification:", data);
+        this.notifyListeners("server:customer_inactive", data);
+      }
+    );
+
+    // Chat ended event
+    this.socket.on(
+      "server:chat_ended",
+      (data: {
+        chatSessionId: string;
+        message: string;
+        customerId: string;
+        customerName: string;
+        sessionStatus: string;
+      }) => {
+        console.log("Chat ended notification:", data);
+        this.notifyListeners("server:chat_ended", data);
+      }
+    );
+
+    // Customer info request acknowledgment
+    this.socket.on(
+      "server:customer_info_request_sent",
+      (data: {
+        chatSessionId: string;
+        customerId: string;
+        triggeredBySocket: string;
+        totalAgentSockets: number;
+        requestedAt: string;
+      }) => {
+        console.log("Customer info request sent acknowledgment:", data);
+        this.notifyListeners("server:customer_info_request_sent", data);
+      }
+    );
+
+    return this.socket;
+  }
+
+  // Socket operations
+  sendMessage(payload: {
+    chatSessionId: string;
+    messageContent: ChatMessage["content"];
+  }) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot send message.");
+      return false;
+    }
+    this.socket.emit("agent:send_message", payload);
+    return true;
+  }
+
+  acceptChat(chatSessionId: string) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot accept chat.");
+      return false;
+    }
+    this.socket.emit("agent:accept_chat", { chatSessionId });
+    return true;
+  }
+
+  setOnlineStatus(isOnline: boolean) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot set online status.");
+      return false;
+    }
+    this.socket.emit("agent:set_online_status", { isOnline });
+    console.log(`User status changed to: ${isOnline ? "Online" : "Offline"}`);
+    return true;
+  }
+
+  sendTypingStart(chatSessionId: string) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot send typing start.");
+      return false;
+    }
+    this.socket.emit("agent:typing_start", { chatSessionId });
+    return true;
+  }
+
+  sendTypingStop(chatSessionId: string) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot send typing stop.");
+      return false;
+    }
+    this.socket.emit("agent:typing_stop", { chatSessionId });
+    return true;
+  }
+
+  endChat(chatSessionId: string) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot end chat.");
+      return false;
+    }
+    this.socket.emit("agent:end_chat", { chatSessionId });
+    return true;
+  }
+
+  bookCustomer(payload: {
+    chatSessionId: string;
+    date: string;
+    notes?: string;
+  }) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot book appointment.");
+      return false;
+    }
+    console.debug("Booking appointment for chat session:", payload);
+    this.socket.emit("agent:book_appointment", payload);
+    queryClient.invalidateQueries({ queryKey: [CHAT_SESSIONS_QUERY_KEY_PREFIX, MY_ACTIVE_CHAT_SESSIONS_QUERY_KEY, PENDING_CHAT_SESSIONS_QUERY_KEY] });
+    return true;
+  }
+
+  markMessagesAsRead(payload: { chatSessionId: string; messageId: string }) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot mark messages as read.");
+      return false;
+    }
+    console.debug("Marking messages as read for chat session:", payload);
+    this.socket.emit("agent:mark_messages_read", payload);
+    return true;
+  }
+
+  requestCustomerInfo(payload: { chatSessionId: string }) {
+    if (!this.socket || !this.socket.connected) {
+      console.error("Socket not connected. Cannot request customer info.");
+      return false;
+    }
+    console.debug("Requesting customer info for chat session:", payload);
+    this.socket.emit("agent:customer_info_request", payload);
+    return true;
+  }
+
+  // State management helpers
+  addListener(callback: (event: string, data: any) => void) {
+    this.listeners.add(callback);
+    return () => this.listeners.delete(callback);
+  }
+
+  private notifyListeners(event: string, data: any) {
+    this.listeners.forEach((listener) => listener(event, data));
+  }
+
+  // Disconnect method (rarely needed - mainly for cleanup on logout)
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+  }
+
+  // Getters
+  get isConnected() {
+    return this.socket?.connected ?? false;
+  }
+
+  get instance() {
+    return this.socket;
+  }
+}
+
+// Create a singleton instance
+export const socketService = new SocketService();

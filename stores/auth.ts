@@ -2,16 +2,21 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { User } from "@/types";
+import { setAuthCookies, clearAuthCookies, syncAuthState } from "@/lib/auth-utils";
 // REMOVE: import { queryClient } from '@/lib/api';
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
+  refreshToken: string | null;
+  isOnline: boolean; // Agent's online status
   _hasHydrated: boolean;
   actions: {
-    login: (user: User, accessToken: string) => void;
+    login: (user: User, accessToken: string, refreshToken: string) => void;
     logout: () => void;
+    updateTokens: (accessToken: string, refreshToken: string) => void;
     updateUser: (updatedUserDetails: Partial<User>) => void;
+    setOnlineStatus: (isOnline: boolean) => void;
     setHasHydrated: (hasHydrated: boolean) => void;
   };
 }
@@ -21,18 +26,42 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       accessToken: null,
+      refreshToken: null,
+      isOnline: false,
       _hasHydrated: false,
       actions: {
-        login: (user, accessToken) => set({ user, accessToken }),
+        login: (user, accessToken, refreshToken) => {
+          // Extract isOnline status from user data or default to false
+          const isOnline = user.isOnline || false;
+          set({ user, accessToken, refreshToken, isOnline });
+          // Set cookies for middleware compatibility
+          setAuthCookies(accessToken, refreshToken, undefined, isOnline);
+        },
         logout: () => {
-          set({ user: null, accessToken: null });
+          set({ user: null, accessToken: null, refreshToken: null, isOnline: false });
+          // Clear cookies for middleware compatibility
+          clearAuthCookies();
           // queryClient.clear() will be called from where logout action is dispatched
+        },
+        updateTokens: (accessToken, refreshToken) => {
+          const currentState = get();
+          set({ accessToken, refreshToken });
+          // Update cookies for middleware compatibility
+          setAuthCookies(accessToken, refreshToken, undefined, currentState.isOnline);
         },
         updateUser: (updatedUserDetails) => {
           if (get().user) {
             set((state) => ({
               user: { ...state.user!, ...updatedUserDetails },
             }));
+          }
+        },
+        setOnlineStatus: (isOnline) => {
+          const currentState = get();
+          set({ isOnline });
+          // Update cookies to keep online status in sync
+          if (currentState.accessToken && currentState.refreshToken) {
+            setAuthCookies(currentState.accessToken, currentState.refreshToken, undefined, isOnline);
           }
         },
         setHasHydrated: (hasHydrated) => set({ _hasHydrated: hasHydrated }),
@@ -44,9 +73,15 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+        isOnline: state.isOnline,
       }),
       onRehydrateStorage: () => (state) => {
         state?.actions.setHasHydrated(true);
+        // Sync auth state with cookies after hydration
+        if (typeof window !== 'undefined') {
+          syncAuthState();
+        }
       },
     }
   )
@@ -54,9 +89,12 @@ export const useAuthStore = create<AuthState>()(
 
 export const useCurrentUser = () => useAuthStore((state) => state.user);
 export const useAccessToken = () => useAuthStore((state) => state.accessToken);
+export const useRefreshToken = () => useAuthStore((state) => state.refreshToken);
 export const useIsAuthenticated = () =>
   useAuthStore((state) => !!state.accessToken && !!state.user);
+export const useIsOnline = () => useAuthStore((state) => state.isOnline);
 export const useHasHydrated = () => useAuthStore((state) => state._hasHydrated);
 export const useAuthActions = () => useAuthStore((state) => state.actions);
 export const getAuthToken = () => useAuthStore.getState().accessToken;
+export const getRefreshToken = () => useAuthStore.getState().refreshToken;
 export const getCurrentUserFromStore = () => useAuthStore.getState().user;

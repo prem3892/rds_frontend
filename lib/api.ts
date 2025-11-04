@@ -1,4 +1,4 @@
-// src/lib/api.ts
+
 import { useAuthStore } from "@/stores/auth";
 import {
   LoginDto,
@@ -12,6 +12,8 @@ import {
   UseMutationOptions,
   QueryClient,
 } from "@tanstack/react-query";
+import { handleApiError, isUnauthorizedError } from "@/lib/error-handler";
+import { fetchWithTokenRefresh, logoutUser } from "@/lib/token-refresh";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
@@ -33,30 +35,12 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Custom fetch wrapper
+// Custom fetch wrapper with automatic token refresh
 export const customFetch = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  const token = useAuthStore.getState().accessToken; // Get token directly from Zustand store
-
-  const defaultHeaders: HeadersInit = {
-    "Content-Type": "application/json",
-  };
-
-  if (token) {
-    defaultHeaders["Authorization"] = `Bearer ${token}`;
-  }
-
-  const config: RequestInit = {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-  };
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  const response = await fetchWithTokenRefresh(`${API_BASE_URL}${endpoint}`, options);
 
   if (!response.ok) {
     let errorData: ApiErrorResponse;
@@ -70,21 +54,20 @@ export const customFetch = async <T>(
         // Ensure statusCode field exists
         errorData.statusCode = response.status;
       }
-    } catch (e) {
+    } catch (error) {
+      console.error("Error parsing JSON response:", error);
       errorData = {
         statusCode: response.status,
         message:
           response.statusText ||
-          "An unexpected error occurred. The response was not valid JSON.",
+          "An unexpected error occurred. The response was not valid JSON. " ,
       };
     }
 
-    // Specific handling for 401 Unauthorized (e.g., token expired) on non-login routes
-    if (response.status === 401 && !endpoint.includes("/auth/login")) {
-      // Consider a more robust way to handle global logout, e.g., via a React context or queryClient default onError
-      // useAuthStore.getState().actions.logout();
-      // window.location.href = '/login'; // Can cause issues if not handled carefully
-      console.error("Authentication error (401) on non-login route:", endpoint);
+    // Handle 401 errors globally (after token refresh attempt)
+    if (isUnauthorizedError(errorData) && !endpoint.includes("/auth/login")) {
+      // If we still get 401 after token refresh, logout the user
+      await logoutUser();
     }
     throw errorData;
   }
@@ -116,7 +99,7 @@ export const useLoginMutation = (
         body: JSON.stringify(loginData),
       }),
     onSuccess: (data, variables, context) => {
-      loginAction(data.user, data.accessToken); // Update Zustand store
+      loginAction(data.user, data.accessToken, data.refreshToken); // Update Zustand store with refresh token
       if (options?.onSuccess) {
         options.onSuccess(data, variables, context);
       }
@@ -157,4 +140,83 @@ export const useInitialAdminSignupMutation = (
   });
 };
 
+// API Hook for Resend Email Verification
+export const useResendVerificationMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, { email: string }>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, { email: string }>({
+    mutationFn: (data: { email: string }) =>
+      customFetch<{ message: string }>("/auth/resend-verification", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    ...options,
+  });
+};
+
+// API Hook for Email Verification
+export const useEmailVerificationMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, { token: string }>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, { token: string }>({
+    mutationFn: (data: { token: string }) =>
+      customFetch<{ message: string }>(`/auth/verify-email?token=${data.token}`, {
+        method: "GET",
+      }),
+    ...options,
+  });
+};
+
+// API Hook for Forgot Password
+export const useForgotPasswordMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, { email: string }>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, { email: string }>({
+    mutationFn: (data: { email: string }) =>
+      customFetch<{ message: string }>("/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    ...options,
+  });
+};
+
+// API Hook for Reset Password
+export const useResetPasswordMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, { token: string; newPassword: string }>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, { token: string; newPassword: string }>({
+    mutationFn: (data: { token: string; newPassword: string }) =>
+      customFetch<{ message: string }>("/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    ...options,
+  });
+};
+
+// API Hook for Change Password
+export interface ChangePasswordDto {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export const useChangePasswordMutation = (
+  options?: UseMutationOptions<{ message: string }, ApiErrorResponse, ChangePasswordDto>
+) => {
+  return useMutation<{ message: string }, ApiErrorResponse, ChangePasswordDto>({
+    mutationFn: (data: ChangePasswordDto) =>
+      customFetch<{ message: string }>("/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    ...options,
+  });
+};
+
 export * from "./chat.api";
+export * from "./widget.api";
+export * from "./department.api";
+export * from "./agent.api";
+export * from "./contact.api";
+export * from "./visitor.api";

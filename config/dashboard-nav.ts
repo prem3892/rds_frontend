@@ -11,13 +11,16 @@ import {
   History,
   CircleUserRound,
   Power,
+  FileText,
+  ShieldX,
+  UserCheck,
 } from "lucide-react"; // Example icons from lucide-react
 
 export type NavItem = {
   title: string;
   href: string;
   icon: React.ElementType;
-  role?: "ADMIN" | "AGENT"; // If undefined, visible to all authenticated users within dashboard
+  role?: "ADMIN" | "AGENT" | "MANAGER"; // If undefined, visible to all authenticated users within dashboard
   isExternal?: boolean;
   label?: string;
   children?: NavItem[]; // For nested navigation if needed in future
@@ -32,7 +35,7 @@ export const dashboardNavItems: NavItem[] = [
   },
   {
     title: "My Chats", // Or "Active Chats"
-    href: "/dashboard/chats",
+    href: "/dashboard/chat",
     icon: MessageSquare,
   },
   {
@@ -41,27 +44,59 @@ export const dashboardNavItems: NavItem[] = [
     icon: History,
   },
   {
+    title: "Chat History (New)", // New chat history UI
+    href: "/dashboard/history-new",
+    icon: History,
+  },
+  {
+    title: "Contacts",
+    href: "/dashboard/contacts",
+    icon: UserCheck,
+  },
+  {
     title: "User Management",
-    href: "/dashboard/admin/users",
+    href: "/dashboard/users",
     icon: Users,
     role: "ADMIN",
     separator: true,
   },
   {
+    title: "Widgets",
+    href: "/dashboard/widgets",
+    icon: Building,
+    role: "ADMIN",
+  },
+  {
     title: "Agent Settings", // Specific agent settings (can be part of User Management too)
-    href: "/dashboard/admin/agents",
+    href: "/dashboard/agents",
     icon: UserCog,
     role: "ADMIN",
   },
   {
     title: "Departments",
-    href: "/dashboard/admin/departments",
+    href: "/dashboard/departments",
     icon: Building,
     role: "ADMIN",
   },
   {
+    title: "Canned Messages",
+    href: "/dashboard/canned-messages",
+    icon: FileText,
+  },
+  {
+    title: "Auto Messages",
+    href: "/dashboard/auto-messages",
+    icon: MessageSquare,
+  },
+  {
+    title: "Blocked Customers",
+    href: "/dashboard/blocked-customers",
+    icon: ShieldX,
+    role: "ADMIN",
+  },
+  {
     title: "All Chat Sessions", // Admin monitoring
-    href: "/dashboard/admin/sessions",
+    href: "/dashboard/sessions",
     icon: ShieldAlert,
     role: "ADMIN",
   },
