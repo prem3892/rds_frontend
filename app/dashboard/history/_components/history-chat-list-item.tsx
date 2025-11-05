@@ -3,19 +3,30 @@ import { Button } from "@/components/ui/button";
 import { ChatSession } from "@/types";
 import { parseISO, format } from "date-fns";
 import { formatAppointmentDate } from "@/lib/utils";
-import { 
-  Clock, 
-  Globe, 
-  User, 
-  Monitor, 
-  Smartphone, 
+import {
+  Clock,
+  Globe,
+  User,
+  Monitor,
+  Smartphone,
   Tablet,
-  Calendar
+  Calendar,
 } from "lucide-react";
 import React from "react";
 
-import { FaChrome, FaFacebook, FaFirefox, FaGoogle, FaSafari, FaEdge, FaOpera, FaQuestionCircle, FaWindows, FaTablet } from 'react-icons/fa';
-import { SiApple, SiLinux, SiAndroid, SiMacos } from 'react-icons/si';
+import {
+  FaChrome,
+  FaFacebook,
+  FaFirefox,
+  FaGoogle,
+  FaSafari,
+  FaEdge,
+  FaOpera,
+  FaQuestionCircle,
+  FaWindows,
+  FaTablet,
+} from "react-icons/fa";
+import { SiApple, SiLinux, SiAndroid, SiMacos } from "react-icons/si";
 import ReactCountryFlag from "react-country-flag";
 import { getTimeZones, TimeZone } from "@vvo/tzdb";
 
@@ -26,18 +37,22 @@ interface HistoryChatListItemProps {
 }
 const HistoryChatListItem = React.memo(
   ({ session, isSelected, onSelect }: HistoryChatListItemProps) => {
- 
     console.log(session, "session");
 
     const getBrowserIcon = (userAgent?: string) => {
       if (!userAgent) return <Globe className="w-3 h-3 text-gray-500" />;
-      
+
       const ua = userAgent.toLowerCase();
-      if (ua.includes("chrome") && !ua.includes("edg")) return <FaChrome className="w-3 h-3 text-blue-600" />;
-      if (ua.includes("firefox")) return <FaFirefox className="w-3 h-3 text-orange-500" />;
-      if (ua.includes("safari") && !ua.includes("chrome")) return <FaSafari className="w-3 h-3 text-blue-500" />;
-      if (ua.includes("edge")) return <FaEdge className="w-3 h-3 text-blue-700" />;
-      if (ua.includes("opera")) return <FaOpera className="w-3 h-3 text-red-500" />;
+      if (ua.includes("chrome") && !ua.includes("edg"))
+        return <FaChrome className="w-3 h-3 text-blue-600" />;
+      if (ua.includes("firefox"))
+        return <FaFirefox className="w-3 h-3 text-orange-500" />;
+      if (ua.includes("safari") && !ua.includes("chrome"))
+        return <FaSafari className="w-3 h-3 text-blue-500" />;
+      if (ua.includes("edge"))
+        return <FaEdge className="w-3 h-3 text-blue-700" />;
+      if (ua.includes("opera"))
+        return <FaOpera className="w-3 h-3 text-red-500" />;
       return <FaQuestionCircle className="w-3 h-3 text-gray-500" />;
     };
 
@@ -45,41 +60,56 @@ const HistoryChatListItem = React.memo(
       if (!platform) return <Monitor className="w-3 h-3 text-gray-500" />;
 
       const platformLower = platform.toLowerCase();
-      if (platformLower.includes("mac")) return <SiApple className="w-3 h-3 text-gray-800" />;
-      if (platformLower.includes("win")) return <FaWindows className="w-3 h-3 text-blue-600" />;
-      if (platformLower.includes("linux")) return <SiLinux className="w-3 h-3 text-green-600" />;
-      if (platformLower.includes("ios")) return <SiApple className="w-3 h-3 text-blue-500" />;
-      if (platformLower.includes("android")) return <SiAndroid className="w-3 h-3 text-green-500" />;
-      if (platformLower.includes("mobile")) return <SiAndroid className="w-3 h-3 text-gray-600" />;
-      if (platformLower.includes("tablet")) return <FaTablet className="w-3 h-3 text-gray-600" />;
+      if (platformLower.includes("mac"))
+        return <SiApple className="w-3 h-3 text-gray-800" />;
+      if (platformLower.includes("win"))
+        return <FaWindows className="w-3 h-3 text-blue-600" />;
+      if (platformLower.includes("linux"))
+        return <SiLinux className="w-3 h-3 text-green-600" />;
+      if (platformLower.includes("ios"))
+        return <SiApple className="w-3 h-3 text-blue-500" />;
+      if (platformLower.includes("android"))
+        return <SiAndroid className="w-3 h-3 text-green-500" />;
+      if (platformLower.includes("mobile"))
+        return <SiAndroid className="w-3 h-3 text-gray-600" />;
+      if (platformLower.includes("tablet"))
+        return <FaTablet className="w-3 h-3 text-gray-600" />;
       return <Monitor className="w-3 h-3 text-gray-500" />;
     };
 
     const getSourceIcon = (currentPageUrl?: string) => {
       if (!currentPageUrl) return null;
-      
+
       try {
         const url = new URL(currentPageUrl);
         const searchParams = url.searchParams;
-        
+
         // Check for Google Ads parameters
-        if (searchParams.has('gad_source') || 
-            searchParams.has('gad_campaignid') || 
-            searchParams.has('gbraid') ||
-            searchParams.get('utm_source')?.toLowerCase().includes('google') ||
-            searchParams.get('utm_medium')?.toLowerCase().includes('cpc') ||
-            searchParams.get('utm_medium')?.toLowerCase().includes('ppc')) {
-          return <FaGoogle className="w-3 h-3 text-blue-500" title="Google Ads" />;
+        if (
+          searchParams.has("gad_source") ||
+          searchParams.has("gad_campaignid") ||
+          searchParams.has("gbraid") ||
+          searchParams.get("utm_source")?.toLowerCase().includes("google") ||
+          searchParams.get("utm_medium")?.toLowerCase().includes("cpc") ||
+          searchParams.get("utm_medium")?.toLowerCase().includes("ppc")
+        ) {
+          return (
+            <FaGoogle className="w-3 h-3 text-blue-500" title="Google Ads" />
+          );
         }
-        
+
         // Check for Facebook parameters
-        if (searchParams.get('utm_medium')?.toLowerCase() === 'fb' ||
-            searchParams.get('utm_source')?.toLowerCase().includes('facebook') ||
-            searchParams.get('utm_source')?.toLowerCase().includes('meta') ||
-            searchParams.has('fbclid')) {
-          return <FaFacebook className="w-3 h-3 text-blue-600" title="Facebook" />;
+        if (
+          searchParams.get("utm_medium")?.toLowerCase() === "fb" ||
+          searchParams.get("utm_source")?.toLowerCase().includes("facebook") ||
+          searchParams.get("utm_source")?.toLowerCase().includes("meta") ||
+          searchParams.has("fbclid")
+        ) {
+          return (
+            <FaFacebook className="w-3 h-3 text-blue-600" title="Facebook" />
+          );
         }
-        
+
         return null;
       } catch (error) {
         // If URL parsing fails, return null
@@ -96,7 +126,9 @@ const HistoryChatListItem = React.memo(
     };
 
     const getTimeDisplay = () => {
-      const messageTime = session.lastMessageAt ? session.lastMessageAt : session.initiatedAt;
+      const messageTime = session.lastMessageAt
+        ? session.lastMessageAt
+        : session.initiatedAt;
 
       if (messageTime) {
         const date = parseISO(messageTime);
@@ -110,9 +142,9 @@ const HistoryChatListItem = React.memo(
             hour12: true,
           });
         } else {
-          return date.toLocaleDateString("en-GB", {
-            day: "2-digit",
+          return date.toLocaleDateString("en-US", {
             month: "2-digit",
+            day: "2-digit",
             year: "2-digit",
           });
         }
@@ -122,22 +154,26 @@ const HistoryChatListItem = React.memo(
 
     const getDomainDisplay = () => {
       // Use metadata.initialDomain if available, otherwise fall back to session.domain
-      return session.customerId?.metadata?.initialDomain?.split("?")[0] || session.domain.split("?")[0] || "N/A";
+      return (
+        session.customerId?.metadata?.initialDomain?.split("?")[0] ||
+        session.domain.split("?")[0] ||
+        "N/A"
+      );
     };
 
     const getScreenResolution = () => {
-      return session.customerId?.metadata?.browserInfo?.screenResolution || "N/A";
+      return (
+        session.customerId?.metadata?.browserInfo?.screenResolution || "N/A"
+      );
     };
 
     const getLanguage = () => {
       return session.customerId?.metadata?.browserInfo?.language || "N/A";
     };
 
-
     const getIpInfo = () => {
       return session.customerId?.metadata?.ipInfo.clientIp || "N/A";
-    }
-
+    };
 
     const getCountry = () => {
       const countryCode = session.customerId?.metadata?.ipInfo.country;
@@ -145,13 +181,15 @@ const HistoryChatListItem = React.memo(
         return "N/A";
       }
       const timeZones = getTimeZones();
-      const timeZone = timeZones.find((tz: TimeZone) => tz.countryCode === countryCode);
+      const timeZone = timeZones.find(
+        (tz: TimeZone) => tz.countryCode === countryCode
+      );
       return timeZone ? timeZone.countryName : countryCode;
-    }
+    };
 
     const getCity = () => {
       return session.customerId?.metadata?.ipInfo.city || "N/A";
-    }
+    };
 
     const getStatusColor = (status: string) => {
       switch (status) {
@@ -189,15 +227,21 @@ const HistoryChatListItem = React.memo(
                 {getCustomerName()}
               </span>
               <span className="text-base sm:text-lg flex-shrink-0">
-                <ReactCountryFlag 
-                  countryCode={session.customerId?.metadata?.ipInfo?.country || ""} 
-                  svg 
-                  style={{ width: '20px', height: '15px' }} 
+                <ReactCountryFlag
+                  countryCode={
+                    session.customerId?.metadata?.ipInfo?.country || ""
+                  }
+                  svg
+                  style={{ width: "20px", height: "15px" }}
                 />
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
-                {getBrowserIcon(session.customerId?.metadata?.browserInfo?.userAgent)}
-                {getPlatformIcon(session.customerId?.metadata?.browserInfo?.platform)}
+                {getBrowserIcon(
+                  session.customerId?.metadata?.browserInfo?.userAgent
+                )}
+                {getPlatformIcon(
+                  session.customerId?.metadata?.browserInfo?.platform
+                )}
                 {getSourceIcon(session.customerId?.metadata?.currentPageUrl)}
               </div>
             </div>
@@ -223,12 +267,15 @@ const HistoryChatListItem = React.memo(
             )} */}
             <div className="flex flex-col items-start gap-2 flex-wrap">
               <div className="w-full flex-wrap">
-
-              <Badge  className="rounded-full truncate text-wrap text-ellipsis text-xs">IP: {getIpInfo()}</Badge>
+                <Badge className="rounded-full truncate text-wrap text-ellipsis text-xs">
+                  IP: {getIpInfo()}
+                </Badge>
               </div>
-             {
-              session.customerId?.metadata?.ipInfo.country &&
-             <Badge  className="rounded-full truncate text-wrap">Country: {getCountry()}</Badge>}
+              {session.customerId?.metadata?.ipInfo.country && (
+                <Badge className="rounded-full truncate text-wrap">
+                  Country: {getCountry()}
+                </Badge>
+              )}
               {/* <Badge  className="rounded-full">City: {getCity()}</Badge> */}
             </div>
           </div>
@@ -263,7 +310,10 @@ const HistoryChatListItem = React.memo(
                 <span className="font-medium">Appointment Booked</span>
               </div>
               <div className="text-xs text-green-600 mt-1">
-                {formatAppointmentDate(session.appointmentData.date, "MMM dd, yyyy 'at' h:mm a")}
+                {formatAppointmentDate(
+                  session.appointmentData.date,
+                  "MMM dd, yyyy 'at' h:mm a"
+                )}
               </div>
               {session.appointmentData.notes && (
                 <div className="text-xs text-green-600 mt-1 truncate">
