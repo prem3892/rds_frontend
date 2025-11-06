@@ -11,7 +11,7 @@ export default function AuthLayout({
         <div className="hidden lg:flex lg:w-1/2 bg-white overflow-hidden relative">
           <div className="flex flex-col justify-between w-full h-full relative">
             <Image
-              src="/_static/auth/auth-left.png"
+              src="/_static/auth/auth-left-02.webp"
               alt="auth bg"
               width={1000}
               height={1000}
