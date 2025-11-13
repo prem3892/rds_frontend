@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import CannedMessageSelector from "./CannedMessageSelector";
+import { useChatActions, useDraftMessage } from "@/stores/chat";
 
 interface MessageInputProps {
   disabled: boolean;
@@ -20,7 +21,8 @@ const MessageInput = ({
   onTypingStop,
   sessionId,
 }: MessageInputProps) => {
-  const [message, setMessage] = useState("");
+  const message = useDraftMessage(sessionId);
+  const { setDraftMessage, clearDraftMessage } = useChatActions();
   const [isTyping, setIsTyping] = useState(false);
   const [showCannedMessages, setShowCannedMessages] = useState(false);
   const [cannedMessageQuery, setCannedMessageQuery] = useState("");
@@ -51,7 +53,7 @@ const MessageInput = ({
   const handleSend = () => {
     if (message.trim() && sessionId) {
       onSendMessage(message.trim());
-      setMessage("");
+      clearDraftMessage(sessionId);
       setShowCannedMessages(false);
       setCannedMessageQuery("");
 
@@ -85,7 +87,9 @@ const MessageInput = ({
       cursorPosition = newMessage.length;
     }
     
-    setMessage(newMessage);
+    if (sessionId) {
+      setDraftMessage(sessionId, newMessage);
+    }
     setShowCannedMessages(false);
     setCannedMessageQuery("");
     
@@ -134,7 +138,9 @@ const MessageInput = ({
           value={message}
           onChange={(e) => {
             const newValue = e.target.value;
-            setMessage(newValue);
+            if (sessionId) {
+              setDraftMessage(sessionId, newValue);
+            }
 
             // Handle canned message trigger
             if (newValue.includes("#")) {
