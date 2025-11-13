@@ -19,6 +19,7 @@ interface ChatState {
   pendingRequests: ChatSession[]; // For agents to see incoming chats
   selectedSessionId: string | null; // ID of the currently viewed chat in "My Chats"
   bookingInProgress: string[]; // Array of session IDs that are currently booking appointments
+  draftMessages: Record<string, string>; // Draft messages per session
 
   actions: {
     setSocket: (socket: Socket | null) => void;
@@ -79,6 +80,11 @@ interface ChatState {
       timestamp: string
     ) => void;
 
+    // Draft messages
+    setDraftMessage: (sessionId: string, message: string) => void;
+    getDraftMessage: (sessionId: string) => string;
+    clearDraftMessage: (sessionId: string) => void;
+
     // Utility functions
     clearStuckSessions: (validSessionIds: string[]) => void; // Manual cleanup of stuck sessions
     clearChatState: () => void; // For logout or re-initialization
@@ -92,6 +98,7 @@ const initialState = {
   pendingRequests: [],
   selectedSessionId: null,
   bookingInProgress: [],
+  draftMessages: {},
 };
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -429,6 +436,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
         };
       }),
 
+    setDraftMessage: (sessionId, message) =>
+      set((state) => ({
+        draftMessages: {
+          ...state.draftMessages,
+          [sessionId]: message,
+        },
+      })),
+
+    getDraftMessage: (sessionId) => {
+      return get().draftMessages[sessionId] || "";
+    },
+
+    clearDraftMessage: (sessionId) =>
+      set((state) => {
+        const { [sessionId]: _, ...remaining } = state.draftMessages;
+        return {
+          draftMessages: remaining,
+        };
+      }),
+
     clearStuckSessions: (validSessionIds) =>
       set((state) => {
         const validIdsSet = new Set(validSessionIds);
@@ -464,7 +491,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         return state; // No changes needed
       }),
 
-    clearChatState: () => set(initialState),
+    clearChatState: () => set(() => initialState),
   },
 }));
 
@@ -488,3 +515,5 @@ export const useSelectedChatSessionId = () =>
 export const useChatActions = () => useChatStore((state) => state.actions);
 export const useIsBookingInProgress = (sessionId: string) =>
   useChatStore((state) => state.bookingInProgress.includes(sessionId));
+export const useDraftMessage = (sessionId: string | null) =>
+  useChatStore((state) => (sessionId ? state.draftMessages[sessionId] || "" : ""));
