@@ -2,7 +2,15 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Widget } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
-import { Globe, IdCard, MessageCircle, MoreHorizontal, Paintbrush, Text, Workflow } from "lucide-react";
+import {
+  Globe,
+  IdCard,
+  MessageCircle,
+  MoreHorizontal,
+  Paintbrush,
+  Text,
+  Workflow,
+} from "lucide-react";
 import CelAction from "./cell-actions";
 
 export const columns: ColumnDef<Widget>[] = [
@@ -34,9 +42,9 @@ export const columns: ColumnDef<Widget>[] = [
       return (
         <div className="flex items-center gap-2">
           <IdCard className="size-5 stroke-1" />
-          <span>Widget Name</span>
+          <span>App Name</span>
         </div>
-      )
+      );
     },
     cell: ({ row }) => {
       return <div>{row.original.name}</div>;
@@ -52,7 +60,7 @@ export const columns: ColumnDef<Widget>[] = [
           <Globe className="size-5 stroke-1" />
           <span>Domains</span>
         </div>
-      )
+      );
     },
     cell: ({ row }) => {
       return <div>{row.original.domains.join(", ")}</div>;
@@ -77,31 +85,42 @@ export const columns: ColumnDef<Widget>[] = [
           <Paintbrush className="size-5 stroke-1" />
           <span>Primary Color</span>
         </div>
-      )
+      );
     },
     cell: ({ row }) => {
-      return <div className="text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <span className="size-3 rounded-full" style={{ backgroundColor: row.original.primaryColor }}></span>
-          <Badge variant="outline" className="rounded-full">{row.original.primaryColor}</Badge>
+      return (
+        <div className="text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span
+              className="size-3 rounded-full"
+              style={{ backgroundColor: row.original.primaryColor }}
+            ></span>
+            <Badge variant="outline" className="rounded-full">
+              {row.original.primaryColor}
+            </Badge>
+          </div>
         </div>
-      </div>;
+      );
     },
     enableSorting: false,
     enableHiding: false,
   },
   {
     id: "welcomeMessage",
-        header: () => {
-          return (
-            <div className="flex items-center gap-2">
-              <MessageCircle className="size-5 stroke-1" />
-              <span>Welcome Message</span>
-            </div>
-          )
-        },
+    header: () => {
+      return (
+        <div className="flex items-center gap-2">
+          <MessageCircle className="size-5 stroke-1" />
+          <span>Welcome Message</span>
+        </div>
+      );
+    },
     cell: ({ row }) => {
-      return <div className="text-sm text-muted-foreground">{row.original.welcomeMessage}</div>;
+      return (
+        <div className="text-sm text-muted-foreground">
+          {row.original.welcomeMessage}
+        </div>
+      );
     },
     enableSorting: false,
     enableHiding: false,
@@ -114,16 +133,14 @@ export const columns: ColumnDef<Widget>[] = [
           <Workflow className="size-5 stroke-1" />
           <span>Departments</span>
         </div>
-      )
+      );
     },
     cell: ({ row }) => {
       return (
         <>
           {row.original.departmentIds.map((d, index) => (
             <div className="flex flex-wrap gap-2 items-center" key={index}>
-              <Badge variant="outline" >
-                {d.name}
-              </Badge>
+              <Badge variant="outline">{d.name}</Badge>
             </div>
           ))}
         </>
@@ -140,28 +157,30 @@ export const columns: ColumnDef<Widget>[] = [
           <Text className="size-5 stroke-1" />
           <span>Header Text</span>
         </div>
-      )
+      );
     },
     cell: ({ row }) => {
-      return <div className="text-sm text-muted-foreground">{row.original.headerText}</div>;
+      return (
+        <div className="text-sm text-muted-foreground">
+          {row.original.headerText}
+        </div>
+      );
     },
     enableSorting: false,
     enableHiding: false,
   },
   {
     id: "actions",
-        header: () => {
+    header: () => {
       return (
         <div className="flex items-center gap-2">
           <MoreHorizontal className="size-5 stroke-1" />
           <span>Actions</span>
         </div>
-      )
+      );
     },
     cell: ({ row }) => {
-      return (
-        <CelAction row={row} />
-      );
+      return <CelAction row={row} />;
     },
     enableSorting: false,
     enableHiding: false,

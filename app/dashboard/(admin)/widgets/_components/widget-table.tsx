@@ -141,7 +141,7 @@ const WidgetTable = (props: Props) => {
   if (!widgets.length && !isLoadingWidgets) {
     return (
       <div className="bg-white p-4 rounded-xl">
-        <div className="text-center text-gray-500 py-8">No widgets found</div>
+        <div className="text-center text-gray-500 py-8">No apps found</div>
       </div>
     );
   }

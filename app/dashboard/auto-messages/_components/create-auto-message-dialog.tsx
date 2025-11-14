@@ -22,9 +22,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { AUTO_MESSAGES_QUERY_KEY, useCreateAutoMessageMutation } from "@/lib/auto-message.api";
+import {
+  AUTO_MESSAGES_QUERY_KEY,
+  useCreateAutoMessageMutation,
+} from "@/lib/auto-message.api";
 import { Widget } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -44,7 +53,7 @@ interface CreateAutoMessageDialogProps {
 const createAutoMessageSchema = z.object({
   title: z.string().min(1, "Title is required"),
   message: z.string().min(1, "Message is required"),
-  widgetId: z.string().min(1, "Widget is required"),
+  widgetId: z.string().min(1, "App is required"),
   domain: z.string().min(1, "Domain is required"),
   sitewide: z.boolean(),
   pagePaths: z.array(z.string()),
@@ -109,7 +118,10 @@ export default function CreateAutoMessageDialog({
   };
 
   const addPagePath = () => {
-    if (newPagePath.trim() && !form.getValues("pagePaths").includes(newPagePath.trim())) {
+    if (
+      newPagePath.trim() &&
+      !form.getValues("pagePaths").includes(newPagePath.trim())
+    ) {
       const currentPaths = form.getValues("pagePaths");
       form.setValue("pagePaths", [...currentPaths, newPagePath.trim()]);
       setNewPagePath("");
@@ -118,7 +130,10 @@ export default function CreateAutoMessageDialog({
 
   const removePagePath = (index: number) => {
     const currentPaths = form.getValues("pagePaths");
-    form.setValue("pagePaths", currentPaths.filter((_, i) => i !== index));
+    form.setValue(
+      "pagePaths",
+      currentPaths.filter((_, i) => i !== index)
+    );
   };
 
   const handleSitewideChange = (checked: boolean) => {
@@ -134,7 +149,8 @@ export default function CreateAutoMessageDialog({
         <DialogHeader>
           <DialogTitle>Create New Auto Message</DialogTitle>
           <DialogDescription>
-            Create a new auto message that will be shown to visitors automatically.
+            Create a new auto message that will be shown to visitors
+            automatically.
           </DialogDescription>
         </DialogHeader>
 
@@ -148,10 +164,7 @@ export default function CreateAutoMessageDialog({
                   <FormItem>
                     <FormLabel>Title *</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter message title"
-                        {...field}
-                      />
+                      <Input placeholder="Enter message title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -202,48 +215,45 @@ export default function CreateAutoMessageDialog({
               )}
             />
 
-     
-              <FormField
-                control={form.control}
-                name="domain"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Domain *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="example.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Enter domains without http(s)://
-                      </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-           
             <FormField
-                control={form.control}
-                name="showAfterSeconds"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Show After (seconds)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        placeholder="5"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-              
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              control={form.control}
+              name="domain"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Domain *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="example.com" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Enter domains without http(s)://
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="showAfterSeconds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Show After (seconds)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="5"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value) || 0)
+                      }
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -271,17 +281,23 @@ export default function CreateAutoMessageDialog({
                     value={newPagePath}
                     onChange={(e) => setNewPagePath(e.target.value)}
                     placeholder="Enter page path (e.g., /about, /contact)"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPagePath())}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && (e.preventDefault(), addPagePath())
+                    }
                   />
                   <Button type="button" onClick={addPagePath} variant="outline">
                     Add
                   </Button>
                 </div>
-                
+
                 {form.watch("pagePaths").length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {form.watch("pagePaths").map((path, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
                         {path}
                         <button
                           type="button"
@@ -301,11 +317,10 @@ export default function CreateAutoMessageDialog({
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={createMutation.isPending}
-              >
-                {createMutation.isPending ? "Creating..." : "Create Auto Message"}
+              <Button type="submit" disabled={createMutation.isPending}>
+                {createMutation.isPending
+                  ? "Creating..."
+                  : "Create Auto Message"}
               </Button>
             </DialogFooter>
           </form>
@@ -314,5 +329,3 @@ export default function CreateAutoMessageDialog({
     </Dialog>
   );
 }
-
-
