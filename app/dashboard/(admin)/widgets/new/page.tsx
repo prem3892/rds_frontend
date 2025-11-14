@@ -81,7 +81,7 @@ const THEME_PRESETS = {
 
 // Zod schema for widget form validation
 const widgetFormSchema = z.object({
-  name: z.string().min(1, { message: "Widget name is required." }),
+  name: z.string().min(1, { message: "App name is required." }),
   domains: z.array(z.string()),
   departmentIds: z.array(z.string()),
   isEnabled: z.boolean(),
@@ -753,7 +753,7 @@ export default function NewWidgetPage() {
   const createWidgetMutation = useCreateWidgetMutation({
     onSuccess: () => {
       toast("App Created", {
-        description: "The new widget has been successfully created.",
+        description: "The new app has been successfully created.",
       });
       queryClient.invalidateQueries({ queryKey: [WIDGETS_QUERY_KEY] });
       router.push("/dashboard/widgets");

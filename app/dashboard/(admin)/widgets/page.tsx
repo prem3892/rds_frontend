@@ -76,7 +76,7 @@ export default function WidgetsPage() {
             <PlusCircle
               className={cn("sm:mr-2 h-4 w-4", "md:hidden size-6 md:mr-0")}
             />
-            <span className="hidden md:block">Create New Widget</span>
+            <span className="hidden md:block">Create New App</span>
           </Button>
         </div>
 
