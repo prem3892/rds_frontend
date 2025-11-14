@@ -134,13 +134,13 @@ function WidgetPreview({ form }: { form: any }) {
               value="online"
               className="text-xs md:text-sm truncate  bg-gray-200 data-[state=active]:shadow-md data-[state=active]:p-2  data-[state=active]:mb-0 data-[state=active]:bg-white data-[state=active]:text-primary rounded-md"
             >
-              Show Online widget
+              Show Online App
             </TabsTrigger>
             <TabsTrigger
               value="offline"
               className="text-xs md:text-sm truncate  bg-gray-200 data-[state=active]:shadow-md data-[state=active]:p-2  data-[state=active]:mb-0 data-[state=active]:bg-white data-[state=active]:text-primary rounded-md"
             >
-              Show Offline widget
+              Show Offline App
             </TabsTrigger>
           </TabsList>
 
@@ -1353,7 +1353,7 @@ export default function NewWidgetPage() {
         {/* Right Column - Preview */}
         <Card className="p-6">
           <CardHeader>
-            <CardTitle>Widget Preview</CardTitle>
+            <CardTitle>App Preview</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-center p-0 md:p-6 ">
             <WidgetPreview form={form} />
