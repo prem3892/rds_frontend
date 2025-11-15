@@ -62,11 +62,13 @@ export default function SearchFilters({
   }, [debouncedSearch]);
 
   const handleDomainToggle = (domain: string) => {
-    const currentDomains = filters.domain ? filters.domain.split(",").filter(d => d.trim()) : [];
+    const currentDomains = filters.domain
+      ? filters.domain.split(",").filter((d) => d.trim())
+      : [];
     const newDomains = currentDomains.includes(domain)
-      ? currentDomains.filter(d => d !== domain)
+      ? currentDomains.filter((d) => d !== domain)
       : [...currentDomains, domain];
-    
+
     onFiltersChange({
       ...filters,
       domain: newDomains.length > 0 ? newDomains.join(",") : undefined,
@@ -75,11 +77,13 @@ export default function SearchFilters({
   };
 
   const handleWidgetToggle = (widgetName: string) => {
-    const currentWidgets = filters.widgetName ? filters.widgetName.split(",").filter(w => w.trim()) : [];
+    const currentWidgets = filters.widgetName
+      ? filters.widgetName.split(",").filter((w) => w.trim())
+      : [];
     const newWidgets = currentWidgets.includes(widgetName)
-      ? currentWidgets.filter(w => w !== widgetName)
+      ? currentWidgets.filter((w) => w !== widgetName)
       : [...currentWidgets, widgetName];
-    
+
     onFiltersChange({
       ...filters,
       widgetName: newWidgets.length > 0 ? newWidgets.join(",") : undefined,
@@ -112,31 +116,35 @@ export default function SearchFilters({
     });
   };
 
-  const hasActiveFilters = filters.search || filters.domain || filters.widgetName;
+  const hasActiveFilters =
+    filters.search || filters.domain || filters.widgetName;
 
   return (
     <div className="space-y-4">
       {/* Search Bar and Toggle */}
       <div className="flex items-center space-x-2">
         <div className="relative flex-1 max-w-md">
-          <Search className={cn(
-            "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4",
-            isSearching ? "text-blue-500 animate-pulse" : "text-gray-400"
-          )} />
+          <Search
+            className={cn(
+              "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4",
+              isSearching ? "text-blue-500 animate-pulse" : "text-gray-400"
+            )}
+          />
           <Input
             placeholder="Search blocked customers..."
             value={searchValue}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
           />
-        </div>  
+        </div>
         <Button
           variant="outline"
           onClick={() => setIsExpanded(!isExpanded)}
           className={cn(
             "transition-all duration-200",
-            isExpanded 
-              ? "bg-primary text-primary-foreground border-primary shadow-md" : ""
+            isExpanded
+              ? "bg-primary text-primary-foreground border-primary shadow-md"
+              : ""
           )}
         >
           <Filter className="h-4 w-4" /> Filters
@@ -169,8 +177,13 @@ export default function SearchFilters({
 
           {/* Sort Order Filter */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium text-gray-700">Sort Order</Label>
-            <Select value={filters.sortOrder} onValueChange={handleSortOrderChange}>
+            <Label className="text-sm font-medium text-gray-700">
+              Sort Order
+            </Label>
+            <Select
+              value={filters.sortOrder}
+              onValueChange={handleSortOrderChange}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Sort Order" />
               </SelectTrigger>
@@ -187,7 +200,8 @@ export default function SearchFilters({
             {availableWidgets.length > 0 ? (
               <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
                 {availableWidgets.map((widgetName) => {
-                  const isSelected = filters.widgetName?.includes(widgetName) || false;
+                  const isSelected =
+                    filters.widgetName?.includes(widgetName) || false;
                   return (
                     <Badge
                       key={widgetName}
@@ -202,7 +216,9 @@ export default function SearchFilters({
                 })}
               </div>
             ) : (
-              <div className="text-sm text-gray-500 italic">No widgets available</div>
+              <div className="text-sm text-gray-500 italic">
+                No apps available
+              </div>
             )}
           </div>
 
@@ -227,7 +243,9 @@ export default function SearchFilters({
                 })}
               </div>
             ) : (
-              <div className="text-sm text-gray-500 italic">No domains available</div>
+              <div className="text-sm text-gray-500 italic">
+                No domains available
+              </div>
             )}
           </div>
         </div>

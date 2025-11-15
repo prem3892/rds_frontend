@@ -23,7 +23,11 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetAllDepartments } from "@/lib/department.api";
-import { useDeleteWidgetMutation, useUpdateWidgetMutation, WIDGETS_QUERY_KEY } from "@/lib/widget.api";
+import {
+  useDeleteWidgetMutation,
+  useUpdateWidgetMutation,
+  WIDGETS_QUERY_KEY,
+} from "@/lib/widget.api";
 import { Widget } from "@/types";
 import {
   Select,
@@ -35,7 +39,16 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Row } from "@tanstack/react-table";
-import { Copy, Edit, Globe, Loader2, MessageSquareText, Palette, ShieldCheck, Trash } from "lucide-react";
+import {
+  Copy,
+  Edit,
+  Globe,
+  Loader2,
+  MessageSquareText,
+  Palette,
+  ShieldCheck,
+  Trash,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import { useForm } from "react-hook-form";
@@ -60,7 +73,7 @@ const THEME_PRESETS = {
 } as const;
 
 const widgetFormSchema = z.object({
-  name: z.string().min(1, { message: "Widget name is required." }),
+  name: z.string().min(1, { message: "App name is required." }),
   domains: z.array(z.string()),
   departmentIds: z.array(z.string()),
   isEnabled: z.boolean(),
@@ -99,7 +112,8 @@ function CelAction({ row }: Props) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showPrimaryColorPicker, setShowPrimaryColorPicker] = useState(false);
-  const [showSecondaryColorPicker, setShowSecondaryColorPicker] = useState(false);
+  const [showSecondaryColorPicker, setShowSecondaryColorPicker] =
+    useState(false);
   const [showTextColorPicker, setShowTextColorPicker] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const currentUser = useCurrentUser();
@@ -110,24 +124,32 @@ function CelAction({ row }: Props) {
   // Handle click outside to close color picker
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+      if (
+        colorPickerRef.current &&
+        !colorPickerRef.current.contains(event.target as Node)
+      ) {
         setShowPrimaryColorPicker(false);
         setShowSecondaryColorPicker(false);
         setShowTextColorPicker(false);
       }
     }
 
-    if (showPrimaryColorPicker || showSecondaryColorPicker || showTextColorPicker) {
-      document.addEventListener('mousedown', handleClickOutside);
+    if (
+      showPrimaryColorPicker ||
+      showSecondaryColorPicker ||
+      showTextColorPicker
+    ) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showPrimaryColorPicker, showSecondaryColorPicker, showTextColorPicker]);
 
   // Get departments for the form
-  const { data: departments, isLoading: isLoadingDepartments } = useGetAllDepartments();
+  const { data: departments, isLoading: isLoadingDepartments } =
+    useGetAllDepartments();
 
   // Form setup
   const form = useForm<WidgetFormValues>({
@@ -154,7 +176,7 @@ function CelAction({ row }: Props) {
   const updateWidgetMutation = useUpdateWidgetMutation({
     onSuccess: () => {
       toast("Widget Updated", {
-        description: "The widget has been successfully updated.",
+        description: "The app has been successfully updated.",
       });
       queryClient.invalidateQueries({ queryKey: [WIDGETS_QUERY_KEY] });
       setIsEditDialogOpen(false);
@@ -170,7 +192,7 @@ function CelAction({ row }: Props) {
   const deleteWidgetMutation = useDeleteWidgetMutation({
     onSuccess: () => {
       toast("Widget Deleted", {
-        description: "The widget has been successfully deleted.",
+        description: "The app has been successfully deleted.",
       });
       queryClient.invalidateQueries({ queryKey: [WIDGETS_QUERY_KEY] });
       setIsDeleteDialogOpen(false);
@@ -185,14 +207,18 @@ function CelAction({ row }: Props) {
   // Handle edit button click
   const handleEditClick = () => {
     // Prefill form with widget data
-    const initialPrimary = widget.primaryColor || THEME_PRESETS["Light blue"].primaryColor;
-    const initialSecondary = widget.secondaryColor || THEME_PRESETS["Light blue"].secondaryColor;
+    const initialPrimary =
+      widget.primaryColor || THEME_PRESETS["Light blue"].primaryColor;
+    const initialSecondary =
+      widget.secondaryColor || THEME_PRESETS["Light blue"].secondaryColor;
     const matchedPreset = Object.entries(THEME_PRESETS).find(
       ([name, preset]) =>
         preset.primaryColor.toLowerCase() === initialPrimary.toLowerCase() &&
         preset.secondaryColor.toLowerCase() === initialSecondary.toLowerCase()
     );
-    const themeName = (widget.theme?.name as any) || (matchedPreset ? (matchedPreset[0] as any) : "Custom");
+    const themeName =
+      (widget.theme?.name as any) ||
+      (matchedPreset ? (matchedPreset[0] as any) : "Custom");
 
     form.reset({
       name: widget.name || "",
@@ -202,10 +228,13 @@ function CelAction({ row }: Props) {
       primaryColor: initialPrimary,
       secondaryColor: initialSecondary,
       themeName,
-      welcomeMessage: widget.welcomeMessage || "Welcome! How can we help you today?",
+      welcomeMessage:
+        widget.welcomeMessage || "Welcome! How can we help you today?",
       headerText: widget.headerText || "Customer Support",
       offline_text: widget.offline_text || "We are offline right now",
-      notification_emails: widget.notification_emails || (currentUser?.email ? [currentUser.email] : []),
+      notification_emails:
+        widget.notification_emails ||
+        (currentUser?.email ? [currentUser.email] : []),
       button_location: (widget.button_location as any) || "bottom_right",
       button_label: widget.button_label || "Chat with us",
       widget_text_color: widget.widget_text_color || "#FFFFFF",
@@ -231,8 +260,14 @@ function CelAction({ row }: Props) {
       ...rest,
       theme,
       // Filter out empty strings from domains if any
-      domains: values.domains?.filter((domain) => domain.trim() !== "").map((d) => d.trim()) || [],
-      notification_emails: values.notification_emails?.map((e) => e.trim()).filter((e) => e.length > 0) || [],
+      domains:
+        values.domains
+          ?.filter((domain) => domain.trim() !== "")
+          .map((d) => d.trim()) || [],
+      notification_emails:
+        values.notification_emails
+          ?.map((e) => e.trim())
+          .filter((e) => e.length > 0) || [],
     };
 
     updateWidgetMutation.mutate({
@@ -264,7 +299,6 @@ function CelAction({ row }: Props) {
           className="h-8 px-2 text-xs"
         >
           <Edit className="size-4  " />
-          
         </Button>
         <Button
           variant="outline"
@@ -273,7 +307,6 @@ function CelAction({ row }: Props) {
           className="h-8 px-2 text-xs"
         >
           <Copy className="size-4 " />
-        
         </Button>
         <Button
           variant="outline"
@@ -282,7 +315,6 @@ function CelAction({ row }: Props) {
           className="h-8 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
         >
           <Trash className="size-4 " />
-         
         </Button>
       </div>
 
@@ -290,20 +322,23 @@ function CelAction({ row }: Props) {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[625px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Widget</DialogTitle>
+            <DialogTitle>Edit App</DialogTitle>
             <DialogDescription>
-              Update the configuration for this chat widget.
+              Update the configuration for this chat app.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 py-4">
+            <form
+              onSubmit={form.handleSubmit(handleFormSubmit)}
+              className="space-y-6 py-4"
+            >
               {/* Widget Name */}
               <FormField
                 name="name"
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Widget Name</FormLabel>
+                    <FormLabel>App Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Main Support Chat" {...field} />
                     </FormControl>
@@ -319,7 +354,8 @@ function CelAction({ row }: Props) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center">
-                      <Globe className="mr-2 h-4 w-4" /> Allowed Domains (optional)
+                      <Globe className="mr-2 h-4 w-4" /> Allowed Domains
+                      (optional)
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -335,7 +371,8 @@ function CelAction({ row }: Props) {
                       />
                     </FormControl>
                     <FormDescription>
-                      Leave empty to allow on any domain. Enter domains without http(s)://.
+                      Leave empty to allow on any domain. Enter domains without
+                      http(s)://.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -350,9 +387,13 @@ function CelAction({ row }: Props) {
                   <FormItem>
                     <FormLabel>Associated Departments</FormLabel>
                     {isLoadingDepartments && (
-                      <p className="text-sm text-muted-foreground">Loading departments...</p>
+                      <p className="text-sm text-muted-foreground">
+                        Loading departments...
+                      </p>
                     )}
-                    {!isLoadingDepartments && departments && departments.length > 0 ? (
+                    {!isLoadingDepartments &&
+                    departments &&
+                    departments.length > 0 ? (
                       <div className="space-y-2 max-h-40 overflow-y-auto border p-3 rounded-md">
                         {departments.map((dept) => (
                           <FormItem
@@ -364,20 +405,28 @@ function CelAction({ row }: Props) {
                                 checked={field.value?.includes(dept._id)}
                                 onCheckedChange={(checked) => {
                                   return checked
-                                    ? field.onChange([...(field.value || []), dept._id])
+                                    ? field.onChange([
+                                        ...(field.value || []),
+                                        dept._id,
+                                      ])
                                     : field.onChange(
-                                        (field.value || []).filter((value) => value !== dept._id)
+                                        (field.value || []).filter(
+                                          (value) => value !== dept._id
+                                        )
                                       );
                                 }}
                               />
                             </FormControl>
-                            <FormLabel className="font-normal">{dept.name}</FormLabel>
+                            <FormLabel className="font-normal">
+                              {dept.name}
+                            </FormLabel>
                           </FormItem>
                         ))}
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        No departments available. Please create departments first.
+                        No departments available. Please create departments
+                        first.
                       </p>
                     )}
                     <FormMessage />
@@ -400,9 +449,20 @@ function CelAction({ row }: Props) {
                           onValueChange={(val) => {
                             field.onChange(val);
                             if (val !== "Custom") {
-                              const preset = THEME_PRESETS[val as keyof typeof THEME_PRESETS];
-                              form.setValue("primaryColor", preset.primaryColor, { shouldDirty: true });
-                              form.setValue("secondaryColor", preset.secondaryColor, { shouldDirty: true });
+                              const preset =
+                                THEME_PRESETS[
+                                  val as keyof typeof THEME_PRESETS
+                                ];
+                              form.setValue(
+                                "primaryColor",
+                                preset.primaryColor,
+                                { shouldDirty: true }
+                              );
+                              form.setValue(
+                                "secondaryColor",
+                                preset.secondaryColor,
+                                { shouldDirty: true }
+                              );
                             }
                           }}
                         >
@@ -410,8 +470,12 @@ function CelAction({ row }: Props) {
                             <SelectValue placeholder="Select theme" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Light blue">Light blue</SelectItem>
-                            <SelectItem value="Sharp blue">Sharp blue</SelectItem>
+                            <SelectItem value="Light blue">
+                              Light blue
+                            </SelectItem>
+                            <SelectItem value="Sharp blue">
+                              Sharp blue
+                            </SelectItem>
                             <SelectItem value="Custom">Custom</SelectItem>
                           </SelectContent>
                         </Select>
@@ -429,30 +493,47 @@ function CelAction({ row }: Props) {
                         <Palette className="mr-2 h-4 w-4" /> Primary Color
                       </FormLabel>
                       <FormControl>
-                        <div className="flex items-center space-x-2 relative" ref={colorPickerRef}>
+                        <div
+                          className="flex items-center space-x-2 relative"
+                          ref={colorPickerRef}
+                        >
                           <div
                             className="size-6 rounded-full border cursor-pointer"
                             style={{ backgroundColor: field.value }}
-                            onClick={() => setShowPrimaryColorPicker(!showPrimaryColorPicker)}
+                            onClick={() =>
+                              setShowPrimaryColorPicker(!showPrimaryColorPicker)
+                            }
                           />
-                          <HexColorInput 
-                            color={field.value} 
+                          <HexColorInput
+                            color={field.value}
                             onChange={field.onChange}
                             className="flex-1 px-3 py-2 border rounded-md"
                             placeholder="#000000"
                           />
                           {showPrimaryColorPicker && (
                             <div className="absolute top-full left-0 mt-2 z-50">
-                              <HexColorPicker 
-                                color={field.value} 
+                              <HexColorPicker
+                                color={field.value}
                                 onChange={(color) => {
                                   field.onChange(color);
-                                  const matchesPreset = Object.entries(THEME_PRESETS).find(
+                                  const matchesPreset = Object.entries(
+                                    THEME_PRESETS
+                                  ).find(
                                     ([name, preset]) =>
-                                      preset.primaryColor.toLowerCase() === color.toLowerCase() &&
-                                      preset.secondaryColor.toLowerCase() === form.getValues("secondaryColor").toLowerCase()
+                                      preset.primaryColor.toLowerCase() ===
+                                        color.toLowerCase() &&
+                                      preset.secondaryColor.toLowerCase() ===
+                                        form
+                                          .getValues("secondaryColor")
+                                          .toLowerCase()
                                   );
-                                  form.setValue("themeName", matchesPreset ? (matchesPreset[0] as any) : "Custom", { shouldDirty: true });
+                                  form.setValue(
+                                    "themeName",
+                                    matchesPreset
+                                      ? (matchesPreset[0] as any)
+                                      : "Custom",
+                                    { shouldDirty: true }
+                                  );
                                 }}
                                 onMouseDown={(e) => e.stopPropagation()}
                               />
@@ -473,30 +554,49 @@ function CelAction({ row }: Props) {
                         <Palette className="mr-2 h-4 w-4" /> Secondary Color
                       </FormLabel>
                       <FormControl>
-                        <div className="flex items-center space-x-2 relative" ref={colorPickerRef}>
+                        <div
+                          className="flex items-center space-x-2 relative"
+                          ref={colorPickerRef}
+                        >
                           <div
                             className="size-6 rounded-full border cursor-pointer"
                             style={{ backgroundColor: field.value }}
-                            onClick={() => setShowSecondaryColorPicker(!showSecondaryColorPicker)}
+                            onClick={() =>
+                              setShowSecondaryColorPicker(
+                                !showSecondaryColorPicker
+                              )
+                            }
                           />
-                          <HexColorInput 
-                            color={field.value} 
+                          <HexColorInput
+                            color={field.value}
                             onChange={field.onChange}
                             className="flex-1 px-3 py-2 border rounded-md"
                             placeholder="#000000"
                           />
                           {showSecondaryColorPicker && (
                             <div className="absolute top-full left-0 mt-2 z-50">
-                              <HexColorPicker 
-                                color={field.value} 
+                              <HexColorPicker
+                                color={field.value}
                                 onChange={(color) => {
                                   field.onChange(color);
-                                  const matchesPreset = Object.entries(THEME_PRESETS).find(
+                                  const matchesPreset = Object.entries(
+                                    THEME_PRESETS
+                                  ).find(
                                     ([name, preset]) =>
-                                      preset.secondaryColor.toLowerCase() === color.toLowerCase() &&
-                                      preset.primaryColor.toLowerCase() === form.getValues("primaryColor").toLowerCase()
+                                      preset.secondaryColor.toLowerCase() ===
+                                        color.toLowerCase() &&
+                                      preset.primaryColor.toLowerCase() ===
+                                        form
+                                          .getValues("primaryColor")
+                                          .toLowerCase()
                                   );
-                                  form.setValue("themeName", matchesPreset ? (matchesPreset[0] as any) : "Custom", { shouldDirty: true });
+                                  form.setValue(
+                                    "themeName",
+                                    matchesPreset
+                                      ? (matchesPreset[0] as any)
+                                      : "Custom",
+                                    { shouldDirty: true }
+                                  );
                                 }}
                                 onMouseDown={(e) => e.stopPropagation()}
                               />
@@ -515,14 +615,17 @@ function CelAction({ row }: Props) {
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-auto">
                       <div className="space-y-0.5">
                         <FormLabel className="flex items-center">
-                          <ShieldCheck className="mr-2 h-4 w-4" /> Enable Widget
+                          <ShieldCheck className="mr-2 h-4 w-4" /> Enable App
                         </FormLabel>
                         <FormDescription>
-                          Allow this widget to be active on websites.
+                          Allow this app to be active on websites.
                         </FormDescription>
                       </div>
                       <FormControl>
-                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -538,17 +641,28 @@ function CelAction({ row }: Props) {
                     <FormItem>
                       <FormLabel>Button Location</FormLabel>
                       <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select location" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="top_left">Top left</SelectItem>
                             <SelectItem value="top_right">Top right</SelectItem>
-                            <SelectItem value="bottom_left">Bottom left</SelectItem>
-                            <SelectItem value="bottom_right">Bottom right</SelectItem>
-                            <SelectItem value="center_left">Center left</SelectItem>
-                            <SelectItem value="center_right">Center right</SelectItem>
+                            <SelectItem value="bottom_left">
+                              Bottom left
+                            </SelectItem>
+                            <SelectItem value="bottom_right">
+                              Bottom right
+                            </SelectItem>
+                            <SelectItem value="center_left">
+                              Center left
+                            </SelectItem>
+                            <SelectItem value="center_right">
+                              Center right
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>
@@ -591,10 +705,14 @@ function CelAction({ row }: Props) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center">
-                      <MessageSquareText className="mr-2 h-4 w-4" /> Welcome Message
+                      <MessageSquareText className="mr-2 h-4 w-4" /> Welcome
+                      Message
                     </FormLabel>
                     <FormControl>
-                      <Textarea placeholder="e.g., Hello! How can we assist you today?" {...field} />
+                      <Textarea
+                        placeholder="e.g., Hello! How can we assist you today?"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -608,7 +726,10 @@ function CelAction({ row }: Props) {
                   <FormItem>
                     <FormLabel>Offline Message</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="We are offline right now. Please leave a message and we will get back to you in a few business hours." {...field} />
+                      <Textarea
+                        placeholder="We are offline right now. Please leave a message and we will get back to you in a few business hours."
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -628,7 +749,9 @@ function CelAction({ row }: Props) {
                           value={field.value?.join(", ")}
                           onChange={(e) =>
                             field.onChange(
-                              e.target.value ? e.target.value.split(",").map((d) => d.trim()) : []
+                              e.target.value
+                                ? e.target.value.split(",").map((d) => d.trim())
+                                : []
                             )
                           }
                         />
@@ -643,25 +766,32 @@ function CelAction({ row }: Props) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex items-center">
-                        <Palette className="mr-2 h-4 w-4" /> Widget Text Color
+                        <Palette className="mr-2 h-4 w-4" /> App Text Color
                       </FormLabel>
                       <FormControl>
-                        <div className="flex items-center space-x-2 relative" ref={colorPickerRef}>
+                        <div
+                          className="flex items-center space-x-2 relative"
+                          ref={colorPickerRef}
+                        >
                           <div
                             className="size-6 rounded-full border cursor-pointer"
-                            style={{ backgroundColor: field.value || "#FFFFFF" }}
-                            onClick={() => setShowTextColorPicker(!showTextColorPicker)}
+                            style={{
+                              backgroundColor: field.value || "#FFFFFF",
+                            }}
+                            onClick={() =>
+                              setShowTextColorPicker(!showTextColorPicker)
+                            }
                           />
-                          <HexColorInput 
-                            color={field.value || "#FFFFFF"} 
+                          <HexColorInput
+                            color={field.value || "#FFFFFF"}
                             onChange={field.onChange}
                             className="flex-1 px-3 py-2 border rounded-md"
                             placeholder="#ffffff"
                           />
                           {showTextColorPicker && (
                             <div className="absolute top-full left-0 mt-2 z-50">
-                              <HexColorPicker 
-                                color={field.value || "#FFFFFF"} 
+                              <HexColorPicker
+                                color={field.value || "#FFFFFF"}
                                 onChange={field.onChange}
                                 onMouseDown={(e) => e.stopPropagation()}
                               />
@@ -683,10 +813,7 @@ function CelAction({ row }: Props) {
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={updateWidgetMutation.isPending}
-                >
+                <Button type="submit" disabled={updateWidgetMutation.isPending}>
                   {updateWidgetMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -708,7 +835,8 @@ function CelAction({ row }: Props) {
           <DialogHeader>
             <DialogTitle>Are you absolutely sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the widget &quot;{widget.name}&quot; and remove it from your account.
+              This action cannot be undone. This will permanently delete the app
+              &quot;{widget.name}&quot; and remove it from your account.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -731,7 +859,7 @@ function CelAction({ row }: Props) {
                   Deleting...
                 </>
               ) : (
-                "Delete Widget"
+                "Delete App"
               )}
             </Button>
           </DialogFooter>

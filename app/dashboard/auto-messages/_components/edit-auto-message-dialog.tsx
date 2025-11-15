@@ -14,10 +14,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useUpdateAutoMessageMutation } from "@/lib/auto-message.api";
-    import { AutoMessage } from "@/types/auto-message";
+import { AutoMessage } from "@/types/auto-message";
 import { Widget } from "@/types/widget";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -47,7 +53,7 @@ interface EditAutoMessageDialogProps {
 const editAutoMessageSchema = z.object({
   title: z.string().min(1, "Title is required"),
   message: z.string().min(1, "Message is required"),
-  widgetId: z.string().min(1, "Widget is required"),
+  widgetId: z.string().min(1, "App is required"),
   domain: z.string().min(1, "Domain is required"),
   sitewide: z.boolean(),
   pagePaths: z.array(z.string()),
@@ -86,8 +92,6 @@ export default function EditAutoMessageDialog({
       isEnabled: autoMessage?.isEnabled ?? true,
     },
   });
-
-
 
   const updateMutation = useUpdateAutoMessageMutation({
     onSuccess: () => {
@@ -151,7 +155,10 @@ export default function EditAutoMessageDialog({
   };
 
   const addPagePath = () => {
-    if (newPagePath.trim() && !form.getValues("pagePaths").includes(newPagePath.trim())) {
+    if (
+      newPagePath.trim() &&
+      !form.getValues("pagePaths").includes(newPagePath.trim())
+    ) {
       const currentPaths = form.getValues("pagePaths");
       form.setValue("pagePaths", [...currentPaths, newPagePath.trim()]);
       setNewPagePath("");
@@ -160,7 +167,10 @@ export default function EditAutoMessageDialog({
 
   const removePagePath = (index: number) => {
     const currentPaths = form.getValues("pagePaths");
-    form.setValue("pagePaths", currentPaths.filter((_, i) => i !== index));
+    form.setValue(
+      "pagePaths",
+      currentPaths.filter((_, i) => i !== index)
+    );
   };
 
   const handleSitewideChange = (checked: boolean) => {
@@ -172,7 +182,10 @@ export default function EditAutoMessageDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent key={autoMessage?._id} className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        key={autoMessage?._id}
+        className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle>Edit Auto Message</DialogTitle>
           <DialogDescription>
@@ -190,12 +203,9 @@ export default function EditAutoMessageDialog({
                   <FormItem>
                     <FormLabel>Title *</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter message title"
-                        {...field}
-                      />
+                      <Input placeholder="Enter message title" {...field} />
                     </FormControl>
-               
+
                     <FormMessage />
                   </FormItem>
                 )}
@@ -207,8 +217,8 @@ export default function EditAutoMessageDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Widget *</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
+                    <Select
+                      onValueChange={field.onChange}
                       value={field.value || ""}
                     >
                       <FormControl>
@@ -248,30 +258,25 @@ export default function EditAutoMessageDialog({
               )}
             />
 
-         
-              <FormField
-                control={form.control}
-                name="domain"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Domain *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="example.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Enter domains without http(s)://
-                      </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-        
-<div className="grid grid-cols-2 gap-4">
             <FormField
+              control={form.control}
+              name="domain"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Domain *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="example.com" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Enter domains without http(s)://
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
                 control={form.control}
                 name="showAfterSeconds"
                 render={({ field }) => (
@@ -283,7 +288,9 @@ export default function EditAutoMessageDialog({
                         min="0"
                         placeholder="5"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value) || 0)
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -291,23 +298,23 @@ export default function EditAutoMessageDialog({
                 )}
               />
 
-            <FormField
-              control={form.control}
-              name="isEnabled"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-end space-x-3 space-y-0 rounded-md  p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Enable auto message</FormLabel>
-                  </div>
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="isEnabled"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-end space-x-3 space-y-0 rounded-md  p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Enable auto message</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
             </div>
 
             <FormField
@@ -336,17 +343,23 @@ export default function EditAutoMessageDialog({
                     value={newPagePath}
                     onChange={(e) => setNewPagePath(e.target.value)}
                     placeholder="Enter page path (e.g., /about, /contact)"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPagePath())}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && (e.preventDefault(), addPagePath())
+                    }
                   />
                   <Button type="button" onClick={addPagePath} variant="outline">
                     Add
                   </Button>
                 </div>
-                
+
                 {form.watch("pagePaths").length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {form.watch("pagePaths").map((path, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
                         {path}
                         <button
                           type="button"
@@ -366,11 +379,10 @@ export default function EditAutoMessageDialog({
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={updateMutation.isPending}
-              >
-                {updateMutation.isPending ? "Updating..." : "Update Auto Message"}
+              <Button type="submit" disabled={updateMutation.isPending}>
+                {updateMutation.isPending
+                  ? "Updating..."
+                  : "Update Auto Message"}
               </Button>
             </DialogFooter>
           </form>
@@ -379,5 +391,3 @@ export default function EditAutoMessageDialog({
     </Dialog>
   );
 }
-
-

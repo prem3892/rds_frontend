@@ -61,7 +61,7 @@ export const dashboardNavItems: NavItem[] = [
     separator: true,
   },
   {
-    title: "Widgets",
+    title: "Apps",
     href: "/dashboard/widgets",
     icon: Building,
     role: "ADMIN",
