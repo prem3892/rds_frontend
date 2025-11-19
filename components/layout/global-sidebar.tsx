@@ -105,11 +105,9 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
           )}
         </Button>
       </div>
-<div className="px-3">
-
-      <Separator orientation="horizontal" className="px-3 w-" /> 
-</div>
-      
+      <div className="px-3">
+        <Separator orientation="horizontal" className="px-3 w-" />
+      </div>
 
       <ScrollArea className="flex-1">
         <nav className="grid items-start gap-1 px-4 py-4">
@@ -136,9 +134,7 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
                       )}
                       title={!sidebarExpanded ? item.title : undefined}
                     >
-                      <Icon
-                        className={cn("size-5", sidebarExpanded && "")}
-                      />
+                      <Icon className={cn("size-5", sidebarExpanded && "")} />
                       {sidebarExpanded && (
                         <>
                           {item.title}
@@ -159,7 +155,9 @@ export function GlobalSidebar({ currentUser, className }: GlobalSidebarProps) {
       </ScrollArea>
 
       <div className="mt-auto border-t p-4">
-        {(currentUser.role === "AGENT" || currentUser.role === "ADMIN" || currentUser.role === "MANAGER") ? (
+        {currentUser.role === "AGENT" ||
+        currentUser.role === "ADMIN" ||
+        currentUser.role === "MANAGER" ? (
           <div className="mb-4">
             {sidebarExpanded ? (
               <div className="flex items-center space-x-2 p-2 rounded-md border">
