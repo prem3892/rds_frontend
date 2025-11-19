@@ -7,6 +7,7 @@ export * from "./agent"; // Export all from agent.ts
 export * from "./visitor"; // Export all from visitor.ts
 export * from "./auto-message"; // Export all from auto-message.ts
 export * from "./blocked-customer"; // Export all from blocked-customer.ts
+export * from "./analytics"; // Export all from analytics.ts
 // Export all from shared.ts
 
 export interface User {
