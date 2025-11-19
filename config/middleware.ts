@@ -38,6 +38,7 @@ export const ROUTES = {
     '/dashboard/history-new',
     '/dashboard/departments',
     '/dashboard/sessions',
+    '/dashboard/analytics',
   ],
   
   // Admin-only routes

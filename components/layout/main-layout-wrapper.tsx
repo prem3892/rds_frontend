@@ -41,6 +41,7 @@ import {
   UserX,
   WifiOff,
   MailCheck,
+  TrendingUp,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -222,6 +223,13 @@ export function MainLayoutWrapper({
       href: "/dashboard/widgets",
       active: pathname.includes("/widgets"),
       roles: ["ADMIN", "MANAGER"], // Admin only
+    },
+    {
+      icon: TrendingUp,
+      label: "Analytics",
+      href: "/dashboard/analytics",
+      active: pathname.includes("/analytics"),
+      roles: ["ADMIN", "MANAGER", "AGENT"], // Admin only
     },
     {
       icon: Mail,
