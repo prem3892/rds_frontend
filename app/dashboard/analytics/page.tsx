@@ -14,6 +14,7 @@ import AnalyticsSummaryCards from "./_components/analytics-summary";
 import AnalyticsChart from "./_components/analytics-chart";
 import AnalyticsTable from "./_components/analytics-table";
 import { GetAnalyticsQueryDto } from "@/types";
+import { useGetAllWidgetsList } from "@/lib/widget.api";
 
 interface AnalyticsFiltersState {
   startDate: string;
@@ -57,8 +58,7 @@ export default function AnalyticsPage() {
 
   // Get agents list for filter dropdown
   const { data: agentsData } = useGetAllAgents({
-    enabled:
-      currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
+    enabled: currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER",
   });
 
   // Build API query parameters
@@ -69,7 +69,9 @@ export default function AnalyticsPage() {
     ...(filters.endDate && { endDate: filters.endDate }),
     ...(filters.source && { source: filters.source }),
     ...(filters.domain && { domain: filters.domain }),
-    ...(filters.type && { type: filters.type as "chats" | "appointments" | "both" }),
+    ...(filters.type && {
+      type: filters.type as "chats" | "appointments" | "both",
+    }),
     ...(filters.agentId && { agentId: filters.agentId }),
     ...(filters.sortBy && { sortBy: filters.sortBy as any }),
     ...(filters.sortOrder && { sortOrder: filters.sortOrder }),
@@ -90,15 +92,19 @@ export default function AnalyticsPage() {
     enabled: !!currentUser,
   });
 
-  // Extract unique domains from the response
+  // changes here
+  const { data: widgetsData } = useGetAllWidgetsList();
   useEffect(() => {
-    if (analyticsData?.items && analyticsData.items.length > 0) {
-      const uniqueDomains = Array.from(
-        new Set(analyticsData.items.map((item) => item.domain))
-      );
-      setDomains(uniqueDomains);
+    if (Array.isArray(widgetsData?.items)) {
+      if (widgetsData?.items.length > 0) {
+        const allDomains = widgetsData.items.flatMap(
+          (widget) => widget.domains || []
+        );
+        const uniqueDomains = Array.from(new Set(allDomains));
+        setDomains(uniqueDomains);
+      }
     }
-  }, [analyticsData?.items]);
+  }, [widgetsData?.items]);
 
   const handleFiltersChange = (newFilters: AnalyticsFiltersState) => {
     setFilters(newFilters);
@@ -234,9 +240,7 @@ export default function AnalyticsPage() {
         {/* Empty State */}
         {!isLoading && !analyticsData && (
           <div className="mx-2 sm:mx-4 text-center py-12">
-            <p className="text-muted-foreground">
-              No analytics data available
-            </p>
+            <p className="text-muted-foreground">No analytics data available</p>
           </div>
         )}
       </div>
