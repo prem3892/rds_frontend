@@ -196,10 +196,12 @@ export default function AnalyticsFilters({
                   {domain}
                 </SelectItem>
               ))}
+              <button className="bg-gray-950 text-white w-full">load more</button>
             </SelectContent>
           </Select>
         ) : (
           <Input
+          aria-label="input"
             placeholder="Filter by domain..."
             value={localDomain}
             onChange={(e) => handleInputChange("domain", e.target.value)}

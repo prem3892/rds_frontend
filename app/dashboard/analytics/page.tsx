@@ -94,12 +94,18 @@ export default function AnalyticsPage() {
 
   // changes here
   const { data: widgetsData } = useGetAllWidgetsList();
+  // console.log("widget data:", widgetsData)
   useEffect(() => {
     if (Array.isArray(widgetsData?.items)) {
       if (widgetsData?.items.length > 0) {
-        const allDomains = widgetsData.items.flatMap(
-          (widget) => widget.domains || []
-        );
+        const limit =  5;
+        const start = 0;
+
+        const slice =  widgetsData.items.slice(start, start+limit)
+        const allDomains =  slice.flatMap((widget)=>widget.domains || [])
+        // const allDomains = widgetsData.items.flatMap(
+        //   (widget) => widget.domains || []
+        // );
         const uniqueDomains = Array.from(new Set(allDomains));
         setDomains(uniqueDomains);
       }
@@ -170,7 +176,9 @@ export default function AnalyticsPage() {
 
         {/* Filters */}
         <div className="mx-2 sm:mx-4 mb-6">
+          
           <AnalyticsFilters
+          
             filters={filters}
             onFiltersChange={handleFiltersChange}
             agents={agentsData || []}
@@ -179,7 +187,9 @@ export default function AnalyticsPage() {
             isLoading={isLoading}
             userRole={currentUser?.role}
           />
+         
         </div>
+        
 
         {/* Error Alert */}
         {error && (
